@@ -1,2832 +1,1635 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>PepeChat v15.0 · Ultimate Connectivity</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PepeChat — ICE Fallback v14</title>
 
-  <!-- QR Code Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- PeerJS (Latest Beta) -->
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- DNS prefetch to reduce STUN hostname lookup latency (best-effort) -->
+  <link rel="dns-prefetch" href="//stun.l.google.com">
+  <link rel="dns-prefetch" href="//stun1.l.google.com">
+  <link rel="dns-prefetch" href="//stun2.l.google.com">
+  <link rel="dns-prefetch" href="//stun3.l.google.com">
+  <link rel="dns-prefetch" href="//stun4.l.google.com">
+  <link rel="dns-prefetch" href="//global.stun.twilio.com">
+  <link rel="dns-prefetch" href="//stun.stunprotocol.org">
 
   <style>
-    :root {
-      --bg-gradient: radial-gradient(circle at top left, #0f0f0f 0%, #000000 100%);
-      --glass-panel: rgba(15, 15, 15, 0.95);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --accent: #0A84FF;
-      --accent-grad: linear-gradient(135deg, #0A84FF, #0056b3);
-      --text-main: #e0e0e0;
-      --text-muted: #8e8e93;
-      --bubble-in: #262628;
-      --bubble-out: #0A84FF;
-      --danger: #FF453A;
-      --success: #30D158;
-      --warning: #FFD60A;
-      --morse-active: #FFD60A;
-      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --safe-bottom: env(safe-area-inset-bottom, 20px);
+    :root{
+      --bg:#0b0d12; --panel:#121626; --panel2:#0f1320; --line:#242a3c;
+      --text:#e8ecff; --muted:#a8b0d6; --accent:#7aa2ff; --bad:#ff6b6b; --good:#44d19a;
+      --warn:#ffce5c;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      margin: 0;
-      font-family: var(--font-stack);
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);}
+    .app{display:grid; grid-template-columns: 340px 1fr; height:100vh;}
+    .sidebar{border-right:1px solid var(--line); background:linear-gradient(180deg,var(--panel),var(--panel2)); padding:14px; overflow:auto;}
+    .main{display:grid; grid-template-rows: auto 1fr auto; height:100vh;}
+    .topbar{border-bottom:1px solid var(--line); padding:12px 14px; display:flex; gap:12px; align-items:center; justify-content:space-between; background:rgba(18,22,38,.9); backdrop-filter: blur(6px);}
+    .status{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted);}
+    .dot{width:8px; height:8px; border-radius:99px; background:var(--muted);}
+    .dot.good{background:var(--good)} .dot.bad{background:var(--bad)} .dot.warn{background:var(--warn)}
+    .btn{background:transparent; color:var(--text); border:1px solid var(--line); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px;}
+    .btn:hover{border-color:#3a4464}
+    .btn.primary{background:rgba(122,162,255,.14); border-color:rgba(122,162,255,.35);}
+    .btn.bad{background:rgba(255,107,107,.14); border-color:rgba(255,107,107,.35);}
+    .btn.good{background:rgba(68,209,154,.12); border-color:rgba(68,209,154,.35);}
+    .btn:disabled{opacity:.45; cursor:not-allowed}
+    .section{border:1px solid var(--line); border-radius:14px; padding:12px; margin:10px 0; background:rgba(15,19,32,.55);}
+    .section h3{margin:0 0 10px 0; font-size:13px; letter-spacing:.02em; color:var(--muted); text-transform:uppercase;}
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px;}
+    input, textarea, select{
+      width:100%; padding:10px 10px; border-radius:12px; border:1px solid var(--line);
+      background:#0b0f1a; color:var(--text); outline:none;
+      font-family:var(--sans); font-size:13px;
     }
-
-    /* --- LOGIN SCREEN --- */
-    #loginScreen {
-      position: absolute; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: opacity 0.3s ease;
-    }
-    #loginScreen.hidden { opacity: 0; pointer-events: none; display: none; }
-    
-    .login-card {
-      background: rgba(30,30,30,0.9); padding: 40px; border-radius: 24px;
-      border: 1px solid var(--glass-border); text-align: center; width: 90%; max-width: 400px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .login-input {
-      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border);
-      background: rgba(0,0,0,0.5); color: white; font-size: 16px; outline: none; margin-bottom: 15px;
-    }
-    .btn-primary {
-      width: 100%; padding: 14px; border-radius: 12px; border: none;
-      background: var(--accent-grad); color: white; font-weight: 600; font-size: 16px; cursor: pointer;
-    }
-    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
-
-    /* --- MAIN APP LAYOUT --- */
-    #app {
-      position: relative;
-      width: 100%; height: 100%; max-width: 1600px; display: flex;
-      background: var(--glass-panel); backdrop-filter: blur(30px);
-      box-shadow: 0 0 50px rgba(0,0,0,0.8); opacity: 0; transform: scale(0.98);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
-    }
-    #app.visible { opacity: 1; transform: scale(1); }
-
-    /* SIDEBAR OVERLAY */
-    .sidebar-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 55;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .sidebar-overlay.visible { opacity: 1; pointer-events: auto; }
-
-    /* SIDEBAR */
-    aside {
-      width: 320px; border-right: 1px solid var(--glass-border);
-      display: flex; flex-direction: column; background: rgba(0,0,0,0.3);
-      z-index: 60; position: relative;
-    }
-    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--glass-border); }
-    .user-profile { display: flex; align-items: center; gap: 10px; }
-    .avatar {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: linear-gradient(45deg, #444, #666);
-      display: flex; align-items: center; justify-content: center; font-weight: bold;
-      flex-shrink: 0;
-    }
-    .sidebar-actions { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .action-btn {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 10px;
-      border-radius: 8px; color: var(--text-main); font-size: 12px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .action-btn:hover { background: rgba(255,255,255,0.1); }
-    
-    .chat-list { flex: 1; overflow-y: auto; padding: 10px; }
-    .chat-item {
-      padding: 12px; border-radius: 10px; cursor: pointer;
-      display: flex; align-items: center; gap: 12px; margin-bottom: 5px;
-      border: 1px solid transparent;
-    }
-    .chat-item:hover { background: rgba(255,255,255,0.05); }
-    .chat-item.active { background: rgba(10, 132, 255, 0.15); border-color: rgba(10,132,255,0.3); }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-    .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
-    .status-dot.connecting { background: var(--warning); animation: pulse 1s infinite; }
-    .status-dot.failed { background: var(--danger); }
-
-    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-    /* CHAT AREA */
-    main {
-      flex: 1; display: flex; flex-direction: column; position: relative;
-      background: rgba(0,0,0,0.2); z-index: 50;
-    }
-    .chat-header {
-      padding: 15px 20px; border-bottom: 1px solid var(--glass-border);
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(30,30,30,0.6); backdrop-filter: blur(10px);
-    }
-    .header-controls { display: flex; gap: 10px; align-items: center; }
-    .icon-btn {
-      background: transparent; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 16px; padding: 8px; border-radius: 50%;
-    }
-    .icon-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.1); }
-    .icon-btn.active { color: var(--accent); background: rgba(10,132,255,0.15); }
-    .icon-btn.danger { color: var(--danger); }
-    .icon-btn.danger:hover { background: rgba(255, 69, 58, 0.2); }
-
-    .messages-container {
-      flex: 1; overflow-y: auto; padding: 20px;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .msg {
-      max-width: 75%; padding: 10px 14px; border-radius: 18px;
-      font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word;
-    }
-    .msg.in { align-self: flex-start; background: var(--bubble-in); border-bottom-left-radius: 4px; }
-    .msg.out { align-self: flex-end; background: var(--bubble-out); border-bottom-right-radius: 4px; color: white; }
-    .msg.system { align-self: center; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); font-size: 11px; max-width: 90%; color: var(--text-muted); text-align: center; }
-    
-    /* File Card Styles */
-    .file-card {
-      background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; padding: 10px; margin-top: 5px;
-      display: flex; flex-direction: column; gap: 8px; min-width: 200px;
-    }
-    .file-header { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; }
-    .file-actions { display: flex; gap: 5px; margin-top: 5px; }
-    .file-btn-small {
-      flex: 1; background: rgba(255,255,255,0.1); border: none; color: white;
-      padding: 6px; border-radius: 6px; cursor: pointer; font-size: 11px;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-    }
-    .file-btn-small:hover { background: rgba(255,255,255,0.2); }
-    .file-info-icon { color: var(--accent); cursor: pointer; margin-left: auto; padding: 0 5px; }
-    
-    /* Audio Visualizer */
-    .audio-visualizer {
-      display: flex; align-items: center; gap: 10px; min-width: 200px; height: 40px;
-      background: rgba(0,0,0,0.2); border-radius: 20px; padding: 0 10px;
-    }
-    .play-icon { cursor: pointer; font-size: 14px; width: 20px; text-align: center; }
-    .waveform-canvas { flex: 1; height: 100%; }
-
-    /* Progress Bar */
-    .progress-track {
-      width: 100%; height: 4px; background: rgba(255,255,255,0.1);
-      border-radius: 2px; overflow: hidden; margin-top: 5px;
-    }
-    .progress-fill {
-      height: 100%; background: var(--success); width: 0%;
-      transition: width 0.2s ease;
-    }
-
-    .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
-
-    .msg-meta { font-size: 10px; opacity: 0.7; margin-top: 4px; display: flex; justify-content: flex-end; gap: 6px; align-items: center; }
-    .msg-status { font-size: 10px; }
-    .copy-btn { cursor: pointer; margin-right: 5px; opacity: 0.5; }
-    .copy-btn:hover { opacity: 1; color: var(--accent); }
-    
-    .ghost-fade { animation: fadeOut 30s forwards; }
-    @keyframes fadeOut { 0% { opacity: 1; } 90% { opacity: 0.1; filter: blur(2px); } 100% { opacity: 0; display: none; } }
-
-    /* INPUT AREA - Mobile Optimized */
-    .input-area {
-      padding: 10px; 
-      padding-bottom: calc(10px + var(--safe-bottom));
-      border-top: 1px solid var(--glass-border);
-      display: flex; gap: 6px; align-items: center; background: rgba(30,30,30,0.6);
-      transition: padding-bottom 0.3s;
-      flex-wrap: nowrap;
-    }
-    .msg-input {
-      flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
-      border-radius: 20px; padding: 10px 12px; color: white; outline: none; font-size: 14px;
-      min-width: 50px;
-    }
-    .msg-input:focus { border-color: var(--accent); }
-    .file-btn {
-      color: var(--accent); background: rgba(10,132,255,0.1); border: none;
-      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      font-size: 14px;
-    }
-    .file-btn:hover { background: rgba(10,132,255,0.2); }
-    .file-btn.recording { background: var(--danger); color: white; animation: pulse-red 1s infinite; }
-    @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
-    /* SECURITY LOG */
-    #securityLog {
-      height: 0; overflow: hidden; background: #000; border-top: 1px solid var(--glass-border);
-      font-family: monospace; font-size: 10px; color: var(--success);
-      transition: height 0.3s; display: flex; flex-direction: column;
-      position: absolute; bottom: 60px; left: 0; right: 0; z-index: 9999;
-    }
-    #securityLog.open { height: 60%; border-top: 2px solid var(--accent); }
-    .log-header {
-      padding: 8px 15px; background: #111; cursor: pointer; display: flex; justify-content: space-between;
-    }
-    .log-tabs { display: flex; gap: 15px; }
-    .log-tab { opacity: 0.5; cursor: pointer; }
-    .log-tab.active { opacity: 1; text-decoration: underline; color: var(--accent); }
-    .log-content { padding: 10px; overflow-y: auto; flex: 1; }
-    .log-row { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; display: flex; gap: 10px; }
-    .log-row.error { color: var(--danger); }
-    .log-row.warn { color: var(--warning); }
-    .log-hash { color: #888; user-select: all; }
-    .log-btn { background: #333; border: 1px solid #555; color: white; font-size: 9px; padding: 2px 6px; cursor: pointer; border-radius: 4px; }
-
-    /* VIRTUAL KEYBOARD */
-    #virtualKeyboard {
-      height: 0; overflow: hidden; transition: height 0.3s ease;
-      background: #151515; border-top: 1px solid var(--glass-border);
-      display: flex; flex-direction: column;
-      padding-bottom: 20px;
-    }
-    #virtualKeyboard.open { height: 320px; }
-    .vk-toolbar { display: flex; justify-content: space-between; padding: 5px 10px; background: #222; font-size: 12px; }
-    .vk-keys { flex: 1; padding: 10px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; overflow-y: auto; align-content: start; }
-    .vk-key {
-      background: #333; color: white; border-radius: 5px; height: 40px;
-      display: flex; align-items: center; justify-content: center; cursor: pointer;
-      font-size: 16px; user-select: none; box-shadow: 0 2px 0 #000;
-    }
-    .vk-key:active { transform: translateY(2px); box-shadow: none; }
-    .vk-key.space { grid-column: span 6; }
-    .vk-key.wide { grid-column: span 2; }
-    .vk-key.arrow { background: #444; }
-
-    /* MODALS */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-      z-index: 200; display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal {
-      background: #1c1c1e; border: 1px solid var(--glass-border); border-radius: 20px;
-      padding: 25px; width: 90%; max-width: 350px; text-align: center; transform: scale(0.9);
-      max-height: 90vh; overflow-y: auto;
-    }
-    .modal-overlay.open .modal { transform: scale(1); }
-    .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-    .btn-sec { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
-
-    /* Toggle Switch */
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 14px; }
-    .switch { position: relative; display: inline-block; width: 40px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(16px); }
-
-    /* Drawing Canvas */
-    .canvas-container {
-      position: relative; width: 100%; height: 350px; background: #fff;
-      border-radius: 8px; overflow: hidden; touch-action: none;
-      cursor: crosshair;
-    }
-    #drawingCanvas { width: 100%; height: 100%; display: block; }
-    .color-picker { display: flex; gap: 5px; justify-content: center; margin: 10px 0; }
-    .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-    .color-dot.active { border-color: white; transform: scale(1.2); }
-    .peer-cursor {
-      position: absolute; pointer-events: none; font-size: 10px; color: white;
-      background: var(--accent); padding: 2px 6px; border-radius: 4px;
-      transform: translate(-50%, -100%); white-space: nowrap;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      transition: top 0.1s, left 0.1s;
-    }
-
-    /* Recording Overlay */
-    #recordingOverlay {
-      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-      background: var(--danger); padding: 10px 20px; border-radius: 30px;
-      color: white; font-weight: bold; display: none; align-items: center; gap: 10px;
-      box-shadow: 0 5px 20px rgba(255, 69, 58, 0.4); z-index: 50;
-    }
-    #recordingOverlay.visible { display: flex; animation: bounceIn 0.3s; }
-    @keyframes bounceIn { 0% { transform: translate(-50%, 20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
-
-    /* MORSE MODE */
-    .morse-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .morse-overlay.visible { opacity: 1; pointer-events: auto; }
-    .morse-btn-main {
-      width: 200px; height: 200px; border-radius: 50%;
-      background: #333; border: 5px solid #555;
-      color: #888; font-size: 24px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; user-select: none; touch-action: manipulation;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      transition: all 0.1s;
-    }
-    .morse-btn-main:active, .morse-btn-main.active {
-      background: var(--morse-active); color: black;
-      transform: scale(0.95); box-shadow: 0 0 50px var(--morse-active);
-      border-color: white;
-    }
-    .morse-status { margin-top: 30px; font-family: monospace; color: var(--accent); height: 20px; }
-    .morse-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-
-    @media (max-width: 768px) {
-      aside { position: absolute; height: 100%; transform: translateX(-100%); transition: transform 0.3s; background: #111; width: 85%; }
-      aside.open { transform: translateX(0); }
-      .mobile-menu-btn { display: block; }
-    }
-    @media (min-width: 769px) { .mobile-menu-btn { display: none; } }
-    .hidden-file { display: none; }
-    
-    /* Raw Data Box */
-    .raw-data-box {
-      background: #111; border: 1px solid #333; padding: 10px; margin-top: 10px;
-      font-family: monospace; font-size: 10px; color: #aaa; text-align: left;
-      max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
-    }
-    
-    /* File Info Table */
-    .file-info-table { width: 100%; text-align: left; font-size: 12px; margin-top: 10px; border-collapse: collapse; }
-    .file-info-table td { padding: 5px; border-bottom: 1px solid #333; }
-    .file-info-table td:first-child { color: #888; width: 80px; }
-    .file-info-table td:last-child { color: #fff; word-break: break-all; font-family: monospace; }
+    textarea{min-height:88px; resize:vertical; font-family:var(--mono); font-size:12px;}
+    .row{display:flex; gap:10px;}
+    .row > *{flex:1}
+    .tiny{font-size:12px; color:var(--muted); line-height:1.35;}
+    .chatList{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+    .chatItem{border:1px solid var(--line); border-radius:14px; padding:10px; cursor:pointer; background:rgba(11,15,26,.55);}
+    .chatItem:hover{border-color:#3a4464}
+    .chatItem .title{font-weight:650; font-size:13px;}
+    .chatItem .sub{font-size:12px; color:var(--muted); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .chatItem.active{border-color:rgba(122,162,255,.55); background:rgba(122,162,255,.10);}
+    .chat{padding:12px 14px; overflow:auto;}
+    .bubble{max-width: 860px; border:1px solid var(--line); border-radius:16px; padding:10px 12px; margin:8px 0; background:rgba(11,15,26,.55);}
+    .bubble.me{margin-left:auto; border-color:rgba(122,162,255,.35); background:rgba(122,162,255,.10);}
+    .meta{display:flex; gap:10px; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;}
+    .text{white-space:pre-wrap; word-wrap:break-word; font-size:14px; line-height:1.35;}
+    .composer{border-top:1px solid var(--line); padding:12px 14px; background:rgba(18,22,38,.85); backdrop-filter: blur(6px);}
+    .composer .row{align-items:center}
+    .composer input[type="file"]{padding:8px; background:#0b0f1a;}
+    .logWrap{border-top:1px solid var(--line); background:rgba(15,19,32,.55); padding:10px 14px;}
+    .log{font-family:var(--mono); font-size:12px; color:#cbd3ff; max-height:180px; overflow:auto; white-space:pre-wrap;}
+    .warnText{color:var(--warn)}
+    .badText{color:var(--bad)}
+    .goodText{color:var(--good)}
+    .qrBox{display:grid; grid-template-columns: 1fr 140px; gap:10px; align-items:start;}
+    .qrCanvas{width:140px; height:140px; border:1px solid var(--line); border-radius:14px; display:flex; align-items:center; justify-content:center; background:#0b0f1a;}
+    .kbd{font-family:var(--mono); font-size:11px; padding:1px 6px; border:1px solid var(--line); border-bottom-width:2px; border-radius:8px; color:var(--muted);}
+    .modal{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:20px;}
+    .modal.open{display:flex}
+    .modalCard{width:min(980px, 96vw); background:rgba(18,22,38,.98); border:1px solid var(--line); border-radius:18px; padding:14px;}
+    .modalTop{display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px;}
+    canvas{border:1px solid var(--line); border-radius:14px; background:#0b0f1a; width:100%; height:520px;}
   </style>
 
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
 </head>
+
 <body>
-
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen">
-    <div class="login-card">
-      <div style="font-size: 40px; margin-bottom: 10px;">🐸</div>
-      <h1>PepeChat v15.0</h1>
-      <p>Ephemeral · Collaborative · Resilient</p>
-      <form id="loginForm">
-        <input type="text" id="customIdInput" class="login-input" placeholder="Username (Empty for Random)" autocomplete="off" maxlength="20">
-        <button type="submit" id="loginBtn" class="btn-primary">Start Chatting</button>
-        <div style="margin-top: 15px; font-size: 12px; color: #666;">
-          Tor & Mobile Optimized
-        </div>
-      </form>
+<div class="app">
+  <aside class="sidebar">
+    <div class="section">
+      <h3>Identity</h3>
+      <label>Your ID</label>
+      <input id="myId" placeholder="e.g., user-34742" />
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn" id="btnRandom">Random ID</button>
+      </div>
+      <div class="tiny" style="margin-top:10px;">
+        Tip: If you are on a restrictive network, reliability typically requires a TURN server (TCP/TLS on port 443).
+        This app includes extensive ICE fallbacks and will log exactly what it tried.
+      </div>
     </div>
-  </div>
 
-  <!-- MORSE OVERLAY -->
-  <div class="morse-overlay" id="morseOverlay">
-    <button class="morse-close" id="closeMorseBtn"><i class="fa-solid fa-xmark"></i></button>
-    <h2 style="margin-bottom: 40px;">Morse Telegraph</h2>
-    <div class="morse-btn-main" id="morseTapBtn">TAP</div>
-    <div class="morse-status" id="morseStatus">Ready...</div>
-    <p style="margin-top: 20px; font-size: 12px; color: #666;">Hold to beep. Auto-sends after 3s silence.</p>
-  </div>
+    <div class="section">
+      <h3>Connect</h3>
+      <label>Peer ID to connect</label>
+      <input id="connectId" placeholder="e.g., user-84307" />
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="btnConnect">Connect</button>
+        <button class="btn" id="btnQR">QR Link</button>
+      </div>
 
-  <!-- MAIN APP -->
-  <div id="app">
-    <!-- SIDEBAR OVERLAY (MOBILE) - Moved inside #app for correct stacking -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <aside id="sidebar">
-      <div class="sidebar-header">
-        <div class="user-profile">
-          <div class="avatar" id="myAvatar">?</div>
-          <div class="user-info">
-            <h3 id="myNameDisplay">Guest</h3>
-            <span id="myIdDisplay" style="font-size:10px; color:#666;">...</span>
-            <i class="fa-regular fa-copy" id="copyMyIdBtn" style="cursor:pointer; font-size:12px; margin-left:5px; color:var(--accent);" title="Copy ID"></i>
+      <div id="qrArea" style="margin-top:10px; display:none;">
+        <div class="qrBox">
+          <div>
+            <div class="tiny">Scan the QR (or copy the URL) on the other device.</div>
+            <label>Invite URL</label>
+            <input id="inviteUrl" readonly />
+            <div class="row" style="margin-top:10px;">
+              <button class="btn" id="btnCopyInvite">Copy</button>
+              <button class="btn" id="btnNewKey">New Key</button>
+            </div>
+            <div class="tiny" style="margin-top:10px;">
+              Encryption key is embedded in the URL parameter <span class="kbd">k=</span>. Anyone with that URL can join.
+            </div>
           </div>
+          <div class="qrCanvas" id="qrCanvas"></div>
         </div>
       </div>
+    </div>
 
-      <div class="sidebar-actions">
-        <button class="action-btn" id="showQrBtn"><i class="fa-solid fa-qrcode"></i> QR</button>
-        <button class="action-btn" id="addPeerBtn"><i class="fa-solid fa-user-plus"></i> Chat</button>
-        <button class="action-btn" id="createGroupBtn"><i class="fa-solid fa-users"></i> Group</button>
-        <button class="action-btn" id="settingsBtn"><i class="fa-solid fa-shield-halved"></i> Security</button>
+    <div class="section">
+      <h3>Chats</h3>
+      <div class="chatList" id="chatList"></div>
+      <div class="tiny" style="margin-top:10px;">
+        Chat history is stored locally (per browser). Files are not persisted; they are session-only.
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>ICE / NAT traversal</h3>
+
+      <label>ICE profile</label>
+      <select id="iceProfile"></select>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="btnTryNextIce">Try next profile</button>
+        <button class="btn" id="btnIceProbe">Probe profile</button>
       </div>
 
-      <div class="chat-list" id="chatList"></div>
-    </aside>
+      <label style="margin-top:12px;">Custom TURN/STUN (optional)</label>
+      <textarea id="customIce" placeholder='Example:
+stun:stun.l.google.com:19302
+turns:turn.example.com:443?transport=tcp | user | pass
+turn:turn.example.com:80?transport=tcp | user | pass
+'></textarea>
 
-    <main>
-      <div class="chat-header">
-        <button class="icon-btn mobile-menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-        <div class="chat-meta">
-          <h2 id="chatTitle">No Chat Selected</h2>
-          <p id="chatStatus">Waiting...</p>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="btnSaveCustomIce">Save</button>
+        <button class="btn" id="btnClearCustomIce">Clear</button>
+      </div>
+
+      <div class="tiny" style="margin-top:10px;">
+        Custom ICE format:
+        <br>• STUN line: <span class="kbd">stun:host:port</span>
+        <br>• TURN line: <span class="kbd">turn(s):host:port?... | username | password</span>
+        <br><br>
+        If STUN host lookup fails or STUN binding times out, your network may block DNS/UDP to STUN.
+        In that case, use TURN over TCP/TLS on port 443.
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Security</h3>
+      <div class="row">
+        <button class="btn" id="btnToggleEnc">Encryption: ON</button>
+        <button class="btn" id="btnRotateKey">Rotate key</button>
+      </div>
+      <div class="tiny" style="margin-top:10px;">
+        Uses NaCl secretbox (symmetric). Key is shared out-of-band (QR/URL).
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Signaling server</h3>
+      <div class="tiny">PeerJS signaling can be a failure point. You may point this to your own PeerJS server for production use.</div>
+      <label>Host</label>
+      <input id="sigHost" placeholder="0.peerjs.com" />
+      <div class="row">
+        <div>
+          <label>Port</label>
+          <input id="sigPort" placeholder="443" />
         </div>
-        <div class="header-controls">
-          <button class="icon-btn" id="reconnectBtn" title="Force Reconnect" style="display:none; color:var(--warning);"><i class="fa-solid fa-rotate"></i></button>
-          <button class="icon-btn" id="ghostToggle" title="Ghost Mode"><i class="fa-solid fa-ghost"></i></button>
-          <button class="icon-btn" id="keySettingsBtn" title="Encryption"><i class="fa-solid fa-key"></i></button>
-          <button class="icon-btn" id="debugToggleBtn" title="Show Logs"><i class="fa-solid fa-bug"></i></button>
-          <button class="icon-btn danger" id="deleteChatBtn" title="Nuke Chat (Remote Wipe)"><i class="fa-solid fa-radiation"></i></button>
+        <div>
+          <label>Secure</label>
+          <select id="sigSecure">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
         </div>
       </div>
-
-      <div class="messages-container" id="messages">
-        <div class="msg system">Select a chat or create a group to begin.</div>
-      </div>
-
-      <div id="recordingOverlay">
-        <i class="fa-solid fa-microphone-lines fa-beat"></i> Recording... <span id="recTimer">0:00</span>
-      </div>
-
-      <form class="input-area" id="msgForm">
-        <button type="button" class="file-btn" id="uploadBtn"><i class="fa-solid fa-paperclip"></i></button>
-        <button type="button" class="file-btn" id="drawBtn" title="Collaborative Drawing"><i class="fa-solid fa-paintbrush"></i></button>
-        <button type="button" class="file-btn" id="morseBtn" title="Morse Code Mode"><i class="fa-solid fa-teletype"></i></button>
-        <button type="button" class="file-btn" id="micBtn" title="Hold to Record"><i class="fa-solid fa-microphone"></i></button>
-        <input type="file" id="fileInput" class="hidden-file">
-        <input type="text" class="msg-input" id="msgInput" placeholder="Type message..." autocomplete="off">
-        <button type="button" class="file-btn" id="vkToggleBtn" title="Virtual Keyboard"><i class="fa-solid fa-keyboard"></i></button>
-        <button type="submit" class="file-btn" id="sendBtn" style="background: var(--accent); color: white;"><i class="fa-solid fa-paper-plane"></i></button>
-      </form>
-
-      <!-- SECURITY LOG -->
-      <div id="securityLog">
-        <div class="log-header" id="logHeader">
-          <div class="log-tabs">
-            <span class="log-tab" id="tabSec">Security Log</span>
-            <span class="log-tab active" id="tabDebug">Debug Log</span>
-          </div>
-          <div style="display:flex; gap:10px;">
-            <button class="log-btn" id="viewRawDataBtn">View Raw Data</button>
-            <i class="fa-solid fa-chevron-up"></i>
-          </div>
-        </div>
-        <div class="log-content" id="logContent">
-          <div class="log-row">System: Zero Trust Rendering Active.</div>
-        </div>
-      </div>
-
-      <!-- VIRTUAL KEYBOARD -->
-      <div id="virtualKeyboard">
-        <div class="vk-toolbar">
-          <div class="vk-tabs">
-            <div class="vk-tab active" data-set="abc">ABC</div>
-            <div class="vk-tab" data-set="123">123</div>
-            <div class="vk-tab" data-set="sym">#+=</div>
-            <div class="vk-tab" data-set="emo">😊</div>
-          </div>
-          <label style="display:flex; align-items:center; gap:5px; cursor:pointer; color:#888;">
-            <input type="checkbox" id="scrambleToggle"> Scramble
-          </label>
-        </div>
-        <div class="vk-keys" id="vkKeys"></div>
-      </div>
-    </main>
-  </div>
-
-  <!-- MODALS -->
-
-  <div class="modal-overlay" id="qrModal">
-    <div class="modal">
-      <h3>Scan to Connect</h3>
-      <div class="qr-container" id="qrCanvas" style="background:white; padding:10px; margin:10px auto; width:fit-content; min-height:200px; min-width:200px;"></div>
-      <input type="text" id="shareUrlInput" readonly style="width:100%; background:#333; border:none; color:#888; font-size:10px; padding:5px; margin-bottom:10px;">
-      <div class="modal-actions">
-        <button class="btn-sec" id="copyLinkBtn">Copy Link</button>
-        <button class="btn-sec" onclick="closeModals()">Close</button>
+      <label>Path</label>
+      <input id="sigPath" placeholder="/" />
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="btnSaveSig">Save</button>
+        <button class="btn" id="btnResetSig">Reset</button>
       </div>
     </div>
-  </div>
 
-  <div class="modal-overlay" id="addPeerModal">
-    <div class="modal">
-      <h3>Connect to Peer</h3>
-      <input type="text" id="remoteIdInput" class="login-input" placeholder="Enter Peer ID">
-      <div class="modal-actions">
-        <button class="btn-primary" id="connectSubmitBtn">Connect</button>
-        <button class="btn-sec" onclick="closeModals()">Cancel</button>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="status">
+        <div class="pill"><span class="dot" id="dotPeer"></span> <span id="peerState">Not started</span></div>
+        <div class="pill"><span class="dot" id="dotWebrtc"></span> <span id="webrtcState">WebRTC: unknown</span></div>
+        <div class="pill"><span class="dot" id="dotEnc"></span> <span id="encState">Encryption: ON</span></div>
+        <div class="pill"><span class="dot" id="dotIce"></span> <span id="iceState">ICE: not configured</span></div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn" id="btnExportLog">Export log</button>
+        <button class="btn bad" id="btnResetApp">Reset app</button>
       </div>
     </div>
-  </div>
 
-  <div class="modal-overlay" id="createGroupModal">
-    <div class="modal">
-      <h3>Create Group Chat</h3>
-      <input type="text" id="groupNameInput" class="login-input" placeholder="Group Name">
-      <div class="modal-actions">
-        <button class="btn-primary" id="createGroupSubmitBtn">Create</button>
-        <button class="btn-sec" onclick="closeModals()">Cancel</button>
+    <div class="chat" id="chat"></div>
+
+    <div class="composer">
+      <div class="row">
+        <input id="msg" placeholder="Type a message…" />
+        <button class="btn primary" id="btnSend">Send</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <input id="file" type="file" />
+        <button class="btn" id="btnSendFile">Send file</button>
+        <button class="btn" id="btnDraw">Draw</button>
+      </div>
+      <div class="tiny" style="margin-top:10px;">
+        Connection tip: If you see repeated <span class="kbd">701 STUN host lookup received error</span> or <span class="kbd">STUN binding request timed out</span>,
+        your network is likely blocking DNS/UDP. Configure TURN (TCP/TLS on 443) in Custom ICE.
       </div>
     </div>
-  </div>
 
-  <div class="modal-overlay" id="groupAddMemberModal">
-    <div class="modal">
-      <h3>Add Member to Group</h3>
-      <input type="text" id="groupMemberIdInput" class="login-input" placeholder="Peer ID to Add">
-      <div class="modal-actions">
-        <button class="btn-primary" id="groupAddMemberSubmitBtn">Add</button>
-        <button class="btn-sec" onclick="closeModals()">Cancel</button>
+    <div class="logWrap">
+      <div class="log" id="log"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Drawing modal -->
+<div class="modal" id="drawModal" role="dialog" aria-modal="true">
+  <div class="modalCard">
+    <div class="modalTop">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <strong>Quick Draw</strong>
+        <span class="tiny">Send as image to the active chat.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="btnClearDraw">Clear</button>
+        <button class="btn good" id="btnSendDraw">Send drawing</button>
+        <button class="btn" id="btnCloseDraw">Close</button>
       </div>
     </div>
-  </div>
-
-  <div class="modal-overlay" id="settingsModal">
-    <div class="modal">
-      <h3>Security Settings</h3>
-      <div class="toggle-row">
-        <span>Secure Session (Fingerprint Lock)</span>
-        <label class="switch">
-          <input type="checkbox" id="secureSessionToggle">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="toggle-row">
-        <span>Allow Incoming Files</span>
-        <label class="switch">
-          <input type="checkbox" id="allowFilesToggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-      <h4>Custom TURN Server (Optional)</h4>
-      <input type="text" id="turnUrlInput" class="login-input" placeholder="turn:your-server.com:3478" style="font-size:12px; padding:8px;">
-      <input type="text" id="turnUserInput" class="login-input" placeholder="Username" style="font-size:12px; padding:8px;">
-      <input type="password" id="turnPassInput" class="login-input" placeholder="Password" style="font-size:12px; padding:8px;">
-      <button class="btn-primary" id="saveTurnBtn" style="padding:8px; font-size:12px;">Save & Reconnect</button>
-      <div class="modal-actions">
-        <button class="btn-sec" id="downloadSourceBtn">Download Source</button>
-        <button class="btn-sec" onclick="closeModals()">Close</button>
-      </div>
+    <canvas id="drawCanvas" width="1400" height="900"></canvas>
+    <div class="tiny" style="margin-top:10px;">
+      Tip: Use mouse or touch. The canvas is local-only until you press “Send drawing”.
     </div>
   </div>
+</div>
 
-  <div class="modal-overlay" id="keyModal">
-    <div class="modal">
-      <h3>Encryption Key</h3>
-      <input type="text" id="keyInput" class="login-input" placeholder="Secret Passphrase">
-      <div class="modal-actions">
-        <button class="btn-primary" id="saveKeyBtn">Update</button>
-        <button class="btn-sec" onclick="closeModals()">Close</button>
-      </div>
-    </div>
-  </div>
+<script>
+(() => {
+  'use strict';
 
-  <div class="modal-overlay" id="rawDataModal">
-    <div class="modal" style="max-width:500px;">
-      <h3>Fingerprint Raw Data</h3>
-      <p style="font-size:11px; color:#888;">This data is hashed to create your unique session ID.</p>
-      <div class="raw-data-box" id="rawDataContent"></div>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModals()">Close</button>
-      </div>
-    </div>
-  </div>
+  // =========================
+  // Version
+  // =========================
+  const APP_VERSION = 'ICE_Fallback_v14';
 
-  <!-- FILE INFO MODAL -->
-  <div class="modal-overlay" id="fileInfoModal">
-    <div class="modal">
-      <h3>File Metadata</h3>
-      <table class="file-info-table">
-        <tr><td>Name</td><td id="fiName"></td></tr>
-        <tr><td>Type</td><td id="fiType"></td></tr>
-        <tr><td>Size</td><td id="fiSize"></td></tr>
-        <tr><td>Hash (SHA256)</td><td id="fiHash"></td></tr>
-      </table>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModals()">Close</button>
-      </div>
-    </div>
-  </div>
+  // =========================
+  // DOM helpers
+  // =========================
+  const $ = (id) => document.getElementById(id);
 
-  <!-- DRAWING MODAL -->
-  <div class="modal-overlay" id="drawingModal">
-    <div class="modal" style="max-width: 600px; width: 95%;">
-      <h3>Collaborative Canvas</h3>
-      <div class="color-picker" id="colorPicker">
-        <div class="color-dot active" style="background: #000;" data-color="#000000"></div>
-        <div class="color-dot" style="background: #FF453A;" data-color="#FF453A"></div>
-        <div class="color-dot" style="background: #30D158;" data-color="#30D158"></div>
-        <div class="color-dot" style="background: #0A84FF;" data-color="#0A84FF"></div>
-        <div class="color-dot" style="background: #FFD60A;" data-color="#FFD60A"></div>
-      </div>
-      <div class="canvas-container" id="canvasContainer">
-        <canvas id="drawingCanvas"></canvas>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-primary" id="finishDrawingBtn">Save & Send</button>
-        <button class="btn-sec" id="cancelDrawingBtn">Close</button>
-      </div>
-    </div>
-  </div>
+  // =========================
+  // State
+  // =========================
+  let peer = null;
+  let myId = '';
+  let activePeerId = null;
+  let encryptionOn = true;
 
-  <script>
-    (function() {
-      'use strict';
+  // 32-byte key for secretbox (shared via URL/QR)
+  let roomKey = null;
 
-      // --- CONFIG & STATE ---
-      const APP_URL = `${window.location.origin}${window.location.pathname}`;
-      const STORAGE_KEY = 'pepechat_v15_data';
-      const CHUNK_SIZE = 16384; 
-      
-      // MASSIVE ICE LIST (The "Shock and Awe" Strategy)
-      const ROBUST_ICE_SERVERS = [
-        // Google
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        // Twilio
-        { urls: 'stun:global.stun.twilio.com:3478' },
-        // Mozilla
-        { urls: 'stun:stun.services.mozilla.com' },
-        // Others
-        { urls: 'stun:stun.qq.com:3478' },
-        { urls: 'stun:stun.miwifi.com:3478' },
-        { urls: 'stun:stun.voipstunt.com' },
-        { urls: 'stun:stun.sipgate.net:3478' },
-        { urls: 'stun:stun.ekiga.net' },
-        { urls: 'stun:stun.ideasip.com' },
-        { urls: 'stun:stun.schlund.de' },
-        { urls: 'stun:stun.voiparound.com' },
-        { urls: 'stun:stun.voipbuster.com' },
-        { urls: 'stun:stun.voipcheap.com' },
-        { urls: 'stun:stun.voipraider.com' },
-        { urls: 'stun:stun.callwithus.com' }
-      ];
+  // chat store
+  const chats = new Map(); // peerId -> {peerId, conn, messages:[], lastPreview, lastTs}
 
-      let peer = null;
-      let myId = null;
-      let myFingerprint = null;
-      let myFingerprintRaw = []; 
-      let chats = new Map(); 
-      let activeChatId = null;
-      let ghostMode = false;
-      let heartbeatInterval = null;
-      let activeLogTab = 'debug'; 
-      
-      let settings = {
-        secureSession: false,
-        allowFiles: true,
-        turnUrl: '',
-        turnUser: '',
-        turnPass: ''
-      };
+  // logs
+  const logLines = [];
+  const MAX_LOG_LINES = 1500;
 
-      // Connection Registry for Glare Handling
-      const connRegistry = new Map(); // peerId => { conn, dir: 'in'|'out', createdAt }
+  // =========================
+  // Logging
+  // =========================
+  function log(msg, cls='') {
+    const ts = new Date().toLocaleTimeString();
+    const line = `[${ts}] ${msg}`;
+    logLines.push({line, cls});
+    while (logLines.length > MAX_LOG_LINES) logLines.shift();
 
-      // Pending Auto-Connect
-      let pendingConnect = null;
+    const el = $('log');
+    el.textContent = logLines.map(x => x.line).join('\n');
+    el.scrollTop = el.scrollHeight;
+    console.log(line);
+  }
 
-      // File Transfer State
-      let incomingFiles = {}; 
+  function setPill(dotEl, textEl, status, text) {
+    const dot = $(dotEl);
+    const t = $(textEl);
+    dot.className = 'dot ' + (status || '');
+    t.textContent = text;
+  }
 
-      // Virtual Keyboard State
-      let vkActive = false;
-      let vkSet = 'abc';
-      let vkScramble = false;
+  // =========================
+  // Storage
+  // =========================
+  const LS = {
+    get(k, fallback=null){ try{ const v = localStorage.getItem(k); return v==null?fallback:JSON.parse(v);}catch{ return fallback; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} },
+    del(k){ try{ localStorage.removeItem(k); }catch{} },
+  };
 
-      // Drawing State
-      let isDrawing = false;
-      let drawCtx = null;
-      let drawColor = '#000000';
-      let drawingActive = false;
-      let lastX = 0;
-      let lastY = 0;
+  // =========================
+  // Base64URL
+  // =========================
+  function b64urlEncode(u8) {
+    const b64 = nacl.util.encodeBase64(u8);
+    return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function b64urlDecodeToU8(s) {
+    const b64 = s.replace(/-/g,'+').replace(/_/g,'/');
+    const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+    return nacl.util.decodeBase64(b64 + pad);
+  }
 
-      // Audio Recording State
-      let mediaRecorder = null;
-      let audioChunks = [];
-      let isRecording = false;
-      let recStartTime = 0;
-      let recTimerInterval = null;
-      let audioContext = null;
+  // =========================
+  // Crypto helpers
+  // =========================
+  function ensureRoomKey() {
+    if (roomKey && roomKey.length === 32) return roomKey;
+    const saved = LS.get('pepechat_roomKey_b64url', null);
+    if (saved) {
+      try {
+        const k = b64urlDecodeToU8(saved);
+        if (k.length === 32) {
+          roomKey = k;
+          return roomKey;
+        }
+      } catch {}
+    }
+    roomKey = nacl.randomBytes(32);
+    LS.set('pepechat_roomKey_b64url', b64urlEncode(roomKey));
+    return roomKey;
+  }
 
-      // Morse Code State
-      let morseActive = false;
-      let morseOscillator = null;
-      let morseGain = null;
-      let morseStartTime = 0;
-      let morseSequence = []; 
-      let morseTimeout = null;
+  function rotateRoomKey() {
+    roomKey = nacl.randomBytes(32);
+    LS.set('pepechat_roomKey_b64url', b64urlEncode(roomKey));
+    log('Rotated encryption key. Re-generate your QR/Invite URL and re-connect.', 'warn');
+    renderInviteIfOpen();
+  }
 
-      // --- INDEXED DB WRAPPER ---
-      const DB_NAME = 'PepeChatDB';
-      const DB_VERSION = 1;
-      let db = null;
+  function encryptBytes(plainU8) {
+    const key = ensureRoomKey();
+    const nonce = nacl.randomBytes(24);
+    const box = nacl.secretbox(plainU8, nonce, key);
+    return { nonceB64: b64urlEncode(nonce), boxU8: box };
+  }
 
-      function initDB() {
-        return new Promise((resolve, reject) => {
-          try {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onupgradeneeded = (e) => {
-              db = e.target.result;
-              if (!db.objectStoreNames.contains('messages')) {
-                db.createObjectStore('messages', { keyPath: 'id' });
-              }
-            };
-            request.onsuccess = (e) => {
-              db = e.target.result;
-              resolve(db);
-            };
-            request.onerror = (e) => reject(e);
-          } catch(e) {
-            reject(e);
-          }
-        });
+  function decryptBytes(nonceB64, boxU8) {
+    const key = ensureRoomKey();
+    const nonce = b64urlDecodeToU8(nonceB64);
+    const plain = nacl.secretbox.open(boxU8, nonce, key);
+    if (!plain) throw new Error('Decrypt failed (wrong key?)');
+    return plain;
+  }
+
+  // =========================
+  // ICE profiles
+  // =========================
+  function dedupeUrls(urls) {
+    const out = [];
+    const s = new Set();
+    for (const u of urls) {
+      const v = String(u || '').trim();
+      if (!v) continue;
+      if (s.has(v)) continue;
+      s.add(v); out.push(v);
+    }
+    return out;
+  }
+
+  function baseIceProfiles() {
+    // Note: many public STUN endpoints are best-effort and may disappear.
+    // This list is intentionally diverse, and we rotate through profiles.
+    return [
+      {
+        name: 'Balanced STUN (multi-provider)',
+        rtcConfig: {
+          iceServers: [
+            { urls: dedupeUrls([
+              'stun:stun.l.google.com:19302',
+              'stun:stun1.l.google.com:19302',
+              'stun:stun2.l.google.com:19302',
+              'stun:stun3.l.google.com:19302',
+              'stun:stun4.l.google.com:19302',
+              'stun:global.stun.twilio.com:3478',
+              'stun:stun.stunprotocol.org:3478'
+            ])}
+          ],
+          iceCandidatePoolSize: 4
+        }
+      },
+      {
+        name: 'Aggressive STUN (broad legacy pool)',
+        rtcConfig: {
+          iceServers: [
+            { urls: dedupeUrls([
+              'stun:stun.l.google.com:19302',
+              'stun:stun1.l.google.com:19302',
+              'stun:stun2.l.google.com:19302',
+              'stun:stun3.l.google.com:19302',
+              'stun:stun4.l.google.com:19302',
+              'stun:global.stun.twilio.com:3478',
+              'stun:stun.stunprotocol.org:3478',
+              'stun:stun.iptel.org:3478',
+              'stun:stun.ideasip.com:3478',
+              'stun:stun.sipgate.net:3478',
+              'stun:stun.voiparound.com:3478',
+              'stun:stun.voipbuster.com:3478',
+              'stun:stun.12voip.com:3478',
+              'stun:stun.voip.blackberry.com:3478'
+            ])}
+          ],
+          iceCandidatePoolSize: 6
+        }
+      },
+      {
+        name: 'Minimal STUN (Google only)',
+        rtcConfig: {
+          iceServers: [
+            { urls: dedupeUrls([
+              'stun:stun.l.google.com:19302',
+              'stun:stun1.l.google.com:19302',
+              'stun:stun2.l.google.com:19302'
+            ])}
+          ],
+          iceCandidatePoolSize: 2
+        }
+      },
+      {
+        name: 'Host-only (no STUN/TURN)',
+        rtcConfig: {
+          iceServers: [],
+          iceCandidatePoolSize: 0
+        }
       }
+    ];
+  }
 
-      function saveMessageToDB(msg) {
-        if (!db) return;
-        try {
-          const tx = db.transaction(['messages'], 'readwrite');
-          tx.objectStore('messages').put(msg);
-        } catch(e) { console.error("DB Save Error", e); }
+  function parseCustomIce(text) {
+    const lines = String(text || '').split('\n').map(x=>x.trim()).filter(Boolean);
+    const servers = [];
+    for (const ln of lines) {
+      // TURN with creds:  turn(s):host:port?... | user | pass
+      const parts = ln.split('|').map(x=>x.trim()).filter(Boolean);
+      if (parts.length >= 3) {
+        const url = parts[0];
+        const username = parts[1];
+        const credential = parts.slice(2).join(' | ');
+        servers.push({ urls: url, username, credential });
+        continue;
       }
-
-      function loadMessagesFromDB(chatId) {
-        return new Promise((resolve) => {
-          if (!db) return resolve([]);
-          try {
-            const tx = db.transaction(['messages'], 'readonly');
-            const store = tx.objectStore('messages');
-            const request = store.getAll();
-            request.onsuccess = () => {
-              const all = request.result;
-              const chatMsgs = all.filter(m => m.chatId === chatId).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-              resolve(chatMsgs);
-            };
-            request.onerror = () => resolve([]);
-          } catch(e) { resolve([]); }
-        });
+      // STUN: no creds
+      if (ln.startsWith('stun:') || ln.startsWith('stuns:') || ln.startsWith('turn:') || ln.startsWith('turns:')) {
+        servers.push({ urls: ln });
       }
+    }
+    // Normalize & dedupe by URL+user
+    const seen = new Set();
+    const out = [];
+    for (const s of servers) {
+      const key = `${s.urls}||${s.username||''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(s);
+    }
+    return out;
+  }
 
-      // --- DOM ELEMENTS ---
-      const els = {
-        loginScreen: document.getElementById('loginScreen'),
-        loginForm: document.getElementById('loginForm'),
-        customIdInput: document.getElementById('customIdInput'),
-        loginBtn: document.getElementById('loginBtn'),
-        app: document.getElementById('app'),
-        sidebar: document.getElementById('sidebar'),
-        sidebarOverlay: document.getElementById('sidebarOverlay'),
-        menuBtn: document.getElementById('menuBtn'),
-        
-        myAvatar: document.getElementById('myAvatar'),
-        myNameDisplay: document.getElementById('myNameDisplay'),
-        myIdDisplay: document.getElementById('myIdDisplay'),
-        copyMyIdBtn: document.getElementById('copyMyIdBtn'),
-        chatList: document.getElementById('chatList'),
-        
-        showQrBtn: document.getElementById('showQrBtn'),
-        addPeerBtn: document.getElementById('addPeerBtn'),
-        createGroupBtn: document.getElementById('createGroupBtn'),
-        settingsBtn: document.getElementById('settingsBtn'),
+  function buildRuntimeIceProfiles() {
+    const profiles = [];
 
-        chatTitle: document.getElementById('chatTitle'),
-        chatStatus: document.getElementById('chatStatus'),
-        messages: document.getElementById('messages'),
-        msgForm: document.getElementById('msgForm'),
-        msgInput: document.getElementById('msgInput'),
-        fileInput: document.getElementById('fileInput'),
-        uploadBtn: document.getElementById('uploadBtn'),
-        drawBtn: document.getElementById('drawBtn'),
-        micBtn: document.getElementById('micBtn'),
-        morseBtn: document.getElementById('morseBtn'),
-        recordingOverlay: document.getElementById('recordingOverlay'),
-        recTimer: document.getElementById('recTimer'),
-        vkToggleBtn: document.getElementById('vkToggleBtn'),
-        sendBtn: document.getElementById('sendBtn'),
-        ghostToggle: document.getElementById('ghostToggle'),
-        keySettingsBtn: document.getElementById('keySettingsBtn'),
-        deleteChatBtn: document.getElementById('deleteChatBtn'),
-        debugToggleBtn: document.getElementById('debugToggleBtn'),
-        reconnectBtn: document.getElementById('reconnectBtn'),
+    const customText = LS.get('pepechat_custom_ice', '');
+    const customServers = parseCustomIce(customText);
 
-        // Logs
-        securityLog: document.getElementById('securityLog'),
-        logHeader: document.getElementById('logHeader'),
-        logContent: document.getElementById('logContent'),
-        viewRawDataBtn: document.getElementById('viewRawDataBtn'),
-        tabSec: document.getElementById('tabSec'),
-        tabDebug: document.getElementById('tabDebug'),
+    const hasTurn = customServers.some(s => String(s.urls).startsWith('turn'));
+    const hasStun = customServers.some(s => String(s.urls).startsWith('stun'));
 
-        // VK
-        virtualKeyboard: document.getElementById('virtualKeyboard'),
-        vkKeys: document.getElementById('vkKeys'),
-        vkTabs: document.querySelectorAll('.vk-tab'),
-        scrambleToggle: document.getElementById('scrambleToggle'),
-
-        // Modals
-        qrModal: document.getElementById('qrModal'),
-        qrCanvas: document.getElementById('qrCanvas'),
-        shareUrlInput: document.getElementById('shareUrlInput'),
-        copyLinkBtn: document.getElementById('copyLinkBtn'),
-        
-        addPeerModal: document.getElementById('addPeerModal'),
-        remoteIdInput: document.getElementById('remoteIdInput'),
-        connectSubmitBtn: document.getElementById('connectSubmitBtn'),
-        
-        createGroupModal: document.getElementById('createGroupModal'),
-        groupNameInput: document.getElementById('groupNameInput'),
-        createGroupSubmitBtn: document.getElementById('createGroupSubmitBtn'),
-        
-        groupAddMemberModal: document.getElementById('groupAddMemberModal'),
-        groupMemberIdInput: document.getElementById('groupMemberIdInput'),
-        groupAddMemberSubmitBtn: document.getElementById('groupAddMemberSubmitBtn'),
-
-        settingsModal: document.getElementById('settingsModal'),
-        secureSessionToggle: document.getElementById('secureSessionToggle'),
-        allowFilesToggle: document.getElementById('allowFilesToggle'),
-        turnUrlInput: document.getElementById('turnUrlInput'),
-        turnUserInput: document.getElementById('turnUserInput'),
-        turnPassInput: document.getElementById('turnPassInput'),
-        saveTurnBtn: document.getElementById('saveTurnBtn'),
-        downloadSourceBtn: document.getElementById('downloadSourceBtn'),
-
-        keyModal: document.getElementById('keyModal'),
-        keyInput: document.getElementById('keyInput'),
-        saveKeyBtn: document.getElementById('saveKeyBtn'),
-
-        rawDataModal: document.getElementById('rawDataModal'),
-        rawDataContent: document.getElementById('rawDataContent'),
-
-        fileInfoModal: document.getElementById('fileInfoModal'),
-        fiName: document.getElementById('fiName'),
-        fiType: document.getElementById('fiType'),
-        fiSize: document.getElementById('fiSize'),
-        fiHash: document.getElementById('fiHash'),
-
-        // Drawing
-        drawingModal: document.getElementById('drawingModal'),
-        drawingCanvas: document.getElementById('drawingCanvas'),
-        canvasContainer: document.getElementById('canvasContainer'),
-        finishDrawingBtn: document.getElementById('finishDrawingBtn'),
-        cancelDrawingBtn: document.getElementById('cancelDrawingBtn'),
-        colorDots: document.querySelectorAll('.color-dot'),
-
-        // Morse
-        morseOverlay: document.getElementById('morseOverlay'),
-        closeMorseBtn: document.getElementById('closeMorseBtn'),
-        morseTapBtn: document.getElementById('morseTapBtn'),
-        morseStatus: document.getElementById('morseStatus')
-      };
-
-      // --- INITIALIZATION ---
-      document.addEventListener('DOMContentLoaded', () => {
-        // 1. Setup UI Listeners IMMEDIATELY
-        setupEventListeners();
-        renderVk();
-
-        // 2. Check URL Params for Auto-Connect (Bypass Login)
-        const params = new URLSearchParams(window.location.search);
-        const connectTo = params.get('connect');
-        const keyParam = params.get('key');
-
-        if (connectTo) {
-            // INSTANT LOGIN BYPASS
-            const randomId = generateRandomId();
-            els.loginScreen.style.display = 'none';
-            els.app.classList.add('visible');
-            
-            // Store pending connection info
-            pendingConnect = { id: connectTo, key: keyParam };
-            
-            // Start Async Init
-            initializeSystem(randomId);
-        } else {
-            // Normal Load
-            initializeSystem();
+    if (customServers.length) {
+      // Relay-only is extremely useful when UDP is blocked and you have TURN/TLS on 443.
+      profiles.push({
+        name: hasTurn ? 'Custom (TURN relay-only first)' : 'Custom (no TURN) — best-effort',
+        rtcConfig: {
+          iceServers: customServers,
+          iceTransportPolicy: hasTurn ? 'relay' : 'all',
+          iceCandidatePoolSize: 4
         }
       });
 
-      async function initializeSystem(forceId = null) {
-        try {
-          await initDB();
-        } catch(e) {
-          console.warn("IndexedDB failed, falling back to memory mode.", e);
-        }
-
-        myFingerprint = await generateFingerprint();
-        logSecurity(`My Fingerprint Hash: ${myFingerprint.substring(0, 16)}...`);
-        
-        loadStorage();
-        
-        // If forced ID (from auto-connect), init app now
-        if (forceId) {
-            initApp(forceId);
-        }
-        
-        // Heartbeat Loop (Every 5 seconds)
-        heartbeatInterval = setInterval(sendHeartbeat, 5000);
-
-        // Mobile Resilience: Auto-rejoin on visibility change
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible') {
-            reconnectAll();
+      // Also allow custom as "all" to combine srflx/host with relay.
+      if (hasTurn) {
+        profiles.push({
+          name: 'Custom (TURN + direct; policy=all)',
+          rtcConfig: {
+            iceServers: customServers,
+            iceTransportPolicy: 'all',
+            iceCandidatePoolSize: 4
           }
         });
       }
 
-      // --- GLARE CONTROL (CRITICAL FIX) ---
-      function preferredDirectionForPeer(peerId) {
-        if (!myId) return 'in';
-        return (String(myId) < String(peerId)) ? 'out' : 'in';
+      // If user provided only TURN (no STUN), add a mixed profile by appending safe STUN.
+      if (hasTurn && !hasStun) {
+        profiles.push({
+          name: 'Custom TURN + fallback STUN (mixed)',
+          rtcConfig: {
+            iceServers: [
+              ...customServers,
+              { urls: dedupeUrls([
+                'stun:stun.l.google.com:19302',
+                'stun:global.stun.twilio.com:3478'
+              ])}
+            ],
+            iceTransportPolicy: 'all',
+            iceCandidatePoolSize: 6
+          }
+        });
+      }
+    }
+
+    // Base profiles at the end
+    profiles.push(...baseIceProfiles());
+
+    return profiles;
+  }
+
+  let runtimeIceProfiles = [];
+  let iceProfileIndex = 0;
+
+  function loadIceProfileIndex() {
+    const v = LS.get('pepechat_ice_profile_index', 0);
+    iceProfileIndex = Number.isFinite(v) ? Math.max(0, v) : 0;
+  }
+
+  function saveIceProfileIndex() {
+    LS.set('pepechat_ice_profile_index', iceProfileIndex);
+  }
+
+  function applyIceProfileByIndex(idx, reason='') {
+    runtimeIceProfiles = buildRuntimeIceProfiles();
+    if (!runtimeIceProfiles.length) runtimeIceProfiles = baseIceProfiles();
+    iceProfileIndex = Math.max(0, Math.min(idx, runtimeIceProfiles.length - 1));
+    saveIceProfileIndex();
+
+    const profile = runtimeIceProfiles[iceProfileIndex];
+    const name = profile?.name || 'unknown';
+    setPill('dotIce','iceState','warn',`ICE: ${name}`);
+    log(`ICE profile set: "${name}"${reason ? ` (${reason})` : ''}`);
+
+    // Apply to PeerJS options for new connections.
+    // PeerJS reads options.config when creating RTCPeerConnection for a DataConnection.
+    if (peer && peer.options) {
+      try { peer.options.config = profile.rtcConfig; } catch {}
+      try { peer._options && (peer._options.config = profile.rtcConfig); } catch {}
+      try { peer.options.iceServers = profile.rtcConfig.iceServers; } catch {}
+    }
+
+    // Update UI dropdown to match
+    const sel = $('iceProfile');
+    if (sel) sel.value = String(iceProfileIndex);
+  }
+
+  // =========================
+  // PeerJS signaling settings
+  // =========================
+  function loadSigSettings() {
+    const d = LS.get('pepechat_sig', null);
+    if (d && typeof d === 'object') return d;
+    return { host: '0.peerjs.com', port: 443, path: '/', secure: true };
+  }
+  function saveSigSettings(s) { LS.set('pepechat_sig', s); }
+
+  // =========================
+  // Peer init
+  // =========================
+  function isWebrtcAvailable() {
+    return !!(window.RTCPeerConnection && window.RTCDataChannel);
+  }
+
+  function randomUserId() {
+    return `user-${Math.floor(10000 + Math.random() * 90000)}`;
+  }
+
+  async function startPeer(forceId = null) {
+    if (!isWebrtcAvailable()) {
+      setPill('dotWebrtc','webrtcState','bad','WebRTC: unavailable');
+      log('WebRTC is not available in this browser/context. P2P cannot work here.', 'bad');
+      return;
+    }
+    setPill('dotWebrtc','webrtcState','good','WebRTC: available');
+
+    myId = String(forceId || $('myId').value || '').trim() || randomUserId();
+    $('myId').value = myId;
+
+    // Ensure key exists
+    ensureRoomKey();
+
+    // Build ICE profiles now
+    runtimeIceProfiles = buildRuntimeIceProfiles();
+    loadIceProfileIndex();
+    applyIceProfileByIndex(Math.min(iceProfileIndex, runtimeIceProfiles.length-1), 'startup');
+
+    // Signaling settings
+    const sig = loadSigSettings();
+
+    if (peer) {
+      try { peer.destroy(); } catch {}
+      peer = null;
+    }
+
+    log(`Initializing PeerJS with ID: ${myId}`);
+    setPill('dotPeer','peerState','warn','Starting…');
+
+    // Create PeerJS peer
+    const profile = runtimeIceProfiles[iceProfileIndex] || baseIceProfiles()[0];
+
+    peer = new Peer(myId, {
+      host: sig.host,
+      port: Number(sig.port),
+      path: sig.path,
+      secure: !!sig.secure,
+      debug: 2,
+      config: profile.rtcConfig
+    });
+
+    peer.on('open', (id) => {
+      setPill('dotPeer','peerState','good',`Online: ${id}`);
+      log(`PeerJS ready. Your ID: ${id}`);
+      renderInviteIfOpen();
+
+      // Auto-connect if URL includes ?connect=...&k=...
+      handleAutoConnectFromUrl();
+    });
+
+    peer.on('connection', (conn) => {
+      log(`Incoming connection from ${conn.peer}`);
+      bindConnection(conn, {incoming:true});
+    });
+
+    peer.on('disconnected', () => {
+      setPill('dotPeer','peerState','warn','Disconnected (signaling)');
+      log('PeerJS disconnected from signaling server. Attempting reconnect…', 'warn');
+      try { peer.reconnect(); } catch {}
+    });
+
+    peer.on('close', () => {
+      setPill('dotPeer','peerState','bad','Closed');
+      log('PeerJS closed.', 'bad');
+    });
+
+    peer.on('error', (err) => {
+      setPill('dotPeer','peerState','bad','Error');
+      log(`PeerJS error: ${err?.type || 'unknown'} — ${err?.message || err}`, 'bad');
+    });
+  }
+
+  // =========================
+  // Connection with ICE fallback
+  // =========================
+  function getOrCreateChat(peerId) {
+    if (!chats.has(peerId)) {
+      chats.set(peerId, { peerId, conn: null, messages: [], lastPreview: '', lastTs: 0 });
+    }
+    return chats.get(peerId);
+  }
+
+  function setActiveChat(peerId) {
+    activePeerId = peerId;
+    renderChatList();
+    renderChat();
+  }
+
+  function getPcFromConn(conn) {
+    // PeerJS has varied internal property names across versions
+    return conn.peerConnection || conn._pc || conn._peerConnection || null;
+  }
+
+  function attachPcDiagnostics(conn) {
+    const peerId = conn.peer;
+
+    const tryAttach = () => {
+      const pc = getPcFromConn(conn);
+      if (!pc) return false;
+
+      pc.addEventListener('icecandidateerror', (e) => {
+        // Some browsers provide: url, errorCode, errorText, hostCandidate
+        const code = e.errorCode ?? 'unknown';
+        const text = e.errorText ?? '';
+        const url = e.url ? ` url=${e.url}` : '';
+        const hostCand = e.hostCandidate ? ` hostCandidate=${e.hostCandidate}` : '';
+        log(`ICE Candidate Error (${peerId}): ${code} ${text}${url}${hostCand}`, 'bad');
+      });
+
+      pc.addEventListener('iceconnectionstatechange', () => {
+        log(`ICE State (${peerId}): ${pc.iceConnectionState}`);
+        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+          log(`ICE state is "${pc.iceConnectionState}" for ${peerId}. You can try the next ICE profile, or configure TURN (TCP/TLS 443).`, 'warn');
+        }
+      });
+
+      pc.addEventListener('connectionstatechange', () => {
+        log(`PC State (${peerId}): ${pc.connectionState}`);
+      });
+
+      pc.addEventListener('signalingstatechange', () => {
+        log(`Signaling State (${peerId}): ${pc.signalingState}`);
+      });
+
+      pc.addEventListener('icegatheringstatechange', () => {
+        log(`ICE Gathering (${peerId}): ${pc.iceGatheringState}`);
+      });
+
+      return true;
+    };
+
+    if (!tryAttach()) {
+      const iv = setInterval(() => {
+        if (tryAttach()) clearInterval(iv);
+      }, 150);
+      setTimeout(() => clearInterval(iv), 5000);
+    }
+  }
+
+  function bindConnection(conn, {incoming=false} = {}) {
+    const peerId = conn.peer;
+    const chat = getOrCreateChat(peerId);
+
+    // If we already have a connection, keep the newest OPEN one and close duplicates
+    if (chat.conn && chat.conn !== conn) {
+      log(`Duplicate connection with ${peerId}. Replacing existing connection.`, 'warn');
+      try { chat.conn.close(); } catch {}
+      chat.conn = null;
+    }
+
+    chat.conn = conn;
+    setActiveChat(peerId);
+
+    attachPcDiagnostics(conn);
+
+    conn.on('open', () => {
+      log(`DataConnection open with ${peerId}${incoming ? ' (incoming)' : ''}`, 'good');
+      chat.lastPreview = 'Connected';
+      chat.lastTs = Date.now();
+      renderChatList();
+      systemMsg(peerId, `Connected to ${peerId}.`);
+    });
+
+    conn.on('data', (data) => {
+      handleIncoming(peerId, data);
+    });
+
+    conn.on('close', () => {
+      log(`Connection closed with ${peerId}`, 'warn');
+      systemMsg(peerId, `Disconnected from ${peerId}.`);
+      chat.conn = null;
+      renderChatList();
+    });
+
+    conn.on('error', (err) => {
+      log(`Connection error with ${peerId}: ${err?.type || 'unknown'} — ${err?.message || err}`, 'bad');
+    });
+  }
+
+  function waitForConnOpen(conn, timeoutMs=15000) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const t = setTimeout(() => {
+        if (done) return;
+        done = true;
+        reject(new Error('timeout'));
+      }, timeoutMs);
+
+      conn.on('open', () => {
+        if (done) return;
+        done = true;
+        clearTimeout(t);
+        resolve(true);
+      });
+
+      conn.on('error', (err) => {
+        if (done) return;
+        done = true;
+        clearTimeout(t);
+        reject(err || new Error('connection error'));
+      });
+
+      conn.on('close', () => {
+        if (done) return;
+        done = true;
+        clearTimeout(t);
+        reject(new Error('closed'));
+      });
+    });
+  }
+
+  async function connectWithIceFallback(peerId) {
+    if (!peer) {
+      log('Start PeerJS first.', 'warn');
+      return;
+    }
+    peerId = String(peerId || '').trim();
+    if (!peerId) return;
+
+    setActiveChat(peerId);
+    const chat = getOrCreateChat(peerId);
+
+    // If already open, do nothing
+    if (chat.conn && chat.conn.open) {
+      log(`Already connected to ${peerId}.`);
+      return;
+    }
+
+    runtimeIceProfiles = buildRuntimeIceProfiles();
+    if (!runtimeIceProfiles.length) runtimeIceProfiles = baseIceProfiles();
+
+    // Attempt starting from current profile, then rotate through the rest
+    const startIdx = iceProfileIndex;
+    const tryOrder = [];
+    for (let i = 0; i < runtimeIceProfiles.length; i++) {
+      tryOrder.push((startIdx + i) % runtimeIceProfiles.length);
+    }
+
+    log(`Connecting to ${peerId} with ICE fallback (${tryOrder.length} profiles)…`);
+    for (const idx of tryOrder) {
+      applyIceProfileByIndex(idx, 'connect-attempt');
+
+      const profile = runtimeIceProfiles[idx];
+      const profileName = profile?.name || 'unknown';
+
+      log(`Attempt: ${peerId} using ICE profile "${profileName}"`);
+
+      // Close any stale connection object
+      if (chat.conn) {
+        try { chat.conn.close(); } catch {}
+        chat.conn = null;
       }
 
-      function adoptConnection(peerId, conn, dir) {
-        const existing = connRegistry.get(peerId);
-        conn.__dir = dir;
-        conn.__createdAt = Date.now();
+      let conn;
+      try {
+        conn = peer.connect(peerId, { reliable: true, serialization: 'binary' });
+      } catch (e) {
+        log(`peer.connect failed immediately: ${e?.message || e}`, 'bad');
+        continue;
+      }
 
-        // IDEMPOTENCY: If same object, allow it.
-        if (existing && existing.conn === conn) return true;
+      bindConnection(conn, {incoming:false});
 
-        if (!existing) {
-          connRegistry.set(peerId, { conn, dir, createdAt: conn.__createdAt });
-          return true;
-        }
+      try {
+        await waitForConnOpen(conn, 16000);
+        log(`Connected to ${peerId} successfully using "${profileName}".`, 'good');
+        return;
+      } catch (e) {
+        const msg = (e && e.message) ? e.message : String(e || 'unknown');
+        log(`Attempt failed with "${profileName}": ${msg}`, 'warn');
 
-        // If existing is open, keep it and close the newcomer.
-        if (existing.conn && existing.conn.open) {
-          try { conn.close(); } catch {}
-          return false;
-        }
-
-        // If newcomer is open, replace existing.
-        if (conn.open) {
-          try { existing.conn.close(); } catch {}
-          connRegistry.set(peerId, { conn, dir, createdAt: conn.__createdAt });
-          return true;
-        }
-
-        // Neither open yet: choose preferred direction.
-        const pref = preferredDirectionForPeer(peerId);
-        if (dir === pref && existing.dir !== pref) {
-          try { existing.conn.close(); } catch {}
-          connRegistry.set(peerId, { conn, dir, createdAt: conn.__createdAt });
-          return true;
-        }
-
-        // Otherwise keep existing, close newcomer.
+        // If we see STUN/TURN lookup errors or timeouts, try next quickly.
         try { conn.close(); } catch {}
-        return false;
+
+        // Short cooldown
+        await new Promise(r => setTimeout(r, 650));
+      }
+    }
+
+    log(`All ICE profiles failed for ${peerId}.`, 'bad');
+    log(`If you are on CGNAT/symmetric NAT or UDP-blocked networks, you will need a TURN server (TCP/TLS on 443).`, 'warn');
+    log(`As a last resort, "Host-only (no STUN/TURN)" can work only on the same LAN or very permissive NATs.`, 'warn');
+  }
+
+  // =========================
+  // Messaging (text + files)
+  // =========================
+  function pushMessage(peerId, m) {
+    const chat = getOrCreateChat(peerId);
+    chat.messages.push(m);
+    chat.lastTs = m.ts || Date.now();
+    chat.lastPreview = m.kind === 'text' ? (m.text || '').slice(0, 120) :
+                      m.kind === 'file' ? `File: ${m.name || 'unknown'}` :
+                      m.kind === 'system' ? (m.text || '').slice(0, 120) : '';
+    persistChat(peerId);
+    renderChatList();
+    if (peerId === activePeerId) renderChat();
+  }
+
+  function systemMsg(peerId, text) {
+    pushMessage(peerId, { id: crypto.randomUUID(), kind: 'system', from: 'system', text, ts: Date.now() });
+  }
+
+  function persistChat(peerId) {
+    const chat = getOrCreateChat(peerId);
+    // Persist only messages metadata/content for text/system; files are not persisted.
+    const persist = {
+      peerId: chat.peerId,
+      lastPreview: chat.lastPreview,
+      lastTs: chat.lastTs,
+      messages: chat.messages
+        .filter(m => m.kind !== 'file')
+        .slice(-400)
+    };
+    const all = LS.get('pepechat_chats', {});
+    all[peerId] = persist;
+    LS.set('pepechat_chats', all);
+  }
+
+  function loadChatsFromStorage() {
+    const all = LS.get('pepechat_chats', {});
+    for (const [peerId, c] of Object.entries(all || {})) {
+      chats.set(peerId, {
+        peerId,
+        conn: null,
+        messages: Array.isArray(c.messages) ? c.messages : [],
+        lastPreview: c.lastPreview || '',
+        lastTs: c.lastTs || 0
+      });
+    }
+  }
+
+  function getActiveConn() {
+    if (!activePeerId) return null;
+    const chat = chats.get(activePeerId);
+    return chat?.conn || null;
+  }
+
+  function sendJson(conn, obj) {
+    conn.send(obj);
+  }
+
+  function sendText() {
+    const conn = getActiveConn();
+    const text = $('msg').value;
+    if (!activePeerId) { log('Select or connect to a peer first.', 'warn'); return; }
+    if (!conn || !conn.open) { log('No active connection. Connect first.', 'warn'); return; }
+    if (!text.trim()) return;
+
+    const ts = Date.now();
+    const id = crypto.randomUUID();
+
+    // Local echo as plaintext
+    pushMessage(activePeerId, { id, kind:'text', from:'me', text, ts });
+
+    const payload = { t:'m', id, ts, enc: false, text };
+
+    if (encryptionOn) {
+      const bytes = nacl.util.decodeUTF8(text);
+      const { nonceB64, boxU8 } = encryptBytes(bytes);
+      payload.enc = true;
+      payload.nonce = nonceB64;
+      payload.box = boxU8.buffer;
+      delete payload.text;
+    }
+
+    try {
+      sendJson(conn, payload);
+      $('msg').value = '';
+    } catch (e) {
+      log(`Send failed: ${e?.message || e}`, 'bad');
+    }
+  }
+
+  // File transfer (chunked)
+  const FILE_CHUNK = 16 * 1024; // 16KB
+  const incomingFiles = new Map(); // id -> {meta, chunks: Map(seq->Uint8Array), receivedBytes}
+
+  async function sendFile() {
+    const conn = getActiveConn();
+    const f = $('file').files?.[0];
+    if (!activePeerId) { log('Select or connect to a peer first.', 'warn'); return; }
+    if (!conn || !conn.open) { log('No active connection. Connect first.', 'warn'); return; }
+    if (!f) { log('Choose a file first.', 'warn'); return; }
+
+    const id = crypto.randomUUID();
+    const total = Math.ceil(f.size / FILE_CHUNK);
+
+    // Local message
+    pushMessage(activePeerId, { id, kind:'file', from:'me', name:f.name, size:f.size, mime:f.type, ts:Date.now() });
+
+    const meta = { t:'fmeta', id, name:f.name, size:f.size, mime:f.type || 'application/octet-stream', total, enc: !!encryptionOn };
+    try { sendJson(conn, meta); } catch(e){ log(`Send meta failed: ${e?.message || e}`, 'bad'); return; }
+
+    let offset = 0;
+    for (let seq = 0; seq < total; seq++) {
+      const slice = f.slice(offset, offset + FILE_CHUNK);
+      const buf = new Uint8Array(await slice.arrayBuffer());
+      offset += FILE_CHUNK;
+
+      if (encryptionOn) {
+        const { nonceB64, boxU8 } = encryptBytes(buf);
+        sendJson(conn, { t:'fchunk', id, seq, total, enc:true, nonce: nonceB64, box: boxU8.buffer });
+      } else {
+        sendJson(conn, { t:'fchunk', id, seq, total, enc:false, data: buf.buffer });
       }
 
-      function reconnectAll() {
-        if(peer && peer.disconnected) {
-          peer.reconnect();
-          logDebug("App woke up. Reconnecting to signaling server...");
-        }
-        // Check active chats
-        chats.forEach(chat => {
-          if(chat.type === 'direct' && (!chat.conn || !chat.conn.open)) {
-             // Only reconnect if not already trying
-             if (!chat.dialInProgress) {
-                 // Jitter to reduce glare storms
-                 const jitter = 200 + Math.floor(Math.random() * 800);
-                 setTimeout(() => connectToPeer(chat.id, chat.passphrase), jitter);
-                 logDebug(`Attempting to rejoin ${chat.name}...`);
-             }
-          }
-        });
+      // Simple pacing
+      if (seq % 16 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+
+    sendJson(conn, { t:'fend', id });
+    $('file').value = '';
+    log(`File sent: ${f.name} (${f.size} bytes)`);
+  }
+
+  function handleIncoming(peerId, data) {
+    try {
+      if (!data || typeof data !== 'object') {
+        log(`Unknown data received from ${peerId} (non-object).`, 'warn');
+        return;
       }
 
-      // --- URL ENCODING HELPERS ---
-      function b64urlEncodeUtf8(str) {
-        const bytes = new TextEncoder().encode(str);
-        let bin = '';
-        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        const b64 = btoa(bin);
-        return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-      }
-      function b64urlDecodeUtf8(b64url) {
-        const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/')
-          .padEnd(Math.ceil(b64url.length / 4) * 4, '=');
-        const bin = atob(b64);
-        const bytes = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        return new TextDecoder().decode(bytes);
+      if (data.t === 'm') {
+        let text = data.text;
+        if (data.enc) {
+          const boxU8 = new Uint8Array(data.box);
+          const plain = decryptBytes(data.nonce, boxU8);
+          text = nacl.util.encodeUTF8(plain);
+        }
+        pushMessage(peerId, { id: data.id || crypto.randomUUID(), kind:'text', from:'peer', text, ts: data.ts || Date.now() });
+        return;
       }
 
-      function handleAutoConnect(connectTo, keyParam) {
-        let decodedKey = 'changeme';
-        if (keyParam) {
-          try {
-            decodedKey = b64urlDecodeUtf8(keyParam);
-          } catch (e) {
-            logDebug("Key decode failed: " + e.message, 'error');
-          }
-        }
-        // Create chat UI immediately
-        let chat = chats.get(connectTo);
-        if(!chat) {
-            chat = createChatObject(connectTo, decodedKey);
-            chats.set(connectTo, chat);
-            renderChatList();
-        }
-        setActiveChat(connectTo);
-        
-        // WAIT for Peer to be ready before dialing
-        if (peer && !peer.disconnected && !peer.destroyed) {
-            connectToPeer(connectTo, decodedKey);
+      if (data.t === 'fmeta') {
+        incomingFiles.set(data.id, { meta: data, chunks: new Map(), receivedBytes: 0 });
+        systemMsg(peerId, `Incoming file: ${data.name} (${data.size} bytes)`);
+        return;
+      }
+
+      if (data.t === 'fchunk') {
+        const rec = incomingFiles.get(data.id);
+        if (!rec) return;
+
+        let chunkU8;
+        if (data.enc) {
+          const boxU8 = new Uint8Array(data.box);
+          chunkU8 = decryptBytes(data.nonce, boxU8);
         } else {
-            // Queue it
-            pendingConnect = { id: connectTo, key: keyParam };
+          chunkU8 = new Uint8Array(data.data);
         }
-        window.history.replaceState({}, document.title, window.location.pathname);
+        rec.chunks.set(data.seq, chunkU8);
+        rec.receivedBytes += chunkU8.length;
+        return;
       }
 
-      function setupEventListeners() {
-        // Login
-        els.loginForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          els.loginBtn.textContent = "Starting...";
-          els.loginBtn.disabled = true;
-          
-          let val = els.customIdInput.value.trim().replace(/[^a-zA-Z0-9-_]/g, '');
-          if(!val) val = generateRandomId(); 
-          initApp(val);
-        });
+      if (data.t === 'fend') {
+        const rec = incomingFiles.get(data.id);
+        if (!rec) return;
+        const meta = rec.meta;
 
-        // Sidebar & Overlay
-        const toggleSidebar = () => {
-          const isOpen = els.sidebar.classList.contains('open');
-          els.sidebar.classList.toggle('open', !isOpen);
-          els.sidebarOverlay.classList.toggle('visible', !isOpen);
-        };
-        els.menuBtn.addEventListener('click', toggleSidebar);
-        els.sidebarOverlay.addEventListener('click', toggleSidebar);
-
-        els.showQrBtn.addEventListener('click', showQrModal);
-        els.addPeerBtn.addEventListener('click', () => openModal(els.addPeerModal));
-        els.createGroupBtn.addEventListener('click', () => openModal(els.createGroupModal));
-        els.settingsBtn.addEventListener('click', () => openModal(els.settingsModal));
-        
-        els.copyMyIdBtn.addEventListener('click', () => {
-          if(myId) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(myId);
-            } else {
-                const ta = document.createElement('textarea');
-                ta.value = myId;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-            }
-            els.copyMyIdBtn.classList.remove('fa-copy');
-            els.copyMyIdBtn.classList.add('fa-check');
-            setTimeout(() => {
-              els.copyMyIdBtn.classList.remove('fa-check');
-              els.copyMyIdBtn.classList.add('fa-copy');
-            }, 1500);
-          }
-        });
-
-        // Chat Actions
-        els.msgForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          sendMessage();
-        });
-        
-        els.msgInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-
-        els.uploadBtn.addEventListener('click', () => els.fileInput.click());
-        els.fileInput.addEventListener('change', handleFileUpload);
-        
-        els.drawBtn.addEventListener('click', () => startDrawingSession(false));
-
-        // Audio Recording Events
-        els.micBtn.addEventListener('mousedown', startRecording);
-        els.micBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
-        els.micBtn.addEventListener('mouseup', stopRecording);
-        els.micBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
-        els.micBtn.addEventListener('mouseleave', () => { if(isRecording) stopRecording(); });
-
-        // Morse Events
-        els.morseBtn.addEventListener('click', openMorseMode);
-        els.closeMorseBtn.addEventListener('click', closeMorseMode);
-        els.morseTapBtn.addEventListener('mousedown', startMorseTap);
-        els.morseTapBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startMorseTap(); });
-        els.morseTapBtn.addEventListener('mouseup', endMorseTap);
-        els.morseTapBtn.addEventListener('touchend', (e) => { e.preventDefault(); endMorseTap(); });
-        els.morseTapBtn.addEventListener('mouseleave', endMorseTap);
-
-        els.ghostToggle.addEventListener('click', () => {
-          ghostMode = !ghostMode;
-          els.ghostToggle.classList.toggle('active', ghostMode);
-          addSystemMessage(getActiveChat(), ghostMode ? "👻 Ghost Mode ON" : "Ghost Mode OFF");
-        });
-
-        els.keySettingsBtn.addEventListener('click', () => {
-          const chat = getActiveChat();
-          if(!chat) return;
-          els.keyInput.value = chat.passphrase;
-          openModal(els.keyModal);
-        });
-
-        els.deleteChatBtn.addEventListener('click', () => {
-          const chat = getActiveChat();
-          if(!chat) return;
-          if(confirm('NUKE CHAT? This will clear history for BOTH you and the peer. This cannot be undone.')) {
-            sendSignal(chat, { type: 'clear_history' });
-            chat.messages = [];
-            incomingFiles = {}; 
-            renderMessages(chat);
-            saveStorage(); 
-          }
-        });
-
-        els.reconnectBtn.addEventListener('click', () => {
-            const chat = getActiveChat();
-            if(chat && chat.type === 'direct') {
-                logDebug("Force Reconnect triggered by user.");
-                // Clean slate
-                if(chat.conn) chat.conn.close();
-                connRegistry.delete(chat.id);
-                chat.dialInProgress = false;
-                connectToPeer(chat.id, chat.passphrase);
-            }
-        });
-
-        // Logs
-        els.logHeader.addEventListener('click', (e) => {
-          if(e.target !== els.viewRawDataBtn && !e.target.classList.contains('log-tab')) {
-            els.securityLog.classList.toggle('open');
-          }
-        });
-        els.debugToggleBtn.addEventListener('click', () => {
-          els.securityLog.classList.toggle('open');
-        });
-        els.viewRawDataBtn.addEventListener('click', () => {
-          els.rawDataContent.textContent = JSON.stringify(myFingerprintRaw, null, 2);
-          openModal(els.rawDataModal);
-        });
-        els.tabSec.addEventListener('click', () => switchLogTab('sec'));
-        els.tabDebug.addEventListener('click', () => switchLogTab('debug'));
-
-        // Virtual Keyboard
-        els.vkToggleBtn.addEventListener('click', () => {
-          vkActive = !vkActive;
-          els.virtualKeyboard.classList.toggle('open', vkActive);
-          els.vkToggleBtn.style.color = vkActive ? 'var(--accent)' : 'var(--accent)';
-        });
-        els.vkTabs.forEach(tab => {
-          tab.addEventListener('click', () => {
-            els.vkTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            vkSet = tab.dataset.set;
-            renderVk();
-          });
-        });
-        els.scrambleToggle.addEventListener('change', (e) => {
-          vkScramble = e.target.checked;
-          renderVk();
-        });
-
-        // Modals
-        els.connectSubmitBtn.addEventListener('click', () => {
-          const id = els.remoteIdInput.value.trim();
-          if(id) { connectToPeer(id); closeModals(); }
-        });
-        els.createGroupSubmitBtn.addEventListener('click', () => {
-          const name = els.groupNameInput.value.trim();
-          if(name) { createGroup(name); closeModals(); }
-        });
-        els.groupAddMemberSubmitBtn.addEventListener('click', () => {
-          const id = els.groupMemberIdInput.value.trim();
-          if(id) { addMemberToGroup(id); closeModals(); }
-        });
-        els.copyLinkBtn.addEventListener('click', () => {
-          els.shareUrlInput.select();
-          document.execCommand('copy');
-          els.copyLinkBtn.textContent = "Copied!";
-          setTimeout(() => els.copyLinkBtn.textContent = "Copy Link", 2000);
-        });
-        els.saveKeyBtn.addEventListener('click', () => {
-          const newKey = els.keyInput.value.trim() || 'changeme';
-          const chat = getActiveChat();
-          if(chat) {
-            chat.passphrase = newKey;
-            if(chat.type === 'group') {
-              chat.participants.forEach(pid => {
-                const conn = chat.connections[pid];
-                if(conn && conn.open) conn.send({ kind: 'system', type: 'key_change', text: 'Group key changed.' });
-              });
-            } else if(chat.conn && chat.conn.open) {
-              chat.conn.send({ kind: 'system', type: 'key_change', text: 'Peer changed key.' });
-            }
-            addSystemMessage(chat, `Key updated: ${newKey}`);
-            saveStorage();
-            closeModals();
-          }
-        });
-        
-        // Settings
-        els.secureSessionToggle.addEventListener('change', (e) => {
-          settings.secureSession = e.target.checked;
-          saveStorage();
-          logSecurity(`Secure Session: ${settings.secureSession ? 'ENABLED' : 'DISABLED'}`);
-        });
-        els.allowFilesToggle.addEventListener('change', (e) => {
-          settings.allowFiles = e.target.checked;
-          saveStorage();
-        });
-        els.saveTurnBtn.addEventListener('click', () => {
-          settings.turnUrl = els.turnUrlInput.value.trim();
-          settings.turnUser = els.turnUserInput.value.trim();
-          settings.turnPass = els.turnPassInput.value.trim();
-          saveStorage();
-          alert("Settings saved. Please refresh to apply new ICE config.");
-          closeModals();
-        });
-        
-        // Download Source
-        els.downloadSourceBtn.addEventListener('click', () => {
-            const htmlContent = document.documentElement.outerHTML;
-            const blob = new Blob([htmlContent], {type: 'text/html'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'pepechat_v15.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-      }
-
-      // --- LOGGING SYSTEM ---
-      function switchLogTab(tab) {
-        activeLogTab = tab;
-        els.tabSec.classList.toggle('active', tab === 'sec');
-        els.tabDebug.classList.toggle('active', tab === 'debug');
-        renderLogs();
-      }
-
-      let logs = { sec: [], debug: [] };
-
-      function logSecurity(msg, type = 'info') {
-        logs.sec.push({ msg, type, time: new Date().toLocaleTimeString() });
-        if(activeLogTab === 'sec') renderLogs();
-      }
-
-      function logDebug(msg, type = 'info') {
-        logs.debug.push({ msg, type, time: new Date().toLocaleTimeString() });
-        if(activeLogTab === 'debug') renderLogs();
-      }
-
-      function renderLogs() {
-        els.logContent.innerHTML = '';
-        const currentLogs = logs[activeLogTab];
-        currentLogs.forEach(l => {
-          const row = document.createElement('div');
-          row.className = `log-row ${l.type}`;
-          row.innerHTML = `<span style="color:#555; font-size:9px;">${l.time}</span> <span class="log-hash">${l.msg}</span>`;
-          els.logContent.appendChild(row);
-        });
-        els.logContent.scrollTop = els.logContent.scrollHeight;
-      }
-
-      // --- FINGERPRINTING ---
-      async function generateFingerprint() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        ctx.textBaseline = "top";
-        ctx.font = "14px 'Arial'";
-        ctx.fillStyle = "#f60";
-        ctx.fillRect(125,1,62,20);
-        ctx.fillStyle = "#069";
-        ctx.fillText("PepeChatv15", 2, 15);
-        const b64 = canvas.toDataURL();
-        
-        const components = [
-          "UserAgent: " + navigator.userAgent,
-          "Language: " + navigator.language,
-          "Timezone: " + new Date().getTimezoneOffset(),
-          "Concurrency: " + (navigator.hardwareConcurrency || 'unknown'),
-          "CanvasHash: " + b64.substring(0, 30) + "..."
-        ];
-        
-        myFingerprintRaw = components; 
-        
-        const str = components.join('||');
-        const enc = new TextEncoder();
-        const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(str));
-        return buf2hex(hashBuf);
-      }
-
-      // --- CORE LOGIC ---
-
-      function getRtcConfig() {
-        const servers = [...ROBUST_ICE_SERVERS];
-        if (settings.turnUrl) {
-          servers.unshift({
-            urls: settings.turnUrl,
-            username: settings.turnUser,
-            credential: settings.turnPass
-          });
+        // Assemble
+        const total = meta.total || rec.chunks.size;
+        const parts = [];
+        for (let i=0; i<total; i++) {
+          const u = rec.chunks.get(i);
+          if (!u) { log(`File ${meta.name}: missing chunk ${i}/${total-1}`, 'bad'); return; }
+          parts.push(u);
         }
-        return {
-          iceServers: servers,
-          iceCandidatePoolSize: 10, 
-          iceTransportPolicy: 'all', 
-          sdpSemantics: 'unified-plan'
-        };
+        const blob = new Blob(parts, { type: meta.mime || 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+
+        pushMessage(peerId, { id: meta.id, kind:'file', from:'peer', name: meta.name, size: meta.size, mime: meta.mime, url, ts: Date.now() });
+        incomingFiles.delete(meta.id);
+        log(`Received file: ${meta.name} (${meta.size} bytes)`, 'good');
+        return;
       }
 
-      function initApp(userId, callback) {
-        myId = userId;
-        els.myNameDisplay.textContent = userId;
-        els.myIdDisplay.textContent = "ID: " + userId;
-        els.myAvatar.textContent = userId.substring(0,2).toUpperCase();
-        
-        logDebug(`Initializing PeerJS with ID: ${userId}`);
-        logDebug(`Configuring ICE (STUN/TURN) for NAT traversal...`);
+      log(`Unknown message type from ${peerId}: ${data.t}`, 'warn');
+    } catch (e) {
+      log(`Error handling incoming data: ${e?.message || e}`, 'bad');
+    }
+  }
 
-        // Robust Configuration for 4G/Tor
-        peer = new Peer(myId, {
-          debug: 2, 
-          config: getRtcConfig()
-        });
+  // =========================
+  // UI rendering
+  // =========================
+  function renderChatList() {
+    const wrap = $('chatList');
+    wrap.innerHTML = '';
+    const items = Array.from(chats.values()).sort((a,b) => (b.lastTs||0) - (a.lastTs||0));
+    if (!items.length) {
+      const d = document.createElement('div');
+      d.className = 'tiny';
+      d.textContent = 'No chats yet.';
+      wrap.appendChild(d);
+      return;
+    }
 
-        peer.on('open', (id) => {
-          myId = id;
-          els.myIdDisplay.textContent = "ID: " + id;
-          els.loginScreen.classList.add('hidden');
-          setTimeout(() => els.loginScreen.style.display = 'none', 500);
-          els.app.classList.add('visible');
-          logSecurity("Peer Network Connected.");
-          
-          // Execute pending auto-connect if any
-          if (pendingConnect) {
-              handleAutoConnect(pendingConnect.id, pendingConnect.key);
-              pendingConnect = null;
-          }
-          
-          if(callback) callback();
-        });
+    for (const c of items) {
+      const el = document.createElement('div');
+      el.className = 'chatItem' + (c.peerId === activePeerId ? ' active' : '');
+      el.onclick = () => setActiveChat(c.peerId);
 
-        peer.on('error', (err) => {
-          logDebug(`Peer Error: ${err.type} - ${err.message}`, 'error');
-          if(err.type === 'unavailable-id') {
-            alert('ID taken. Trying random.');
-            if(peer) peer.destroy();
-            initApp(generateRandomId(), callback);
-          } else if (err.type === 'peer-unavailable') {
-            alert('Peer not found. They might be offline or the ID is incorrect.');
-          } else if (err.type === 'browser-incompatible') {
-            logSecurity("Browser incompatible. If on Tor, WebRTC might be blocked.", 'error');
-          }
-        });
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = c.peerId;
 
-        peer.on('connection', (conn) => {
-          logDebug(`Incoming connection from ${conn.peer}`);
-          handleConnection(conn, true);
-        });
-      }
+      const sub = document.createElement('div');
+      sub.className = 'sub';
+      const status = c.conn?.open ? '• connected' : '• offline';
+      sub.textContent = `${status} — ${c.lastPreview || ''}`;
 
-      function connectToPeer(remoteId, presetKey) {
-        if(remoteId === myId) return;
-        
-        let chat = chats.get(remoteId);
-        if(!chat) {
-          chat = createChatObject(remoteId, presetKey);
-          chats.set(remoteId, chat);
-          renderChatList();
-        }
-        
-        // Fix K: Dial Lock / Glare prevention
-        if(chat.dialInProgress) {
-            logDebug(`Dial already in progress for ${remoteId}`);
-            return;
-        }
-        
-        if(chat.conn && chat.conn.open) {
-          setActiveChat(remoteId);
-          return;
-        }
+      el.appendChild(title);
+      el.appendChild(sub);
+      wrap.appendChild(el);
+    }
+  }
 
-        chat.dialInProgress = true;
-        setActiveChat(remoteId); // Fix B: Auto-open chat
-        updateChatStatus(chat);
-        logDebug(`Initiating connection to ${remoteId}...`);
-        
-        const conn = peer.connect(remoteId, {
-          reliable: true,
-          serialization: 'json',
-          metadata: { from: myId, ts: Date.now() }
-        });
-        
-        // Connection Timeout Logic
-        const timeout = setTimeout(() => {
-          if(!conn.open) {
-            logDebug(`Connection to ${remoteId} timed out (45s). NAT/Firewall issue likely.`, 'error');
-            conn.close();
-            chat.dialInProgress = false;
-            updateChatStatus(chat);
-          }
-        }, 45000);
+  function renderChat() {
+    const wrap = $('chat');
+    wrap.innerHTML = '';
+    if (!activePeerId) {
+      const d = document.createElement('div');
+      d.className = 'tiny';
+      d.textContent = 'Connect to a peer to start chatting.';
+      wrap.appendChild(d);
+      return;
+    }
+    const chat = getOrCreateChat(activePeerId);
+    const msgs = chat.messages || [];
+    for (const m of msgs) {
+      const b = document.createElement('div');
+      b.className = 'bubble' + (m.from === 'me' ? ' me' : '');
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const left = document.createElement('div');
+      left.textContent = `${m.from === 'me' ? 'You' : (m.from === 'peer' ? chat.peerId : 'System')}`;
+      const right = document.createElement('div');
+      right.textContent = new Date(m.ts || Date.now()).toLocaleString();
+      meta.appendChild(left); meta.appendChild(right);
 
-        conn.on('open', () => {
-            clearTimeout(timeout);
-            chat.dialInProgress = false;
-        });
-        conn.on('error', (err) => { 
-            console.error("Connection Error:", err); 
-            clearTimeout(timeout);
-            chat.dialInProgress = false;
-        });
-        
-        handleConnection(conn, false, presetKey);
-      }
+      const body = document.createElement('div');
+      body.className = 'text';
 
-      function handleConnection(conn, inbound, presetKey) {
-        const peerId = conn.peer;
-        let chat = chats.get(peerId);
-        
-        if(!chat) {
-          chat = createChatObject(peerId, presetKey);
-          chats.set(peerId, chat);
+      if (m.kind === 'file') {
+        const name = m.name || 'file';
+        const size = (m.size != null) ? ` (${m.size} bytes)` : '';
+        if (m.url) {
+          const a = document.createElement('a');
+          a.href = m.url;
+          a.download = name;
+          a.textContent = `Download: ${name}${size}`;
+          a.style.color = 'var(--accent)';
+          body.appendChild(a);
         } else {
-          if (presetKey) chat.passphrase = presetKey;
+          body.textContent = `File: ${name}${size}`;
         }
-
-        // Register connection and enforce single-conn policy
-        const dir = inbound ? 'in' : 'out';
-        if (!adoptConnection(peerId, conn, dir)) {
-          logDebug(`Dropped ${dir} connection from/to ${peerId} (duplicate/glare policy)`, 'warn');
-          return false;
-        }
-
-        if (!chat.conn || !chat.conn.open) {
-            chat.conn = conn;
-        }
-
-        renderChatList();
-        if(!activeChatId) setActiveChat(peerId);
-
-        // --- HARD DIAGNOSTICS ---
-        const monitorICE = () => {
-          const pc = conn.peerConnection || conn._pc || null;
-          if (!pc) return setTimeout(monitorICE, 100);
-
-          if (pc.__pepeBound) return;
-          pc.__pepeBound = true;
-
-          pc.addEventListener('icecandidate', (event) => {
-            if (event.candidate) logDebug(`ICE Candidate (${peerId}): ${event.candidate.candidate}`);
-          });
-          pc.addEventListener('icecandidateerror', (e) => {
-            if(e.errorCode === 701) {
-                logDebug(`ICE 701 Error: Tor/Firewall detected. UDP blocked. Please configure a custom TURN server.`, 'error');
-            } else {
-                logDebug(`ICE Candidate Error (${peerId}): ${e.errorCode} ${e.errorText}`, 'error');
-            }
-          });
-          pc.addEventListener('iceconnectionstatechange', () => {
-            logDebug(`ICE State (${peerId}): ${pc.iceConnectionState}`);
-            chat.iceState = pc.iceConnectionState;
-            updateChatStatus(chat);
-            
-            // FORCE ONLINE if ICE connects, even if DataChannel open event is delayed
-            if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
-                if (!chat.conn.open) {
-                    logDebug("ICE Connected. Forcing UI Online.");
-                    chat.conn.open = true; // Force flag
-                    updateChatStatus(chat);
-                }
-            }
-
-            if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
-              dumpIceStats(pc, peerId).catch(() => {});
-            }
-          });
-          pc.addEventListener('connectionstatechange', () => {
-            logDebug(`PC State (${peerId}): ${pc.connectionState}`);
-          });
-        };
-        monitorICE();
-
-        async function dumpIceStats(pc, peerId) {
-          if (!pc || typeof pc.getStats !== 'function') return;
-          const stats = await pc.getStats();
-          let hasRelay = false;
-          stats.forEach(r => {
-            if (r.type === 'local-candidate' && r.candidateType === 'relay') hasRelay = true;
-          });
-          if (!hasRelay) {
-            logDebug(`TURN WARNING (${peerId}): No relay candidates. Mobile/CGNAT likely to fail without TURN.`, 'warn');
-          }
-        }
-
-        conn.on('open', () => {
-          logDebug(`DataChannel established with ${peerId}`);
-          chat.conn = conn;
-          chat.lastSeen = Date.now();
-          chat.dialInProgress = false;
-          
-          if(els.qrModal.classList.contains('open')) closeModals();
-
-          conn.send({ 
-            kind: 'handshake', 
-            name: myId, 
-            fingerprint: myFingerprint 
-          });
-          
-          updateChatStatus(chat);
-          renderChatList();
-          
-          if(chat.pendingMessages.length > 0) {
-            addSystemMessage(chat, "Connection re-established. Sending queued messages...");
-            chat.pendingMessages.forEach(item => {
-              encryptPayload(chat.passphrase, item.payload).then(pkg => {
-                conn.send({
-                  kind: 'message',
-                  iv: pkg.iv,
-                  data: pkg.data,
-                  senderName: myId,
-                  timestamp: item.timestamp
-                });
-              });
-              const uiMsg = chat.messages.find(m => m.id === item.msgId);
-              if(uiMsg) {
-                  uiMsg.status = 'sent';
-                  if(activeChatId === chat.id) {
-                      const el = document.getElementById(uiMsg.id);
-                      if(el) {
-                          const statusEl = el.querySelector('.msg-status');
-                          if(statusEl) statusEl.innerHTML = '<i class="fa-solid fa-check"></i>';
-                      }
-                  }
-              }
-            });
-            chat.pendingMessages = [];
-          }
-        });
-
-        conn.on('data', (data) => handleData(conn, data));
-        conn.on('close', () => { 
-          logDebug(`Connection closed: ${peerId}`);
-          chat.dialInProgress = false;
-          const reg = connRegistry.get(peerId);
-          if (reg && reg.conn === conn) connRegistry.delete(peerId);
-          
-          updateChatStatus(chat); 
-          renderChatList(); 
-        });
-        conn.on('error', (err) => { 
-          const msg = (err && err.message) ? err.message : String(err);
-          logDebug(`Conn Error (${peerId}): ${msg}`, 'error');
-          chat.dialInProgress = false;
-          updateChatStatus(chat); 
-
-          if (msg.toLowerCase().includes('negotiation')) {
-            try { conn.close(); } catch {}
-            
-            // CRITICAL FIX: Remove the dead connection from registry so retry isn't blocked by glare policy
-            connRegistry.delete(peerId);
-            
-            // Immediate retry with fresh connection object
-            logDebug(`Negotiation failed. Retrying immediately...`);
-            setTimeout(() => {
-              if (chat && chat.type === 'direct') {
-                connectToPeer(peerId, chat.passphrase);
-              }
-            }, 500);
-          }
-        });
-        return true;
+      } else {
+        body.textContent = m.text || '';
       }
 
-      function createChatObject(peerId, presetKey) {
-        return {
-          id: peerId,
-          name: peerId,
-          type: 'direct',
-          passphrase: presetKey || 'changeme',
-          messages: [],
-          pendingMessages: [],
-          conn: null,
-          unread: 0,
-          fingerprint: null,
-          lastSeen: 0,
-          iceState: 'new',
-          dialInProgress: false
-        };
-      }
+      b.appendChild(meta);
+      b.appendChild(body);
+      wrap.appendChild(b);
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+  }
 
-      // --- HEARTBEAT SYSTEM ---
-      function sendHeartbeat() {
-        chats.forEach(chat => {
-          if(chat.type === 'direct' && chat.conn && chat.conn.open) {
-            chat.conn.send({ kind: 'ping' });
-            if(Date.now() - chat.lastSeen > 20000) {
-              updateChatStatus(chat);
-            }
-          }
-        });
-      }
+  // =========================
+  // QR / Invite URL
+  // =========================
+  function appBaseUrl() {
+    return window.location.href.replace(window.location.search,'').replace(window.location.hash,'');
+  }
 
-      // --- GROUP CHAT LOGIC ---
-      function createGroup(name) {
-        const groupId = 'group-' + Date.now();
-        const chat = {
-          id: groupId,
-          name: name,
-          type: 'group',
-          passphrase: 'changeme',
-          messages: [],
-          participants: [],
-          connections: {},
-          unread: 0
-        };
-        chats.set(groupId, chat);
-        setActiveChat(groupId);
-        addSystemMessage(chat, 'Group created.');
-      }
+  function inviteUrlFor(peerToConnect=null) {
+    // If peerToConnect is null, this is an invite to connect to YOU.
+    const k = b64urlEncode(ensureRoomKey());
+    const id = peerToConnect ? encodeURIComponent(peerToConnect) : encodeURIComponent(myId);
+    return `${appBaseUrl()}?connect=${id}&k=${encodeURIComponent(k)}&v=${encodeURIComponent(APP_VERSION)}`;
+  }
 
-      function addMemberToGroup(peerId) {
-        const chat = getActiveChat();
-        if(!chat || chat.type !== 'group') return;
-        if(chat.participants.includes(peerId)) return;
-        
-        const conn = peer.connect(peerId, { serialization: 'json', reliable: true });
-        chat.participants.push(peerId);
-        chat.connections[peerId] = conn;
-        
-        conn.on('open', () => {
-          conn.send({ 
-            kind: 'handshake', 
-            name: myId, 
-            fingerprint: myFingerprint,
-            groupId: chat.id, 
-            groupName: chat.name 
-          });
-          addSystemMessage(chat, `${peerId} added.`);
-        });
-        conn.on('data', (data) => handleData(conn, data));
-        saveStorage();
-      }
+  function renderInviteIfOpen() {
+    if ($('qrArea').style.display === 'none') return;
+    // Invite URL is always "connect to me"
+    const url = inviteUrlFor(null);
+    $('inviteUrl').value = url;
 
-      // --- DATA HANDLING ---
-      function handleData(conn, data) {
-        let chat = null;
-        
-        if(data.groupId) {
-          chat = chats.get(data.groupId);
-          if(!chat) {
-            chat = {
-              id: data.groupId,
-              name: data.groupName || 'Unknown Group',
-              type: 'group',
-              passphrase: 'changeme',
-              messages: [],
-              participants: [conn.peer],
-              connections: { [conn.peer]: conn },
-              unread: 0
-            };
-            chats.set(data.groupId, chat);
-            renderChatList();
-          } else {
-            if(!chat.connections[conn.peer]) chat.connections[conn.peer] = conn;
-            if(!chat.participants.includes(conn.peer)) chat.participants.push(conn.peer);
-          }
+    // Render QR
+    const box = $('qrCanvas');
+    box.innerHTML = '';
+    try {
+      new QRCode(box, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
+    } catch (e) {
+      box.textContent = 'QR error';
+    }
+  }
+
+  function openQrArea() {
+    if (!peer) { log('Start PeerJS first to generate a QR/Invite URL.', 'warn'); return; }
+    $('qrArea').style.display = 'block';
+    renderInviteIfOpen();
+  }
+
+  function closeQrArea() {
+    $('qrArea').style.display = 'none';
+  }
+
+  function handleAutoConnectFromUrl() {
+    const url = new URL(window.location.href);
+    const connect = url.searchParams.get('connect');
+    const k = url.searchParams.get('k');
+
+    if (k) {
+      try {
+        const key = b64urlDecodeToU8(k);
+        if (key.length === 32) {
+          roomKey = key;
+          LS.set('pepechat_roomKey_b64url', b64urlEncode(roomKey));
+          log('Imported encryption key from URL (k=...).', 'good');
+          updateEncPill();
+          renderInviteIfOpen();
         } else {
-          chat = chats.get(conn.peer);
+          log('URL key (k=...) was not 32 bytes; ignoring.', 'warn');
         }
-
-        if(!chat) return;
-
-        chat.lastSeen = Date.now();
-
-        // Heartbeat
-        if(data.kind === 'ping') {
-          conn.send({ kind: 'pong' });
-          updateChatStatus(chat);
-          return;
-        }
-        if(data.kind === 'pong') {
-          updateChatStatus(chat);
-          return;
-        }
-
-        // Signals
-        if(data.kind === 'signal') {
-          if(data.type === 'clear_history') {
-            chat.messages = [];
-            incomingFiles = {};
-            addSystemMessage(chat, "Peer nuked the chat history.");
-            if(activeChatId === chat.id) renderMessages(chat);
-          }
-          else if(data.type === 'drawing_invite') {
-            const accept = confirm(`${conn.peer} is drawing. Join session?`);
-            if(accept) {
-              startDrawingSession(true); // Join mode
-              sendSignal(chat, { type: 'drawing_join' });
-            }
-          }
-          else if(data.type === 'drawing_join') {
-            addSystemMessage(chat, `${conn.peer} joined drawing session.`);
-          }
-          else if(data.type === 'drawing_stroke') {
-            drawRemoteStroke(data.x, data.y, data.lastX, data.lastY, data.color);
-          }
-          else if(data.type === 'drawing_cursor') {
-            showRemoteCursor(data.x, data.y, conn.peer);
-          }
-          else if(data.type === 'file_rejected') {
-            addSystemMessage(chat, `Peer rejected file transfer (Settings disabled).`);
-          }
-          return;
-        }
-
-        // File Chunk Handling
-        if(data.kind === 'file_chunk') {
-          handleFileChunk(chat, data);
-          return;
-        }
-
-        if(data.kind === 'handshake') {
-          if(chat.type === 'direct') {
-            chat.name = data.name;
-            chat.conn = conn;
-            
-            if(settings.secureSession) {
-              if(chat.fingerprint && chat.fingerprint !== data.fingerprint) {
-                addSystemMessage(chat, `⚠️ SECURITY ALERT: Fingerprint mismatch!`);
-                logSecurity(`ALERT: ${chat.name} fingerprint changed!`, 'error');
-              } else {
-                chat.fingerprint = data.fingerprint;
-                logSecurity(`Verified ${chat.name}: ${data.fingerprint.substring(0,16)}...`);
-              }
-            } else {
-              chat.fingerprint = data.fingerprint;
-              logSecurity(`Connected ${chat.name}: ${data.fingerprint.substring(0,16)}...`);
-            }
-            updateChatStatus(chat);
-          }
-          renderChatList();
-          if(activeChatId === chat.id) els.chatTitle.textContent = chat.name;
-        } 
-        else if (data.kind === 'system' && data.type === 'key_change') {
-          const newKey = prompt(`Key change in ${chat.name}. Enter new key:`);
-          if(newKey) chat.passphrase = newKey;
-          saveStorage();
-        }
-        else if (data.kind === 'message') {
-          decryptMessage(chat.passphrase, data).then(payload => {
-            if(!payload) return;
-            const msgObj = {
-              id: 'msg-' + Math.random().toString(36).substr(2,9),
-              chatId: chat.id,
-              from: 'them',
-              senderName: data.senderName || conn.peer,
-              type: payload.type,
-              content: payload.content,
-              meta: payload.meta, 
-              timestamp: data.timestamp || new Date().toISOString(),
-              ghost: payload.ghost,
-              status: 'received'
-            };
-            chat.messages.push(msgObj);
-            saveMessageToDB(msgObj); // Persist
-            if(activeChatId === chat.id) {
-              appendMessageToUI(msgObj);
-            } else {
-              chat.unread++;
-              renderChatList();
-            }
-          });
-        }
+      } catch (e) {
+        log(`Failed to parse key from URL: ${e?.message || e}`, 'warn');
       }
+    }
 
-      function sendSignal(chat, payload) {
-        if(chat.type === 'direct' && chat.conn && chat.conn.open) {
-          chat.conn.send({ kind: 'signal', ...payload });
-        } else if (chat.type === 'group') {
-          chat.participants.forEach(pid => {
-            const c = chat.connections[pid];
-            if(c && c.open) c.send({ kind: 'signal', ...payload });
-          });
-        }
+    if (connect) {
+      const peerId = decodeURIComponent(connect);
+      // Clean URL (avoid reconnect loops on refresh)
+      window.history.replaceState({}, '', appBaseUrl());
+      $('connectId').value = peerId;
+      log(`Auto-connect requested via URL: connect=${peerId}`);
+      connectWithIceFallback(peerId);
+    }
+  }
+
+  // =========================
+  // ICE probe (diagnostic)
+  // =========================
+  async function probeCurrentIceProfile() {
+    if (!isWebrtcAvailable()) { log('WebRTC unavailable; cannot probe.', 'bad'); return; }
+
+    runtimeIceProfiles = buildRuntimeIceProfiles();
+    const profile = runtimeIceProfiles[iceProfileIndex] || baseIceProfiles()[0];
+    const name = profile.name;
+
+    log(`Probing ICE profile "${name}" (best-effort)…`);
+    let pc;
+    try {
+      pc = new RTCPeerConnection(profile.rtcConfig);
+    } catch (e) {
+      log(`Probe failed to create RTCPeerConnection: ${e?.message || e}`, 'bad');
+      return;
+    }
+
+    const types = new Set();
+    let errCount = 0;
+
+    pc.addEventListener('icecandidateerror', (e) => {
+      errCount++;
+      const code = e.errorCode ?? 'unknown';
+      const text = e.errorText ?? '';
+      log(`Probe ICE error: ${code} ${text}`, 'warn');
+    });
+
+    pc.onicecandidate = (ev) => {
+      const c = ev.candidate?.candidate || '';
+      if (!c) return;
+      // Candidate strings contain "typ host|srflx|relay"
+      const m = c.match(/\btyp\s+(\w+)/);
+      if (m && m[1]) types.add(m[1]);
+    };
+
+    pc.createDataChannel('probe');
+
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+    } catch (e) {
+      log(`Probe failed during offer/setLocalDescription: ${e?.message || e}`, 'bad');
+      try { pc.close(); } catch {}
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, 3500));
+
+    const typesArr = Array.from(types).sort();
+    log(`Probe results for "${name}": candidate types = ${typesArr.join(', ') || '(none)'}; errors=${errCount}`);
+    if (!typesArr.length || (typesArr.length === 1 && typesArr[0] === 'host')) {
+      log(`Probe suggests no usable STUN/TURN path from this network. If remote is not on the same LAN, configure TURN over TCP/TLS (443).`, 'warn');
+    }
+
+    try { pc.close(); } catch {}
+  }
+
+  // =========================
+  // Drawing
+  // =========================
+  let drawCtx = null;
+  let drawDown = false;
+  let lastPt = null;
+
+  function initDrawing() {
+    const canvas = $('drawCanvas');
+    drawCtx = canvas.getContext('2d');
+
+    const toCanvasPt = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      const x = (clientX - rect.left) * (canvas.width / rect.width);
+      const y = (clientY - rect.top) * (canvas.height / rect.height);
+      return {x,y};
+    };
+
+    const down = (e) => {
+      e.preventDefault();
+      drawDown = true;
+      lastPt = toCanvasPt(e);
+    };
+    const up = (e) => {
+      e.preventDefault();
+      drawDown = false;
+      lastPt = null;
+    };
+    const move = (e) => {
+      if (!drawDown) return;
+      e.preventDefault();
+      const pt = toCanvasPt(e);
+      if (!lastPt) { lastPt = pt; return; }
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+      drawCtx.lineWidth = 6;
+      drawCtx.strokeStyle = '#e8ecff';
+      drawCtx.beginPath();
+      drawCtx.moveTo(lastPt.x, lastPt.y);
+      drawCtx.lineTo(pt.x, pt.y);
+      drawCtx.stroke();
+      lastPt = pt;
+    };
+
+    canvas.addEventListener('mousedown', down);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+
+    canvas.addEventListener('touchstart', down, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    window.addEventListener('touchend', up, {passive:false});
+  }
+
+  function openDraw() {
+    $('drawModal').classList.add('open');
+  }
+  function closeDraw() {
+    $('drawModal').classList.remove('open');
+  }
+  function clearDraw() {
+    const canvas = $('drawCanvas');
+    if (!drawCtx) return;
+    drawCtx.clearRect(0,0,canvas.width,canvas.height);
+  }
+
+  async function sendDrawingAsPng() {
+    const conn = getActiveConn();
+    if (!activePeerId) { log('Select or connect to a peer first.', 'warn'); return; }
+    if (!conn || !conn.open) { log('No active connection. Connect first.', 'warn'); return; }
+
+    const canvas = $('drawCanvas');
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) { log('Failed to export drawing.', 'bad'); return; }
+
+    const file = new File([blob], `drawing-${Date.now()}.png`, {type:'image/png'});
+    $('file').files = null;
+
+    // Send like a normal file
+    const id = crypto.randomUUID();
+    const total = Math.ceil(file.size / FILE_CHUNK);
+
+    pushMessage(activePeerId, { id, kind:'file', from:'me', name:file.name, size:file.size, mime:file.type, ts:Date.now() });
+    sendJson(conn, { t:'fmeta', id, name:file.name, size:file.size, mime:file.type, total, enc: !!encryptionOn });
+
+    let offset = 0;
+    for (let seq = 0; seq < total; seq++) {
+      const slice = file.slice(offset, offset + FILE_CHUNK);
+      const buf = new Uint8Array(await slice.arrayBuffer());
+      offset += FILE_CHUNK;
+      if (encryptionOn) {
+        const { nonceB64, boxU8 } = encryptBytes(buf);
+        sendJson(conn, { t:'fchunk', id, seq, total, enc:true, nonce: nonceB64, box: boxU8.buffer });
+      } else {
+        sendJson(conn, { t:'fchunk', id, seq, total, enc:false, data: buf.buffer });
       }
-
-      function sendMessage() {
-        const text = els.msgInput.value.trim();
-        if(!text) return;
-        
-        const chat = getActiveChat();
-        if(!chat) {
-          els.msgForm.classList.add('shake');
-          setTimeout(() => els.msgForm.classList.remove('shake'), 500);
-          return;
-        }
-
-        const payload = { type: 'text', content: text, ghost: ghostMode };
-        const timestamp = new Date().toISOString();
-        const msgId = 'msg-' + Math.random().toString(36).substr(2,9);
-        
-        const msgObj = {
-          id: msgId,
-          chatId: chat.id,
-          from: 'me',
-          type: 'text',
-          content: text,
-          timestamp: timestamp,
-          ghost: ghostMode,
-          status: 'pending'
-        };
-        chat.messages.push(msgObj);
-        saveMessageToDB(msgObj); // Persist
-        appendMessageToUI(msgObj);
-        els.msgInput.value = '';
-
-        encryptPayload(chat.passphrase, payload).then(pkg => {
-          const msgData = {
-            kind: 'message',
-            iv: pkg.iv,
-            data: pkg.data,
-            groupId: chat.type === 'group' ? chat.id : undefined,
-            groupName: chat.type === 'group' ? chat.name : undefined,
-            senderName: myId,
-            timestamp: timestamp
-          };
-
-          if(chat.type === 'direct') {
-            if(chat.conn && chat.conn.open) {
-              chat.conn.send(msgData);
-              msgObj.status = 'sent';
-              const el = document.getElementById(msgId);
-              if(el) el.querySelector('.msg-status').innerHTML = '<i class="fa-solid fa-check"></i>';
-            } else {
-              chat.pendingMessages.push({ payload: payload, timestamp: timestamp, msgId: msgId });
-            }
-          } else {
-            chat.participants.forEach(pid => {
-              const c = chat.connections[pid];
-              if(c && c.open) c.send(msgData);
-            });
-            msgObj.status = 'sent';
-          }
-        });
-      }
-
-      // --- AUDIO RECORDING & VISUALIZER ---
-      function getAudioContext() {
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContext.state === 'suspended') {
-          audioContext.resume();
-        }
-        return audioContext;
-      }
-
-      async function startRecording() {
-        if(isRecording) return;
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
-          audioChunks = [];
-          
-          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-          mediaRecorder.onstop = processAudio;
-          
-          mediaRecorder.start();
-          isRecording = true;
-          els.micBtn.classList.add('recording');
-          els.recordingOverlay.classList.add('visible');
-          
-          recStartTime = Date.now();
-          recTimerInterval = setInterval(() => {
-            const diff = Math.floor((Date.now() - recStartTime) / 1000);
-            const m = Math.floor(diff / 60);
-            const s = diff % 60;
-            els.recTimer.textContent = `${m}:${s < 10 ? '0'+s : s}`;
-          }, 1000);
-          
-        } catch(err) {
-          alert("Microphone access denied or not available.");
-          console.error(err);
-        }
-      }
-
-      function stopRecording() {
-        if(!isRecording || !mediaRecorder) return;
-        mediaRecorder.stop();
-        isRecording = false;
-        els.micBtn.classList.remove('recording');
-        els.recordingOverlay.classList.remove('visible');
-        clearInterval(recTimerInterval);
-        els.recTimer.textContent = "0:00";
-        
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
-      }
-
-      function processAudio() {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        if(audioBlob.size < 1000) return; 
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const base64 = e.target.result;
-          sendAudioMessage(base64);
-        };
-        reader.readAsDataURL(audioBlob);
-      }
-
-      function sendAudioMessage(base64) {
-        const chat = getActiveChat();
-        if(!chat) return;
-
-        const meta = { name: 'voice_msg.webm', size: 'Audio', type: 'audio/webm', hash: 'generated' };
-        const payload = { type: 'audio', content: base64, meta: meta, ghost: ghostMode };
-        const timestamp = new Date().toISOString();
-        const msgId = 'msg-' + Math.random().toString(36).substr(2,9);
-
-        const msgObj = { id: msgId, chatId: chat.id, from: 'me', type: 'audio', content: base64, meta: meta, timestamp: timestamp, ghost: ghostMode, status: 'pending', progress: 0 };
-        chat.messages.push(msgObj);
-        saveMessageToDB(msgObj);
-        appendMessageToUI(msgObj);
-
-        encryptPayload(chat.passphrase, payload).then(pkg => {
-          sendFileChunked(chat, pkg, timestamp, 'me', msgObj);
-        });
-      }
-
-      // --- MORSE CODE MODE ---
-      function openMorseMode() {
-        els.morseOverlay.classList.add('visible');
-        morseActive = true;
-        morseSequence = [];
-        getAudioContext(); 
-      }
-
-      function closeMorseMode() {
-        els.morseOverlay.classList.remove('visible');
-        morseActive = false;
-        clearTimeout(morseTimeout);
-      }
-
-      function startMorseTap() {
-        if(!morseActive) return;
-        els.morseTapBtn.classList.add('active');
-        
-        const ctx = getAudioContext();
-        morseOscillator = ctx.createOscillator();
-        morseGain = ctx.createGain();
-        morseOscillator.connect(morseGain);
-        morseGain.connect(ctx.destination);
-        morseOscillator.frequency.value = 600;
-        morseOscillator.start();
-        
-        morseStartTime = Date.now();
-        clearTimeout(morseTimeout);
-        els.morseStatus.textContent = "Recording...";
-      }
-
-      function endMorseTap() {
-        if(!morseActive || !morseOscillator) return;
-        els.morseTapBtn.classList.remove('active');
-        
-        morseOscillator.stop();
-        morseOscillator = null;
-        
-        const duration = Date.now() - morseStartTime;
-        if(duration > 10) { 
-          morseSequence.push(duration);
-        }
-
-        morseTimeout = setTimeout(sendMorseSequence, 3000);
-      }
-
-      function sendMorseSequence() {
-        if(morseSequence.length < 1) return;
-        
-        if(morseSequence.length === 1 && morseSequence[0] < 50) {
-            morseSequence = [];
-            els.morseStatus.textContent = "Ignored (Too short)";
-            return;
-        }
-
-        const chat = getActiveChat();
-        if(chat) {
-          const payload = { type: 'morse', content: JSON.stringify(morseSequence), ghost: ghostMode };
-          const timestamp = new Date().toISOString();
-          const msgId = 'msg-' + Math.random().toString(36).substr(2,9);
-          
-          const msgObj = { id: msgId, chatId: chat.id, from: 'me', type: 'morse', content: morseSequence, timestamp: timestamp, ghost: ghostMode, status: 'pending' };
-          chat.messages.push(msgObj);
-          saveMessageToDB(msgObj);
-          appendMessageToUI(msgObj);
-          
-          encryptPayload(chat.passphrase, payload).then(pkg => {
-             const msgData = {
-                kind: 'message',
-                iv: pkg.iv,
-                data: pkg.data,
-                senderName: myId,
-                timestamp: timestamp
-             };
-             if(chat.conn && chat.conn.open) {
-                 chat.conn.send(msgData);
-                 msgObj.status = 'sent';
-                 const el = document.getElementById(msgId);
-                 if(el) el.querySelector('.msg-status').innerHTML = '<i class="fa-solid fa-check"></i>';
-             }
-          });
-          
-          els.morseStatus.textContent = "Sent!";
-        }
-        morseSequence = [];
-      }
-
-      function playMorseSequence(sequence) {
-        const ctx = getAudioContext();
-        let time = ctx.currentTime;
-        
-        sequence.forEach(dur => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.frequency.value = 600;
-          
-          osc.start(time);
-          osc.stop(time + (dur / 1000));
-          
-          time += (dur / 1000) + 0.1; 
-        });
-      }
-
-      // --- DRAWING LOGIC ---
-      function initDrawing() {
-        drawCtx = els.drawingCanvas.getContext('2d');
-        
-        const resize = () => {
-          els.drawingCanvas.width = els.canvasContainer.offsetWidth;
-          els.drawingCanvas.height = els.canvasContainer.offsetHeight;
-        };
-        window.addEventListener('resize', resize);
-        
-        const start = (e) => {
-          isDrawing = true;
-          const rect = els.drawingCanvas.getBoundingClientRect();
-          lastX = (e.clientX || e.touches[0].clientX) - rect.left;
-          lastY = (e.clientY || e.touches[0].clientY) - rect.top;
-        };
-        
-        const move = (e) => {
-          const rect = els.drawingCanvas.getBoundingClientRect();
-          const x = (e.clientX || e.touches[0].clientX) - rect.left;
-          const y = (e.clientY || e.touches[0].clientY) - rect.top;
-          
-          const chat = getActiveChat();
-          if(chat) sendSignal(chat, { type: 'drawing_cursor', x: x/els.drawingCanvas.width, y: y/els.drawingCanvas.height });
-
-          if(!isDrawing) return;
-          
-          drawCtx.beginPath();
-          drawCtx.moveTo(lastX, lastY);
-          drawCtx.lineTo(x, y);
-          drawCtx.strokeStyle = drawColor;
-          drawCtx.lineWidth = 3;
-          drawCtx.lineCap = 'round';
-          drawCtx.stroke();
-          
-          if(chat) {
-            sendSignal(chat, { 
-              type: 'drawing_stroke', 
-              x: x/els.drawingCanvas.width, 
-              y: y/els.drawingCanvas.height,
-              lastX: lastX/els.drawingCanvas.width,
-              lastY: lastY/els.drawingCanvas.height,
-              color: drawColor
-            });
-          }
-
-          lastX = x;
-          lastY = y;
-        };
-        
-        const end = () => { isDrawing = false; };
-
-        els.drawingCanvas.addEventListener('mousedown', start);
-        els.drawingCanvas.addEventListener('mousemove', move);
-        els.drawingCanvas.addEventListener('mouseup', end);
-        els.drawingCanvas.addEventListener('touchstart', start);
-        els.drawingCanvas.addEventListener('touchmove', move);
-        els.drawingCanvas.addEventListener('touchend', end);
-
-        els.colorDots.forEach(dot => {
-          dot.addEventListener('click', () => {
-            els.colorDots.forEach(d => d.classList.remove('active'));
-            dot.classList.add('active');
-            drawColor = dot.dataset.color;
-          });
-        });
-
-        els.finishDrawingBtn.addEventListener('click', () => {
-          const base64 = els.drawingCanvas.toDataURL('image/png');
-          sendImageAsFile(base64, 'drawing.png');
-          closeModals();
-          drawingActive = false;
-        });
-        
-        els.cancelDrawingBtn.addEventListener('click', () => {
-          closeModals();
-          drawingActive = false;
-        });
-      }
-
-      function startDrawingSession(isJoin = false) {
-        const chat = getActiveChat();
-        if(!chat) return;
-        
-        openModal(els.drawingModal);
-        els.drawingCanvas.width = els.canvasContainer.offsetWidth;
-        els.drawingCanvas.height = els.canvasContainer.offsetHeight;
-        drawCtx.clearRect(0, 0, els.drawingCanvas.width, els.drawingCanvas.height);
-        drawCtx.fillStyle = "white";
-        drawCtx.fillRect(0,0,els.drawingCanvas.width, els.drawingCanvas.height);
-        
-        drawingActive = true;
-        
-        if(!isJoin) {
-          sendSignal(chat, { type: 'drawing_invite' });
-          addSystemMessage(chat, "Started drawing session. Waiting for peer...");
-        } else {
-          drawColor = '#FF453A'; 
-        }
-      }
-
-      function drawRemoteStroke(x, y, lx, ly, color) {
-        if(!drawingActive) return;
-        const w = els.drawingCanvas.width;
-        const h = els.drawingCanvas.height;
-        drawCtx.beginPath();
-        drawCtx.moveTo(lx * w, ly * h);
-        drawCtx.lineTo(x * w, y * h);
-        drawCtx.strokeStyle = color;
-        drawCtx.lineWidth = 3;
-        drawCtx.lineCap = 'round';
-        drawCtx.stroke();
-      }
-
-      function showRemoteCursor(x, y, name) {
-        if(!drawingActive) return;
-        let cursor = document.getElementById('cursor-' + name);
-        if(!cursor) {
-          cursor = document.createElement('div');
-          cursor.id = 'cursor-' + name;
-          cursor.className = 'peer-cursor';
-          cursor.textContent = name;
-          els.canvasContainer.appendChild(cursor);
-        }
-        cursor.style.left = (x * 100) + '%';
-        cursor.style.top = (y * 100) + '%';
-      }
-
-      function sendImageAsFile(base64, name) {
-        const chat = getActiveChat();
-        if(!chat) return;
-        
-        const meta = { name: name, size: 'Unknown', type: 'image/png', hash: 'generated' };
-        const payload = { type: 'file', content: base64, meta: meta, ghost: ghostMode };
-        const timestamp = new Date().toISOString();
-        const msgId = 'msg-' + Math.random().toString(36).substr(2,9);
-        
-        const msgObj = { id: msgId, chatId: chat.id, from: 'me', type: 'file', content: base64, meta: meta, timestamp: timestamp, ghost: ghostMode, status: 'pending' };
-        chat.messages.push(msgObj);
-        saveMessageToDB(msgObj);
-        appendMessageToUI(msgObj);
-        
-        encryptPayload(chat.passphrase, payload).then(pkg => {
-           sendFileChunked(chat, pkg, timestamp, 'me', msgObj);
-        });
-      }
-
-      // --- FILE HANDLING (CHUNKED) ---
-      async function handleFileUpload(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-
-        const arrayBuffer = await file.arrayBuffer();
-        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-        const fileHash = buf2hex(hashBuffer);
-
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const base64 = ev.target.result;
-          const chat = getActiveChat();
-          if(!chat) return;
-
-          const meta = {
-            name: file.name,
-            size: formatBytes(file.size),
-            type: file.type,
-            hash: fileHash
-          };
-
-          const payload = { type: 'file', content: base64, meta: meta, ghost: ghostMode };
-          const timestamp = new Date().toISOString();
-          const msgId = 'msg-' + Math.random().toString(36).substr(2,9);
-
-          const msgObj = {
-            id: msgId,
-            chatId: chat.id,
-            from: 'me',
-            type: 'file',
-            content: base64,
-            meta: meta,
-            timestamp: timestamp,
-            ghost: ghostMode,
-            status: 'pending',
-            progress: 0
-          };
-          
-          chat.messages.push(msgObj);
-          saveMessageToDB(msgObj);
-          appendMessageToUI(msgObj);
-
-          encryptPayload(chat.passphrase, payload).then(pkg => {
-             sendFileChunked(chat, pkg, timestamp, 'me', msgObj);
-          });
-        };
-        reader.readAsDataURL(file);
-        e.target.value = '';
-      }
-
-      function sendFileChunked(chat, pkg, timestamp, sender, msgObj) {
-        const fullData = JSON.stringify(pkg);
-        const totalSize = fullData.length;
-        const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
-        const fileId = 'f-' + Date.now() + '-' + Math.random().toString(36).substr(2,5);
-
-        let currentChunk = 0;
-
-        async function sendNextChunk() {
-          if (currentChunk >= totalChunks) {
-            msgObj.status = 'sent';
-            msgObj.progress = 100;
-            updateProgressUI(msgObj);
-            return;
-          }
-
-          // Backpressure control
-          const dc = (chat.conn && (chat.conn._dc || chat.conn.dataChannel)) ? (chat.conn._dc || chat.conn.dataChannel) : null;
-          if (dc && typeof dc.bufferedAmount === 'number' && dc.bufferedAmount > 1024 * 1024) {
-              setTimeout(sendNextChunk, 50);
-              return;
-          }
-
-          const start = currentChunk * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, totalSize);
-          const chunkData = fullData.substring(start, end);
-
-          const chunkMsg = {
-            kind: 'file_chunk',
-            fileId: fileId,
-            current: currentChunk,
-            total: totalChunks,
-            data: chunkData,
-            timestamp: timestamp,
-            senderName: myId
-          };
-
-          if(chat.type === 'direct' && chat.conn && chat.conn.open) {
-            chat.conn.send(chunkMsg);
-          } else if (chat.type === 'group') {
-             chat.participants.forEach(pid => {
-                const c = chat.connections[pid];
-                if(c && c.open) c.send(chunkMsg);
-             });
-          }
-
-          currentChunk++;
-          msgObj.progress = Math.floor((currentChunk / totalChunks) * 100);
-          updateProgressUI(msgObj);
-
-          setTimeout(sendNextChunk, 5); 
-        }
-
-        sendNextChunk();
-      }
-
-      function handleFileChunk(chat, data) {
-        if(!settings.allowFiles) {
-          sendSignal(chat, { type: 'file_rejected' });
-          return;
-        }
-
-        if (!incomingFiles[chat.id]) incomingFiles[chat.id] = {};
-
-        if(!incomingFiles[chat.id][data.fileId]) {
-          incomingFiles[chat.id][data.fileId] = {
-            chunks: [],
-            receivedCount: 0,
-            totalChunks: data.total,
-            timestamp: data.timestamp,
-            senderName: data.senderName,
-            msgObj: null
-          };
-          
-          const msgObj = {
-            id: 'msg-' + Math.random().toString(36).substr(2,9),
-            chatId: chat.id,
-            from: 'them',
-            senderName: data.senderName,
-            type: 'file_transfer', 
-            progress: 0,
-            timestamp: data.timestamp,
-            status: 'receiving'
-          };
-          incomingFiles[chat.id][data.fileId].msgObj = msgObj;
-          chat.messages.push(msgObj);
-          if(activeChatId === chat.id) appendMessageToUI(msgObj);
-        }
-
-        const fileData = incomingFiles[chat.id][data.fileId];
-        fileData.chunks[data.current] = data.data;
-        fileData.receivedCount++;
-        
-        fileData.msgObj.progress = Math.floor((fileData.receivedCount / fileData.totalChunks) * 100);
-        if(activeChatId === chat.id) updateProgressUI(fileData.msgObj);
-
-        if(fileData.receivedCount === fileData.totalChunks) {
-          const fullString = fileData.chunks.join('');
-          try {
-            const pkg = JSON.parse(fullString);
-            decryptMessage(chat.passphrase, pkg).then(payload => {
-              if(!payload) return;
-              
-              const finalMsg = fileData.msgObj;
-              finalMsg.type = payload.type;
-              finalMsg.content = payload.content;
-              finalMsg.meta = payload.meta;
-              finalMsg.ghost = payload.ghost;
-              finalMsg.status = 'received';
-              
-              saveMessageToDB(finalMsg); // Persist
-              delete incomingFiles[chat.id][data.fileId];
-              if(activeChatId === chat.id) renderMessages(chat); 
-            });
-          } catch(e) { console.error("Reassembly failed", e); }
-        }
-      }
-
-      function formatBytes(bytes, decimals = 2) {
-        if (!+bytes) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-      }
-
-      // --- CRYPTO ---
-      async function encryptPayload(pass, payload) {
-        const key = await getKey(pass);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const enc = new TextEncoder();
-        const data = enc.encode(JSON.stringify(payload));
-        const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, data);
-        return { iv: buf2hex(iv), data: buf2hex(ciphertext) };
-      }
-
-      async function decryptMessage(passphrase, pkg) {
-        try {
-          const key = await getKey(passphrase);
-          const iv = hex2buf(pkg.iv);
-          const data = hex2buf(pkg.data);
-          const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, data);
-          const dec = new TextDecoder();
-          return JSON.parse(dec.decode(decrypted));
-        } catch(e) { return { type: 'text', content: '🔒 Decryption failed.' }; }
-      }
-
-      async function getKey(pass) {
-        const enc = new TextEncoder();
-        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pass), { name: "PBKDF2" }, false, ["deriveKey"]);
-        return crypto.subtle.deriveKey(
-          { name: "PBKDF2", salt: enc.encode("pepechat_salt"), iterations: 100000, hash: "SHA-256" }, 
-          keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
-        );
-      }
-
-      // --- UI RENDERING ---
-      function renderChatList() {
-        els.chatList.innerHTML = '';
-        chats.forEach(chat => {
-          const div = document.createElement('div');
-          div.className = `chat-item ${activeChatId === chat.id ? 'active' : ''}`;
-          
-          let statusClass = '';
-          let statusText = 'Offline';
-          
-          if (chat.type === 'group') {
-              statusClass = 'online';
-              statusText = 'Group';
-          } else {
-              if (chat.conn && chat.conn.open) {
-                  statusClass = 'online';
-                  statusText = 'Online';
-              } else if (chat.iceState === 'checking' || chat.dialInProgress) {
-                  statusClass = 'connecting';
-                  statusText = 'Connecting...';
-              } else if (chat.iceState === 'failed') {
-                  statusClass = 'failed';
-                  statusText = 'Failed';
-              }
-          }
-
-          div.innerHTML = `
-            <div class="avatar">${chat.name.substring(0,2).toUpperCase()}</div>
-            <div style="flex:1; overflow:hidden;">
-              <div style="display:flex; justify-content:space-between;">
-                <span style="font-weight:600; font-size:14px;">${chat.name}</span>
-                ${chat.unread > 0 ? `<span style="background:var(--danger); color:white; border-radius:10px; padding:0 6px; font-size:10px;">${chat.unread}</span>` : ''}
-              </div>
-              <div style="font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                ${statusText}
-              </div>
-            </div>
-            <div class="status-dot ${statusClass}"></div>
-          `;
-          div.onclick = () => setActiveChat(chat.id);
-          els.chatList.appendChild(div);
-        });
-      }
-
-      function setActiveChat(id) {
-        // Fix D: Close sidebar immediately on mobile
-        if (window.innerWidth <= 768) {
-          els.sidebar.classList.remove('open');
-          els.sidebarOverlay.classList.remove('visible');
-        }
-
-        activeChatId = id;
-        const chat = chats.get(id);
-        if(!chat) {
-          els.chatTitle.textContent = "No Chat Selected";
-          els.messages.innerHTML = '';
-          return;
-        }
-        chat.unread = 0;
-        els.chatTitle.textContent = chat.name;
-        
-        if(chat.type === 'group') {
-          els.chatStatus.innerHTML = `<span style="color:var(--accent); cursor:pointer;" onclick="openModal(document.getElementById('groupAddMemberModal'))">+ Add Member</span>`;
-        } else {
-          updateChatStatus(chat);
-        }
-        
-        renderMessages(chat);
-        renderChatList();
-      }
-
-      function updateChatStatus(chat) {
-        if(activeChatId !== chat.id || chat.type === 'group') return;
-        
-        let text = "Offline";
-        let color = "var(--text-muted)";
-        let showReconnect = false;
-        
-        if (chat.conn && chat.conn.open) {
-            text = "Online · Encrypted";
-            color = "var(--success)";
-        } else if (chat.iceState === 'checking' || chat.dialInProgress) {
-            text = "Connecting (ICE)...";
-            color = "var(--warning)";
-        } else if (chat.iceState === 'failed') {
-            text = "Connection Failed (NAT). TURN likely required.";
-            color = "var(--danger)";
-            showReconnect = true;
-        }
-
-        els.chatStatus.textContent = text;
-        els.chatStatus.style.color = color;
-        els.reconnectBtn.style.display = showReconnect ? 'block' : 'none';
-      }
-
-      function renderMessages(chat) {
-        els.messages.innerHTML = '';
-        chat.messages.forEach(appendMessageToUI);
-      }
-
-      function appendMessageToUI(msg) {
-        const div = document.createElement('div');
-        if (msg.from === 'system') {
-            div.className = 'msg system';
-            div.textContent = msg.content;
-            els.messages.appendChild(div);
-            return;
-        }
-
-        div.className = `msg ${msg.from === 'me' ? 'out' : 'in'} ${msg.ghost ? 'ghost-fade' : ''}`;
-        
-        if(!msg.id) msg.id = 'msg-' + Math.random().toString(36).substr(2,9);
-        div.id = msg.id;
-
-        let contentHtml = '';
-        
-        if(msg.type === 'text') {
-          contentHtml = sanitize(msg.content);
-        } else if (msg.type === 'audio') {
-           const audioId = 'audio-' + msg.id;
-           contentHtml = `
-             <div class="audio-visualizer" id="${audioId}">
-               <i class="fa-solid fa-play play-icon" onclick="playAudioMsg('${msg.content}', '${audioId}')"></i>
-               <canvas class="waveform-canvas"></canvas>
-             </div>
-           `;
-           setTimeout(() => drawWaveform(msg.content, audioId), 100);
-        } else if (msg.type === 'morse') {
-           const seqStr = JSON.stringify(msg.content);
-           contentHtml = `
-             <div style="display:flex; align-items:center; gap:10px;">
-               <i class="fa-solid fa-teletype"></i>
-               <span>Morse Sequence (${msg.content.length} taps)</span>
-               <i class="fa-solid fa-play play-icon" onclick='playMorseSequence(${seqStr})'></i>
-             </div>
-           `;
-        } else if (msg.type === 'file') {
-          const fileId = 'file-' + Math.random().toString(36).substr(2, 9);
-          window[fileId] = { content: msg.content, meta: msg.meta };
-          
-          const isImg = msg.meta.type.startsWith('image/');
-          
-          contentHtml = `
-            <div class="file-card">
-              <div class="file-header">
-                <i class="fa-solid ${isImg ? 'fa-image' : 'fa-file'}"></i>
-                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sanitize(msg.meta.name)}</span>
-                <i class="fa-solid fa-circle-info file-info-icon" onclick="showFileInfo('${fileId}')"></i>
-              </div>
-              <div style="font-size:10px; color:#aaa;">${msg.meta.size}</div>
-              <div class="file-actions">
-                ${isImg ? `<button class="file-btn-small" onclick="previewFile('${fileId}')"><i class="fa-solid fa-eye"></i> Preview</button>` : ''}
-                <button class="file-btn-small" onclick="downloadFile('${fileId}')"><i class="fa-solid fa-download"></i> Download</button>
-              </div>
-              <div id="preview-${fileId}" style="display:none; margin-top:5px;"></div>
-            </div>
-          `;
-        } else if (msg.type === 'file_transfer') {
-          contentHtml = `
-            <div class="file-card">
-              <div class="file-header">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                <span>Receiving File...</span>
-              </div>
-              <div class="progress-track"><div class="progress-fill" style="width: ${msg.progress}%"></div></div>
-            </div>
-          `;
-        }
-
-        if(msg.from === 'me' && msg.status === 'pending' && (msg.type === 'file' || msg.type === 'audio')) {
-           contentHtml += `<div class="progress-track"><div class="progress-fill" style="width: ${msg.progress || 0}%"></div></div>`;
-        }
-
-        const senderInfo = (msg.from === 'them' && msg.senderName) ? `<div style="font-size:10px; color:var(--accent); margin-bottom:2px;">${sanitize(msg.senderName)}</div>` : '';
-        
-        let statusIcon = '';
-        if(msg.from === 'me') {
-          if(msg.status === 'pending') statusIcon = '<i class="fa-regular fa-clock"></i>';
-          else if(msg.status === 'sent') statusIcon = '<i class="fa-solid fa-check"></i>';
-          else if(msg.status === 'failed') statusIcon = '<i class="fa-solid fa-circle-exclamation" style="color:red"></i>';
-        }
-
-        const copyBtn = msg.type === 'text' ? `<i class="fa-regular fa-copy copy-btn" onclick="copyToClipboard('${msg.id}')" title="Copy Text"></i>` : '';
-
-        div.innerHTML = `
-          ${senderInfo}
-          ${contentHtml}
-          <div class="msg-meta">
-            ${copyBtn}
-            ${msg.ghost ? '👻 ' : ''}
-            <span class="msg-status">${statusIcon}</span>
-            ${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-          </div>
-        `;
-        
-        els.messages.appendChild(div);
-        els.messages.scrollTop = els.messages.scrollHeight;
-
-        if(msg.ghost) {
-          setTimeout(() => { if(div.parentNode) div.parentNode.removeChild(div); }, 30000);
-        }
-      }
-
-      function updateProgressUI(msg) {
-        const el = document.getElementById(msg.id);
-        if(!el) return;
-        const bar = el.querySelector('.progress-fill');
-        if(bar) bar.style.width = msg.progress + '%';
-        
-        if(msg.status === 'sent' && msg.from === 'me') {
-           setTimeout(() => {
-             const track = el.querySelector('.progress-track');
-             if(track) track.style.display = 'none';
-             const status = el.querySelector('.msg-status');
-             if(status) status.innerHTML = '<i class="fa-solid fa-check"></i>';
-           }, 500);
-        }
-      }
-
-      // --- AUDIO VISUALIZER LOGIC ---
-      window.playAudioMsg = (src, containerId) => {
-        const audio = new Audio(src);
-        const container = document.getElementById(containerId);
-        const icon = container.querySelector('.play-icon');
-        
-        icon.className = "fa-solid fa-stop play-icon";
-        icon.onclick = () => { audio.pause(); audio.currentTime = 0; };
-        
-        audio.play();
-        audio.onended = () => {
-           icon.className = "fa-solid fa-play play-icon";
-           icon.onclick = () => playAudioMsg(src, containerId);
-        };
+      if (seq % 16 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+    sendJson(conn, { t:'fend', id });
+    log('Drawing sent as PNG.', 'good');
+  }
+
+  // =========================
+  // Controls
+  // =========================
+  function updateEncPill() {
+    $('btnToggleEnc').textContent = `Encryption: ${encryptionOn ? 'ON' : 'OFF'}`;
+    setPill('dotEnc','encState', encryptionOn ? 'good' : 'warn', `Encryption: ${encryptionOn ? 'ON' : 'OFF'}`);
+  }
+
+  function exportLog() {
+    const content = logLines.map(x => x.line).join('\n');
+    const blob = new Blob([content], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pepechat-log-${APP_VERSION}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  function resetApp() {
+    if (peer) {
+      try { peer.destroy(); } catch {}
+      peer = null;
+    }
+    chats.clear();
+    activePeerId = null;
+    // keep key by default; user can rotate
+    LS.del('pepechat_chats');
+    log('App reset: chats cleared. (Encryption key kept.)', 'warn');
+    renderChatList();
+    renderChat();
+    setPill('dotPeer','peerState','warn','Not started');
+  }
+
+  // =========================
+  // Init UI + load persisted data
+  // =========================
+  function refreshIceDropdown() {
+    runtimeIceProfiles = buildRuntimeIceProfiles();
+    const sel = $('iceProfile');
+    sel.innerHTML = '';
+    runtimeIceProfiles.forEach((p, idx) => {
+      const o = document.createElement('option');
+      o.value = String(idx);
+      o.textContent = p.name;
+      sel.appendChild(o);
+    });
+    loadIceProfileIndex();
+    sel.value = String(Math.min(iceProfileIndex, runtimeIceProfiles.length-1));
+  }
+
+  function loadUiFromStorage() {
+    const custom = LS.get('pepechat_custom_ice', '');
+    $('customIce').value = custom || '';
+    const sig = loadSigSettings();
+    $('sigHost').value = sig.host;
+    $('sigPort').value = String(sig.port);
+    $('sigPath').value = sig.path;
+    $('sigSecure').value = String(!!sig.secure);
+
+    encryptionOn = LS.get('pepechat_enc_on', true);
+    updateEncPill();
+  }
+
+  function bindUi() {
+    $('btnRandom').addEventListener('click', () => {
+      $('myId').value = randomUserId();
+    });
+
+    $('btnStart').addEventListener('click', async () => {
+      await startPeer(null);
+    });
+
+    $('btnConnect').addEventListener('click', () => {
+      const id = $('connectId').value.trim();
+      connectWithIceFallback(id);
+    });
+
+    $('btnQR').addEventListener('click', () => {
+      if ($('qrArea').style.display === 'none') openQrArea();
+      else closeQrArea();
+    });
+
+    $('btnCopyInvite').addEventListener('click', async () => {
+      const url = $('inviteUrl').value;
+      try { await navigator.clipboard.writeText(url); log('Invite URL copied.', 'good'); }
+      catch { log('Failed to copy to clipboard.', 'warn'); }
+    });
+
+    $('btnNewKey').addEventListener('click', () => rotateRoomKey());
+
+    $('btnToggleEnc').addEventListener('click', () => {
+      encryptionOn = !encryptionOn;
+      LS.set('pepechat_enc_on', encryptionOn);
+      updateEncPill();
+      log(`Encryption toggled: ${encryptionOn ? 'ON' : 'OFF'}`);
+    });
+
+    $('btnRotateKey').addEventListener('click', () => rotateRoomKey());
+
+    $('btnSend').addEventListener('click', sendText);
+    $('msg').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendText();
+    });
+
+    $('btnSendFile').addEventListener('click', sendFile);
+
+    $('iceProfile').addEventListener('change', () => {
+      applyIceProfileByIndex(parseInt($('iceProfile').value,10) || 0, 'manual-select');
+    });
+
+    $('btnTryNextIce').addEventListener('click', () => {
+      runtimeIceProfiles = buildRuntimeIceProfiles();
+      const next = (iceProfileIndex + 1) % runtimeIceProfiles.length;
+      applyIceProfileByIndex(next, 'manual-next');
+      log('If a connection was failing, try reconnecting now.', 'warn');
+    });
+
+    $('btnIceProbe').addEventListener('click', probeCurrentIceProfile);
+
+    $('btnSaveCustomIce').addEventListener('click', () => {
+      LS.set('pepechat_custom_ice', $('customIce').value || '');
+      refreshIceDropdown();
+      applyIceProfileByIndex(0, 'custom-ice-saved');
+      log('Saved custom ICE. The "Custom" profiles are now available at the top.', 'good');
+    });
+
+    $('btnClearCustomIce').addEventListener('click', () => {
+      $('customIce').value = '';
+      LS.set('pepechat_custom_ice', '');
+      refreshIceDropdown();
+      applyIceProfileByIndex(0, 'custom-ice-cleared');
+      log('Cleared custom ICE.', 'warn');
+    });
+
+    $('btnSaveSig').addEventListener('click', () => {
+      const s = {
+        host: $('sigHost').value.trim() || '0.peerjs.com',
+        port: parseInt($('sigPort').value,10) || 443,
+        path: $('sigPath').value.trim() || '/',
+        secure: $('sigSecure').value === 'true'
       };
+      saveSigSettings(s);
+      log(`Saved signaling server settings: ${s.secure?'wss':'ws'}://${s.host}:${s.port}${s.path}`);
+      log('Restart PeerJS to apply signaling changes.', 'warn');
+    });
 
-      function drawWaveform(src, containerId) {
-        const container = document.getElementById(containerId);
-        if(!container) return;
-        const canvas = container.querySelector('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        
-        ctx.fillStyle = '#0A84FF';
-        const bars = 30;
-        const gap = 2;
-        const width = (canvas.width / bars) - gap;
-        
-        for(let i=0; i<bars; i++) {
-           const height = Math.random() * canvas.height * 0.8;
-           const y = (canvas.height - height) / 2;
-           ctx.fillRect(i * (width + gap), y, width, height);
-        }
-      }
+    $('btnResetSig').addEventListener('click', () => {
+      saveSigSettings({ host:'0.peerjs.com', port:443, path:'/', secure:true });
+      loadUiFromStorage();
+      log('Signaling settings reset to defaults. Restart PeerJS to apply.', 'warn');
+    });
 
-      window.copyToClipboard = (msgId) => {
-        const el = document.getElementById(msgId);
-        if(!el) return;
-        const clone = el.cloneNode(true);
-        const meta = clone.querySelector('.msg-meta');
-        const sender = clone.querySelector('div[style*="color:var(--accent)"]'); 
-        if(meta) meta.remove();
-        if(sender) sender.remove();
-        
-        const text = clone.innerText.trim();
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(() => {
-               const btn = el.querySelector('.copy-btn');
-               if(btn) {
-                 btn.classList.remove('fa-copy');
-                 btn.classList.add('fa-check');
-                 setTimeout(() => {
-                   btn.classList.remove('fa-check');
-                   btn.classList.add('fa-copy');
-                 }, 1000);
-               }
-            });
-        }
-      };
+    $('btnExportLog').addEventListener('click', exportLog);
+    $('btnResetApp').addEventListener('click', resetApp);
 
-      // --- FILE ACTIONS ---
-      window.showFileInfo = (fileId) => {
-        const data = window[fileId];
-        if(!data) return;
-        els.fiName.textContent = data.meta.name;
-        els.fiType.textContent = data.meta.type;
-        els.fiSize.textContent = data.meta.size;
-        els.fiHash.textContent = data.meta.hash;
-        openModal(els.fileInfoModal);
-      };
+    // Drawing modal
+    $('btnDraw').addEventListener('click', openDraw);
+    $('btnCloseDraw').addEventListener('click', closeDraw);
+    $('btnClearDraw').addEventListener('click', clearDraw);
+    $('btnSendDraw').addEventListener('click', async () => {
+      await sendDrawingAsPng();
+      closeDraw();
+    });
 
-      window.previewFile = (fileId) => {
-        const data = window[fileId];
-        const container = document.getElementById('preview-' + fileId);
-        if(!data || !container) return;
-        
-        if(container.style.display === 'none') {
-          container.innerHTML = `<img src="${data.content}" style="width:100%; border-radius:8px;">`;
-          container.style.display = 'block';
-        } else {
-          container.style.display = 'none';
-        }
-      };
+    // Close modal on backdrop click
+    $('drawModal').addEventListener('click', (e) => {
+      if (e.target === $('drawModal')) closeDraw();
+    });
+  }
 
-      window.downloadFile = (fileId) => {
-        const data = window[fileId];
-        if(!data) return;
-        const a = document.createElement('a');
-        a.href = data.content;
-        a.download = data.meta.name;
-        a.click();
-      };
+  // =========================
+  // Boot
+  // =========================
+  function boot() {
+    loadChatsFromStorage();
+    renderChatList();
+    renderChat();
 
-      function addSystemMessage(chat, text) {
-        if(!chat) return;
-        const msg = { from: 'system', type: 'text', content: text, timestamp: new Date().toISOString() };
-        chat.messages.push(msg);
-        if(activeChatId === chat.id) appendMessageToUI(msg);
-      }
+    loadUiFromStorage();
+    refreshIceDropdown();
 
-      // --- HELPERS ---
-      function sanitize(str) {
-        const temp = document.createElement('div');
-        temp.textContent = str;
-        return temp.innerHTML;
-      }
-      
-      window.openModal = (el) => { el.classList.add('open'); el.querySelector('.modal').style.transform = 'scale(1)'; };
-      window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('open')); };
-      
-      function showQrModal() {
-        if(!myId) return;
-        const chat = getActiveChat();
-        const key = chat ? chat.passphrase : 'changeme';
-        const encodedKey = b64urlEncodeUtf8(key);
-        const url = `${APP_URL}?connect=${encodeURIComponent(myId)}&key=${encodedKey}`;
-        
-        openModal(els.qrModal);
-        setTimeout(() => {
-          els.qrCanvas.innerHTML = '';
-          new QRCode(els.qrCanvas, { text: url, width: 200, height: 200 });
-          els.shareUrlInput.value = url;
-        }, 50);
-      }
-      
-      function generateRandomId() { return 'user-' + Math.floor(Math.random() * 100000); }
-      function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join(''); }
-      function hex2buf(hex) { return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))); }
-      
-      function saveStorage() {
-        const chatsArr = Array.from(chats.entries()).map(([k, v]) => {
-          const { conn, connections, messages, pendingMessages, ...rest } = v; 
-          return [k, rest];
-        });
-        const data = { myId, chats: chatsArr, settings };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-      
-      function loadStorage() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw) {
-          try {
-            const data = JSON.parse(raw);
-            if(data.settings) {
-              settings = data.settings;
-              els.secureSessionToggle.checked = settings.secureSession;
-              if(settings.allowFiles !== undefined) els.allowFilesToggle.checked = settings.allowFiles;
-              if(settings.turnUrl) els.turnUrlInput.value = settings.turnUrl;
-              if(settings.turnUser) els.turnUserInput.value = settings.turnUser;
-              if(settings.turnPass) els.turnPassInput.value = settings.turnPass;
-            }
-            if(data.chats) {
-              chats = new Map(data.chats);
-              chats.forEach(async c => { 
-                c.conn = null; 
-                c.connections = {}; 
-                c.unread = 0; 
-                c.messages = await loadMessagesFromDB(c.id); // Load from DB
-                c.pendingMessages = [];
-                c.lastSeen = 0;
-                c.iceState = 'new';
-                c.dialInProgress = false;
-              });
-            }
-          } catch(e) {}
-        }
-      }
+    // WebRTC availability
+    if (isWebrtcAvailable()) setPill('dotWebrtc','webrtcState','good','WebRTC: available');
+    else setPill('dotWebrtc','webrtcState','bad','WebRTC: unavailable');
 
-      function getActiveChat() {
-        return activeChatId ? chats.get(activeChatId) : null;
-      }
+    // Ensure key exists
+    ensureRoomKey();
+    updateEncPill();
 
-    })();
-  </script>
+    // Drawing init (fix: ensure drawCtx exists)
+    initDrawing();
 
+    // If URL requests auto-start (connect param), start peer with random id
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('connect') && !peer) {
+      $('myId').value = randomUserId();
+      startPeer(null);
+    }
+
+    log(`PepeChat ${APP_VERSION} loaded.`);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bindUi();
+    boot();
+  });
+
+})();
+</script>
 </body>
 </html>
