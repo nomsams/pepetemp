@@ -3,38 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS X | Titan Edition</title>
+    <title>PepeTalk OS X | Apex Edition</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- TITAN CORE DEPENDENCIES -->
+    <!-- APEX CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 
-         * 🏛️ THEME: TITAN DARK
-         * Enterprise-grade aesthetics.
+         * 🏛️ THEME: APEX DARK
+         * "Perfection is not when there is nothing more to add, but nothing left to take away."
          */
         :root {
-            --bg-root: #050505;
-            --bg-desktop: #0a0a0a;
-            --bg-window: #141414;
-            --bg-header: #1f1f1f;
-            --bg-panel: #1a1a1a;
-            --bg-input: #0f0f0f;
+            --bg-root: #000000;
+            --bg-desktop: #050505;
+            --bg-window: #121212;
+            --bg-header: #1a1a1a;
+            --bg-panel: #161616;
+            --bg-input: #0a0a0a;
             
-            --primary: #3b82f6; /* Enterprise Blue */
+            --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
-            --primary-glow: rgba(59, 130, 246, 0.5);
+            --primary-glow: rgba(59, 130, 246, 0.4);
             
             --accent: #8b5cf6;
             --success: #10b981;
@@ -43,14 +42,12 @@
             
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
-            --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(20, 20, 20, 0.7);
-            --blur: blur(20px);
+            --glass: rgba(18, 18, 18, 0.8);
+            --blur: blur(24px);
             
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+            --shadow-win: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
             
             --font-ui: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -78,76 +75,78 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-family: var(--font-mono); color: var(--primary);
         }
-        .boot-log { width: 300px; height: 150px; overflow: hidden; font-size: 0.8rem; opacity: 0.7; margin-top: 20px; text-align: left; }
-        .boot-line { margin-bottom: 2px; white-space: nowrap; overflow: hidden; animation: type 0.1s steps(40, end); }
+        .boot-log { width: 320px; height: 200px; overflow: hidden; font-size: 0.8rem; opacity: 0.8; margin-top: 30px; text-align: left; border-left: 2px solid var(--primary-dim); padding-left: 15px; }
+        .boot-line { margin-bottom: 4px; white-space: nowrap; overflow: hidden; animation: type 0.05s steps(20, end); }
         .loader-ring {
-            width: 60px; height: 60px; border: 4px solid rgba(59, 130, 246, 0.1);
-            border-left-color: var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width: 80px; height: 80px; border: 2px solid rgba(59, 130, 246, 0.1);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- DESKTOP & NEURAL GRID --- */
         #desktop {
             position: relative; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+            background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
             overflow: hidden; z-index: var(--z-desktop);
         }
-        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.3; pointer-events: none; }
+        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.2; pointer-events: none; }
         
         /* Desktop Icons (Grid System) */
         .icon-grid {
             position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 60px);
-            padding: 20px; display: grid;
+            padding: 30px; display: grid;
             grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            grid-auto-rows: 110px; gap: 10px; align-content: start;
+            grid-auto-rows: 110px; gap: 15px; align-content: start;
             pointer-events: none;
         }
         .app-icon {
             pointer-events: auto;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s ease; padding: 10px; border-radius: 16px;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); padding: 10px; border-radius: 16px;
             border: 1px solid transparent;
         }
-        .app-icon:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); transform: translateY(-2px); }
+        .app-icon:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); transform: translateY(-4px); }
         .app-icon:active { transform: scale(0.95); }
         .icon-img { 
-            width: 54px; height: 54px; border-radius: 14px; 
-            background: linear-gradient(135deg, #222, #333);
+            width: 58px; height: 58px; border-radius: 16px; 
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
             display: flex; justify-content: center; align-items: center;
             font-size: 1.8rem; color: var(--text-main);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            margin-bottom: 8px; position: relative; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            margin-bottom: 10px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .icon-img::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom right, rgba(255,255,255,0.1), transparent); }
-        .app-label { font-size: 0.8rem; text-shadow: 0 2px 4px black; font-weight: 500; letter-spacing: 0.3px; color: #eee; }
+        .icon-img i { z-index: 2; position: relative; }
+        .icon-img::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom right, rgba(255,255,255,0.15), transparent); z-index: 1; }
+        .app-label { font-size: 0.85rem; text-shadow: 0 2px 4px black; font-weight: 500; letter-spacing: 0.3px; color: #eee; }
 
-        /* --- WINDOW MANAGER (TITAN ENGINE) --- */
+        /* --- WINDOW MANAGER (APEX ENGINE) --- */
         .window {
             position: absolute; background: var(--bg-window);
             border: var(--border); border-radius: 12px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-win);
             display: flex; flex-direction: column;
             min-width: 350px; min-height: 250px;
             overflow: hidden; resize: both;
             animation: winOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: var(--z-window);
         }
-        .window.active { border-color: rgba(255,255,255,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,0.05), var(--shadow-lg); }
+        .window.active { border-color: rgba(255,255,255,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,0.05), var(--shadow-win); }
         .window.minimized { opacity: 0; transform: scale(0.8) translateY(200px); pointer-events: none; transition: 0.3s; }
         .window.maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 50px) !important; border-radius: 0; resize: none; }
 
         .win-bar {
-            height: 40px; background: var(--bg-header);
+            height: 42px; background: var(--bg-header);
             border-bottom: var(--border);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 12px; cursor: grab; user-select: none;
+            padding: 0 14px; cursor: grab; user-select: none;
         }
         .win-bar:active { cursor: grabbing; }
         .win-title { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #ddd; }
         .win-controls { display: flex; gap: 8px; }
         .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; position: relative; }
-        .win-btn:hover::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.2); border-radius:50%; }
+        .win-btn:hover { transform: scale(1.1); }
         .btn-close { background: #ff5f57; }
         .btn-min { background: #febc2e; }
         .btn-max { background: #28c840; }
@@ -158,7 +157,7 @@
         /* --- TASKBAR (DOCK) --- */
         #taskbar {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
-            background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px);
             border-top: var(--border);
             display: flex; align-items: center; padding: 0 15px; gap: 15px;
             z-index: var(--z-taskbar);
@@ -170,13 +169,13 @@
         }
         .start-menu-btn:hover { background: rgba(255,255,255,0.1); box-shadow: 0 0 15px var(--primary-dim); }
         
-        .task-strip { flex: 1; display: flex; gap: 4px; overflow-x: auto; height: 100%; align-items: center; }
+        .task-strip { flex: 1; display: flex; gap: 6px; overflow-x: auto; height: 100%; align-items: center; }
         .task-tab {
-            padding: 0 12px; background: rgba(255,255,255,0.03);
+            padding: 0 14px; background: rgba(255,255,255,0.03);
             border-radius: 6px; color: var(--text-muted); font-size: 0.8rem;
             cursor: pointer; display: flex; align-items: center; gap: 8px;
             transition: 0.2s; border-bottom: 2px solid transparent; white-space: nowrap;
-            height: 32px; max-width: 150px; overflow: hidden;
+            height: 34px; max-width: 160px; overflow: hidden;
         }
         .task-tab:hover { background: rgba(255,255,255,0.08); color: white; }
         .task-tab.active { background: rgba(255,255,255,0.1); color: white; border-bottom-color: var(--primary); }
@@ -192,7 +191,7 @@
         .cmd-center { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
         .cmd-btn { 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
-            color: #ccc; padding: 8px 12px; border-radius: 6px; cursor: pointer; 
+            color: #ccc; padding: 10px 12px; border-radius: 6px; cursor: pointer; 
             display: flex; align-items: center; gap: 10px; font-size: 0.8rem; transition: 0.2s;
         }
         .cmd-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); color: white; }
@@ -257,6 +256,46 @@
         .code-layout { display: flex; flex-direction: column; height: 100%; }
         .code-toolbar { padding: 8px; background: var(--bg-header); border-bottom: var(--border); display: flex; gap: 10px; }
         .code-editor { flex: 1; background: #1e1e1e; color: #d4d4d4; border: none; padding: 15px; font-family: 'JetBrains Mono', monospace; resize: none; font-size: 0.9rem; line-height: 1.5; }
+
+        /* --- APP: TELEGRAPH (MORSE) --- */
+        .telegraph-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #111; gap: 20px; padding: 20px; position: relative; }
+        .haptic-key {
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(#2c2c2e, #000); border: 6px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            color: #555; font-size: 4rem; transition: 0.1s;
+            user-select: none; -webkit-user-select: none;
+        }
+        .haptic-key:active, .haptic-key.pressed { transform: scale(0.96); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .morse-stream { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); height: 50px; letter-spacing: 4px; text-align: center; text-shadow: 0 0 10px var(--primary-dim); }
+        .morse-translation { font-family: var(--font-ui); font-size: 1.2rem; color: var(--accent); height: 30px; opacity: 0.9; }
+        
+        .morse-info-btn { position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #444; color: #888; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+
+        /* Morse Reference Modal */
+        .morse-ref-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 10; display: none;
+            flex-direction: column; padding: 20px; overflow-y: auto;
+        }
+        .morse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 15px; }
+        .morse-item { background: #222; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .morse-char { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+        .morse-val { font-family: monospace; font-size: 0.9rem; color: #aaa; }
+
+        /* Spoiler for Morse Translation */
+        .spoiler-box {
+            background: #222; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 5px;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .spoiler-content { filter: blur(8px); transition: 0.5s; opacity: 0.5; }
+        .spoiler-label { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 0.7rem; color: #aaa; font-weight: bold; letter-spacing: 1px; pointer-events: none;
+        }
+        .spoiler-box.revealed .spoiler-content { filter: blur(0); opacity: 1; }
+        .spoiler-box.revealed .spoiler-label { display: none; }
 
         /* --- SECURE KEYBOARD (MOBILE) --- */
         #secure-kb {
@@ -332,7 +371,7 @@
 
     <!-- BOOT LAYER -->
     <div id="boot-layer">
-        <div class="bios-logo"><i class="fas fa-shield-alt"></i></div>
+        <div class="bios-logo" style="font-size:4rem; margin-bottom:20px; color:var(--primary)"><i class="fas fa-shield-alt"></i></div>
         <div class="boot-log" id="boot-log"></div>
         <div class="loader-ring"></div>
     </div>
@@ -363,8 +402,12 @@
                 <div class="icon-img" style="color:#ffd60a"><i class="fas fa-pen-nib"></i></div>
                 <div class="app-label">Canvas</div>
             </div>
+            <div class="app-icon" onclick="OS.WM.open('telegraph')">
+                <div class="icon-img" style="color:#ff9f0a"><i class="fas fa-broadcast-tower"></i></div>
+                <div class="app-label">Telegraph</div>
+            </div>
             <div class="app-icon" onclick="OS.WM.open('files')">
-                <div class="icon-img" style="color:#ff9f0a"><i class="fas fa-folder-open"></i></div>
+                <div class="icon-img" style="color:#00d2ff"><i class="fas fa-folder-open"></i></div>
                 <div class="app-label">Files</div>
             </div>
             <div class="app-icon" onclick="OS.WM.open('settings')">
@@ -434,7 +477,7 @@
                 </div>
                 <div class="chat-input-bar">
                     <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
-                    <input type="text" class="chat-input" id="chat-input" placeholder="Message..." autocomplete="off">
+                    <textarea class="chat-input" id="chat-input" placeholder="Message... (Enter to send)" autocomplete="off"></textarea>
                     <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
                     <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -489,7 +532,47 @@
         </div>
     </template>
 
-    <!-- 5. SETTINGS -->
+    <!-- 5. TELEGRAPH -->
+    <template id="tpl-telegraph">
+        <div class="telegraph-ui">
+            <button class="morse-info-btn" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info"></i></button>
+            <div class="morse-stream" id="morse-display"></div>
+            <div class="morse-translation" id="morse-transcription"></div>
+            <div class="haptic-key" id="telegraph-key"
+                 onmousedown="OS.Apps.Telegraph.down()" 
+                 onmouseup="OS.Apps.Telegraph.up()" 
+                 onmouseleave="OS.Apps.Telegraph.up()"
+                 ontouchstart="OS.Apps.Telegraph.down()"
+                 ontouchend="OS.Apps.Telegraph.up()">
+                <i class="fas fa-fingerprint"></i>
+            </div>
+            <div style="color:#666; text-align:center; margin-top:20px;">
+                TAP = DOT | HOLD = DASH<br>
+                <span style="font-size:0.8rem; color:#444;">Audio Auto-Sent</span>
+            </div>
+            <!-- Reference Overlay -->
+            <div class="morse-ref-overlay" id="morse-ref">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Morse Reference</h3>
+                    <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="morse-grid" id="morse-grid-content"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 6. FILES -->
+    <template id="tpl-files">
+        <div class="scroll-wrap" style="padding:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
+                <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
+                    <i class="fas fa-hdd" style="font-size:3rem;"></i><br>VFS Empty
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 7. SETTINGS -->
     <template id="tpl-settings">
         <div class="scroll-wrap" style="padding:20px;">
             <h3 style="border-bottom:1px solid #333; padding-bottom:10px;">Network Identity</h3>
@@ -506,18 +589,7 @@
         </div>
     </template>
 
-    <!-- 6. FILES -->
-    <template id="tpl-files">
-        <div class="scroll-wrap" style="padding:20px;">
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
-                <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
-                    <i class="fas fa-hdd" style="font-size:3rem;"></i><br>VFS Empty
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <!-- 7. WHITEBOARD -->
+    <!-- 8. WHITEBOARD -->
     <template id="tpl-whiteboard">
         <div style="display:flex; flex-direction:column; height:100%;">
             <div style="flex:1; position:relative; background:#111; cursor:crosshair;" id="wb-wrap">
@@ -530,6 +602,7 @@
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ffffff')"><i class="fas fa-circle" style="color:#ffffff"></i></button>
                 <div style="width:1px; height:20px; background:#444;"></div>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.clear()"><i class="fas fa-trash"></i></button>
+                <button class="btn-icon" onclick="OS.Apps.Whiteboard.save()"><i class="fas fa-save"></i></button>
             </div>
         </div>
     </template>
@@ -542,19 +615,22 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS X - TITAN EDITION
-         * "Too big to fail."
+         * 🍓 PEPETALK OS X - APEX EDITION
+         * "The final word in browser-based communication."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, call: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false, fs: [] },
+            State: { peerId: null, conn: null, call: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false, fs: {} },
 
             // --- KERNEL BOOT ---
             init: async () => {
                 OS.State.isMobile = window.innerWidth < 768;
                 if(OS.State.isMobile) document.body.classList.add('mobile-mode');
                 
+                // Init Virtual File System
+                OS.State.fs = { '/': { type: 'dir', children: { 'home': { type: 'dir', children: { 'readme.txt': { type: 'file', content: 'Welcome to PepeTalk OS X.' } } } } } };
+
                 // Boot Sequence
                 const log = document.getElementById('boot-log');
                 const msgs = ["INITIALIZING KERNEL...", "MOUNTING VFS...", "LOADING DRIVERS...", "STARTING NEURAL GRID...", "SYSTEM READY."];
@@ -581,6 +657,13 @@
                 await OS.Security.init();
                 OS.Net.init();
                 OS.UI.clock();
+                
+                // Global Event Delegation for Spoiler Reveals
+                document.addEventListener('click', (e) => {
+                    if(e.target.closest('.spoiler-box')) {
+                        e.target.closest('.spoiler-box').classList.add('revealed');
+                    }
+                });
             },
 
             // --- WINDOW MANAGER ---
@@ -603,7 +686,7 @@
                         win.style.height = '500px';
                     }
 
-                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', files: 'File Manager', settings: 'Settings' };
+                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V6', files: 'File Manager', settings: 'Settings' };
 
                     win.innerHTML = `
                         <div class="win-bar" onmousedown="OS.WM.drag(event, '${app}')">
@@ -624,10 +707,24 @@
                     OS.WM.focus(app);
 
                     // App Init Hooks
-                    if(app === 'whiteboard') setTimeout(OS.Apps.Whiteboard.init, 100);
+                    if(app === 'whiteboard') {
+                        // Wait for DOM paint
+                        setTimeout(OS.Apps.Whiteboard.init, 100);
+                    }
                     if(app === 'settings') OS.Apps.Settings.render();
                     if(app === 'terminal') OS.Apps.Terminal.init();
-                    if(app === 'chat' && OS.State.isMobile) document.getElementById('kb-toggle').style.display = 'block';
+                    if(app === 'telegraph') OS.Apps.Telegraph.renderGrid();
+                    if(app === 'chat') {
+                        if(OS.State.isMobile) document.getElementById('kb-toggle').style.display = 'block';
+                        // Bind Enter Key
+                        const input = document.getElementById('chat-input');
+                        input.addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                OS.Apps.Chat.send();
+                            }
+                        });
+                    }
                 },
                 close: (app) => {
                     OS.UI.playSound('close');
@@ -653,7 +750,7 @@
                     const item = document.createElement('div');
                     item.className = 'task-tab active';
                     item.id = `task-${app}`;
-                    const icons = { chat: 'comment-dots', video: 'video', terminal: 'terminal', code: 'code', whiteboard: 'pen-nib', files: 'folder-open', settings: 'cog' };
+                    const icons = { chat: 'comment-dots', video: 'video', terminal: 'terminal', code: 'code', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
                     item.innerHTML = `<i class="fas fa-${icons[app]}"></i> <span>${title}</span>`;
                     item.onclick = () => OS.WM.focus(app);
                     bar.appendChild(item);
@@ -801,6 +898,7 @@
                         OS.Net.send('text', txt);
                         OS.Apps.Chat.render(txt, 'local');
                         el.value = '';
+                        el.focus();
                     },
                     render: (h, s) => {
                         const f = document.getElementById('chat-feed');
@@ -918,13 +1016,15 @@
                     exec: (cmd) => {
                         const args = cmd.split(' ');
                         switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot'); break;
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix'); break;
                             case 'clear': document.getElementById('term-out').innerHTML = '<div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div>'; OS.Apps.Terminal.init(); break;
                             case 'ping': OS.Apps.Terminal.log('pong'); break;
                             case 'echo': OS.Apps.Terminal.log(args.slice(1).join(' ')); break;
                             case 'date': OS.Apps.Terminal.log(new Date().toString()); break;
                             case 'whoami': OS.Apps.Terminal.log(OS.State.peerId); break;
                             case 'reboot': location.reload(); break;
+                            case 'ls': OS.Apps.Terminal.log(Object.keys(OS.State.fs['/'].children).join('  ')); break;
+                            case 'matrix': OS.Apps.Terminal.log('Wake up, Neo...'); break;
                             default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
                         }
                     }
@@ -991,7 +1091,19 @@
                         const c = document.getElementById('wb-canvas');
                         const w = document.getElementById('wb-wrap');
                         if(!c || !w) return;
-                        new ResizeObserver(() => { c.width = w.clientWidth; c.height = w.clientHeight; }).observe(w);
+                        
+                        // Force resize immediately
+                        c.width = w.clientWidth; c.height = w.clientHeight;
+                        
+                        new ResizeObserver(() => { 
+                            // Preserve content on resize
+                            const temp = document.createElement('canvas');
+                            temp.width = c.width; temp.height = c.height;
+                            temp.getContext('2d').drawImage(c, 0, 0);
+                            c.width = w.clientWidth; c.height = w.clientHeight; 
+                            c.getContext('2d').drawImage(temp, 0, 0);
+                        }).observe(w);
+
                         const getPos = (e) => {
                             const r = c.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
@@ -1024,9 +1136,90 @@
                     clear: () => { OS.Apps.Whiteboard.clearLocal(); OS.Net.send('draw-clear', {}); },
                     clearLocal: () => { const c = document.getElementById('wb-canvas'); OS.Apps.Whiteboard.ctx.clearRect(0,0,c.width,c.height); },
                     save: () => {
-                        const u = document.getElementById('wb-canvas').toDataURL();
+                        const c = document.getElementById('wb-canvas');
+                        const u = c.toDataURL('image/png');
                         OS.Net.FileTransfer.send(OS.UI.dataURLtoFile(u, 'drawing.png'));
                         OS.UI.toast('Sent to Chat', 'success');
+                    }
+                },
+
+                Telegraph: {
+                    ctx: null, osc: null, dest: null, rec: null, chunks: [], startT: 0, seq: "", lastUp: 0,
+                    dict: { '.-':'A', '-...':'B', '-.-.':'C', '-..':'D', '.':'E', '..-.':'F', '--.':'G', '....':'H', '..':'I', '.---':'J', '-.-':'K', '.-..':'L', '--':'M', '-.':'N', '---':'O', '.--.':'P', '--.-':'Q', '.-.':'R', '...':'S', '-':'T', '..-':'U', '...-':'V', '.--':'W', '-..-':'X', '-.--':'Y', '--..':'Z', '.--.-':'Å', '.-.-':'Ä', '---.':'Ö' },
+                    renderGrid: () => {
+                        const grid = document.getElementById('morse-grid-content');
+                        if(!grid) return;
+                        grid.innerHTML = '';
+                        for(const [code, char] of Object.entries(OS.Apps.Telegraph.dict)) {
+                            const item = document.createElement('div');
+                            item.className = 'morse-item';
+                            item.innerHTML = `<div class="morse-char">${char}</div><div class="morse-val">${code}</div>`;
+                            grid.appendChild(item);
+                        }
+                    },
+                    toggleInfo: () => {
+                        const el = document.getElementById('morse-ref');
+                        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+                    },
+                    initAudio: () => {
+                        if(OS.Apps.Telegraph.ctx) return;
+                        OS.Apps.Telegraph.ctx = new AudioContext();
+                        OS.Apps.Telegraph.dest = OS.Apps.Telegraph.ctx.createMediaStreamDestination();
+                        OS.Apps.Telegraph.rec = new MediaRecorder(OS.Apps.Telegraph.dest.stream);
+                        OS.Apps.Telegraph.rec.ondataavailable = e => OS.Apps.Telegraph.chunks.push(e.data);
+                        OS.Apps.Telegraph.rec.start();
+                    },
+                    down: () => {
+                        OS.Apps.Telegraph.initAudio();
+                        if(OS.Apps.Telegraph.osc) return;
+                        const t = OS.Apps.Telegraph;
+                        t.osc = t.ctx.createOscillator();
+                        const g = t.ctx.createGain();
+                        t.osc.connect(g); g.connect(t.ctx.destination); g.connect(t.dest);
+                        t.osc.frequency.value = 600; t.osc.start();
+                        t.startT = Date.now();
+                        document.getElementById('telegraph-key').classList.add('pressed');
+                        const diff = Date.now() - t.lastUp;
+                        if(t.lastUp > 0) { if(diff > 1000) t.seq += " / "; else if(diff > 400) t.seq += " "; }
+                    },
+                    up: () => {
+                        const t = OS.Apps.Telegraph;
+                        if(!t.osc) return;
+                        t.osc.stop(); t.osc = null;
+                        document.getElementById('telegraph-key').classList.remove('pressed');
+                        const dur = Date.now() - t.startT;
+                        t.seq += dur < 200 ? "." : "-";
+                        document.getElementById('morse-display').innerText = t.seq;
+                        t.lastUp = Date.now();
+                        t.transcribe();
+                    },
+                    transcribe: () => {
+                        const t = OS.Apps.Telegraph;
+                        const words = t.seq.split(' / ');
+                        const text = words.map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
+                        document.getElementById('morse-transcription').innerText = text;
+                    },
+                    send: () => {
+                        const t = OS.Apps.Telegraph;
+                        if(!t.rec) return;
+                        t.rec.stop();
+                        t.rec.onstop = () => {
+                            const b = new Blob(t.chunks, { type: 'audio/webm' });
+                            OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
+                            const translation = document.getElementById('morse-transcription').innerText;
+                            if(t.seq) {
+                                let msg = `<div class="spoiler-box"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
+                                OS.Net.send('text', msg);
+                            }
+                            t.clear();
+                        };
+                    },
+                    clear: () => {
+                        const t = OS.Apps.Telegraph;
+                        t.chunks = []; t.seq = ""; t.lastUp = 0;
+                        document.getElementById('morse-display').innerText = "";
+                        document.getElementById('morse-transcription').innerText = "";
+                        if(t.ctx) { t.ctx.close(); t.ctx = null; }
                     }
                 },
 
