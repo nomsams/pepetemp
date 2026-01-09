@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS v7 | The Event Horizon</title>
-    <meta name="theme-color" content="#000000">
+    <title>PepeTalk OS v8 | Hyper-Connected</title>
+    <meta name="theme-color" content="#0f0f0f">
     <meta name="description" content="Secure P2P OS with Swedish Morse Support">
     
     <!-- KERNEL LIBRARIES -->
@@ -13,39 +13,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 
-         * 🌌 THEME ENGINE: EVENT HORIZON
-         * "Where light cannot escape, but data flows freely."
+         * 🌌 THEME ENGINE: HYPER-CONNECTED
+         * Modern, clean, and responsive.
          */
         :root {
             --bg-root: #000000;
-            --bg-desktop: #050505;
-            --bg-window: #121214;
-            --bg-header: #1a1a1e;
-            --bg-input: #0a0a0c;
-            --bg-panel: #18181b;
+            --bg-desktop: #0f0f0f;
+            --bg-window: #1c1c1e;
+            --bg-header: #2c2c2e;
+            --bg-input: #1c1c1e;
+            --bg-bubble-remote: #2c2c2e;
+            --bg-bubble-local: #0a84ff;
             
-            --primary: #ff2a2a;
-            --primary-dim: rgba(255, 42, 42, 0.15);
-            --primary-glow: rgba(255, 42, 42, 0.4);
+            --primary: #0a84ff;
+            --primary-dim: rgba(10, 132, 255, 0.15);
             
-            --accent: #00f0ff;
-            --success: #00e676;
-            --warning: #ffea00;
-            --danger: #ff1744;
+            --accent: #5e5ce6;
+            --success: #30d158;
+            --warning: #ffd60a;
+            --danger: #ff453a;
             
             --text-main: #ffffff;
-            --text-muted: #8b9bb4;
+            --text-muted: #8e8e93;
             
-            --border: 1px solid rgba(255, 255, 255, 0.08);
-            --shadow-window: 0 20px 50px rgba(0,0,0,0.8);
+            --border: 1px solid rgba(255, 255, 255, 0.1);
+            --shadow-window: 0 20px 50px rgba(0,0,0,0.5);
             
-            --font-ui: 'Space Grotesk', sans-serif;
+            --font-ui: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
             
             --z-desktop: 1;
@@ -66,39 +64,38 @@
             background: #000; color: var(--primary);
             font-family: var(--font-mono); z-index: var(--z-boot);
             padding: 40px; display: flex; flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center; align-items: center;
         }
-        .bios-line { margin-bottom: 5px; opacity: 0; animation: typeLine 0.05s forwards; white-space: pre-wrap; }
+        .bios-logo { font-size: 4rem; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .bios-line { margin-bottom: 5px; opacity: 0; animation: typeLine 0.05s forwards; white-space: pre-wrap; font-size: 0.9rem; }
         @keyframes typeLine { to { opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         /* --- DESKTOP ENVIRONMENT --- */
         #desktop {
             position: relative; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            background: radial-gradient(circle at bottom right, #1a1a1a 0%, #000 100%);
             background-size: cover; overflow: hidden; z-index: var(--z-desktop);
         }
         
-        /* Fixed Grid for Icons */
+        /* Desktop Icons */
         .desktop-icons {
             position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 60px);
             padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            grid-auto-rows: 110px;
-            gap: 10px;
-            align-content: start;
-            pointer-events: none; /* Allow clicking through to desktop */
+            display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; gap: 15px;
+            pointer-events: none;
         }
         .d-icon {
             pointer-events: auto;
+            width: 84px; height: 90px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; padding: 10px; border-radius: 12px;
-            background: rgba(0,0,0,0.01); border: 1px solid transparent;
+            cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 12px;
+            border: 1px solid transparent;
         }
-        .d-icon:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
-        .d-icon i { font-size: 2.2rem; margin-bottom: 10px; color: var(--text-main); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8)); transition: 0.2s; }
-        .d-icon:hover i { transform: scale(1.1); color: var(--accent); }
-        .d-icon span { font-size: 0.85rem; text-shadow: 0 2px 4px black; text-align: center; font-weight: 500; letter-spacing: 0.5px; }
+        .d-icon:hover { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .d-icon:active { transform: scale(0.95); }
+        .d-icon i { font-size: 2.5rem; margin-bottom: 8px; color: var(--text-main); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+        .d-icon span { font-size: 0.8rem; text-shadow: 0 1px 3px black; text-align: center; font-weight: 500; line-height: 1.2; }
 
         /* --- WINDOW MANAGER --- */
         .window {
@@ -108,76 +105,109 @@
             display: flex; flex-direction: column;
             min-width: 320px; min-height: 200px;
             overflow: hidden; resize: both;
-            animation: openWindow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: openWindow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: var(--z-window);
         }
-        .window.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary-dim), var(--shadow-window); z-index: var(--z-window) + 10; }
+        .window.active { border-color: rgba(255,255,255,0.2); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-window); }
         .window.minimized { display: none; }
         .window.maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 50px) !important; border-radius: 0; resize: none; }
 
         .win-header {
-            height: 42px; background: var(--bg-header);
+            height: 44px; background: var(--bg-header);
             border-bottom: var(--border);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 12px; cursor: grab; user-select: none;
+            padding: 0 16px; cursor: grab; user-select: none;
         }
         .win-header:active { cursor: grabbing; }
-        .win-title { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #eee; }
+        .win-title { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #eee; }
         .win-controls { display: flex; gap: 8px; }
         .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
-        .win-btn:hover { transform: scale(1.2); }
-        .wb-close { background: #ff5f56; }
-        .wb-min { background: #ffbd2e; }
-        .wb-max { background: #27c93f; }
+        .win-btn:hover { filter: brightness(1.2); }
+        .wb-close { background: #ff453a; }
+        .wb-min { background: #ffd60a; }
+        .wb-max { background: #30d158; }
 
         .win-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--bg-window); }
 
         /* --- TASKBAR --- */
         #taskbar {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
-            background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(15px);
+            background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px);
             border-top: var(--border);
-            display: flex; align-items: center; padding: 0 15px; gap: 15px;
+            display: flex; align-items: center; padding: 0 10px; gap: 10px;
             z-index: var(--z-taskbar);
         }
         .start-btn {
             font-weight: 700; color: var(--primary); font-size: 1.4rem;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px; border-radius: 8px; transition: 0.2s;
+            width: 40px; height: 40px; border-radius: 10px; transition: 0.2s;
         }
-        .start-btn:hover { background: rgba(255,255,255,0.1); box-shadow: 0 0 15px var(--primary-dim); }
+        .start-btn:hover { background: rgba(255,255,255,0.1); }
         
         .task-list { flex: 1; display: flex; gap: 5px; overflow-x: auto; height: 100%; align-items: center; }
         .task-item {
-            padding: 6px 15px; background: rgba(255,255,255,0.03);
-            border-radius: 6px; color: var(--text-muted); font-size: 0.85rem;
+            padding: 0 15px; background: rgba(255,255,255,0.05);
+            border-radius: 8px; color: var(--text-muted); font-size: 0.85rem;
             cursor: pointer; display: flex; align-items: center; gap: 8px;
             transition: 0.2s; border-bottom: 2px solid transparent; white-space: nowrap;
             height: 36px;
         }
-        .task-item:hover { background: rgba(255,255,255,0.08); color: white; }
-        .task-item.active { background: rgba(255,255,255,0.1); color: white; border-bottom-color: var(--primary); }
+        .task-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .task-item.active { background: rgba(255,255,255,0.15); color: white; }
         
-        .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.8rem; color: var(--text-muted); padding-left: 10px; border-left: 1px solid #333; }
+        .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.8rem; color: var(--text-muted); padding: 0 15px; }
 
-        /* --- APP: CHAT --- */
+        /* --- APP: CHAT (Telegram Style) --- */
         .chat-layout { display: flex; height: 100%; }
-        .chat-sidebar { width: 220px; background: var(--bg-input); border-right: var(--border); padding: 15px; display: flex; flex-direction: column; }
-        .chat-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-window); }
+        .chat-sidebar { width: 260px; background: var(--bg-input); border-right: var(--border); padding: 0; display: flex; flex-direction: column; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: #000; position: relative; }
         
-        .chat-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; display: flex; gap: 10px; animation: slideUp 0.2s ease; }
-        .msg.local { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-bubble { background: #222; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; border: 1px solid #333; position: relative; min-width: 100px; word-wrap: break-word; }
-        .msg.local .msg-bubble { background: var(--primary); color: white; border: none; }
-        .msg-meta { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: right; }
+        /* Sidebar Items */
+        .chat-header { padding: 15px; border-bottom: var(--border); font-weight: bold; font-size: 1.1rem; }
+        .peer-list { padding: 10px; }
+        .peer-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px;
+            background: rgba(255,255,255,0.03); border-radius: 10px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .peer-item:hover { background: rgba(255,255,255,0.08); }
+        .peer-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a84ff, #5e5ce6); display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
-        /* Inline Audio Recorder */
-        .chat-input-area { padding: 15px; background: var(--bg-header); border-top: var(--border); position: relative; }
-        .input-row { display: flex; gap: 10px; align-items: flex-end; }
-        .chat-input { flex: 1; background: #000; border: var(--border); color: white; padding: 12px; border-radius: 20px; resize: none; height: 46px; font-family: inherit; transition: 0.2s; }
-        .chat-input:focus { border-color: var(--primary); }
+        /* Messages */
+        .chat-feed { 
+            flex: 1; overflow-y: auto; padding: 20px 5%; 
+            display: flex; flex-direction: column; gap: 8px; 
+            background-image: radial-gradient(#222 1px, transparent 1px); background-size: 20px 20px;
+        }
+        .msg { max-width: 75%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
+        .msg.local { align-self: flex-end; align-items: flex-end; }
+        .msg.remote { align-self: flex-start; align-items: flex-start; }
         
+        .msg-bubble { 
+            padding: 10px 14px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; 
+            position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .msg.local .msg-bubble { 
+            background: var(--bg-bubble-local); color: white; 
+            border-bottom-right-radius: 4px; 
+        }
+        .msg.remote .msg-bubble { 
+            background: var(--bg-bubble-remote); color: white; 
+            border-bottom-left-radius: 4px; 
+        }
+        
+        .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
+        
+        /* Input Area */
+        .chat-input-area { padding: 10px 15px; background: var(--bg-header); display: flex; gap: 10px; align-items: flex-end; min-height: 60px; }
+        .chat-input { 
+            flex: 1; background: #1c1c1e; border: none; color: white; 
+            padding: 12px 15px; border-radius: 20px; resize: none; height: 44px; 
+            font-family: inherit; transition: 0.2s; 
+        }
+        .chat-input:focus { background: #2c2c2e; }
+        
+        /* Audio Deck */
         .audio-deck {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-header); z-index: 10;
@@ -185,103 +215,111 @@
             animation: slideUp 0.2s ease;
         }
         .audio-deck.active { display: flex; }
-        #mic-visualizer { flex: 1; height: 40px; background: #000; border-radius: 4px; border: 1px solid #333; }
+        #mic-visualizer { flex: 1; height: 40px; background: #000; border-radius: 8px; border: 1px solid #333; }
 
         /* --- APP: WHITEBOARD --- */
-        .wb-container { flex: 1; position: relative; background: #1a1a1a; cursor: crosshair; touch-action: none; overflow: hidden; }
+        .wb-container { flex: 1; position: relative; background: #121212; cursor: crosshair; touch-action: none; overflow: hidden; }
         .wb-toolbar {
-            height: 50px; background: var(--bg-header); border-top: var(--border);
-            display: flex; justify-content: center; align-items: center; gap: 15px;
+            height: 60px; background: var(--bg-header); border-top: var(--border);
+            display: flex; justify-content: center; align-items: center; gap: 20px;
         }
-        .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .color-dot.active { transform: scale(1.2); border-color: white; }
+        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-dot.active { transform: scale(1.2); border-color: white; box-shadow: 0 0 10px currentColor; }
 
         /* --- APP: TELEGRAPH --- */
         .telegraph-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #111; gap: 20px; padding: 20px; position: relative; }
         .haptic-key {
-            width: 160px; height: 160px; border-radius: 50%;
-            background: radial-gradient(#333, #000); border: 4px solid #444;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); cursor: pointer;
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(#2c2c2e, #000); border: 6px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer;
             display: flex; justify-content: center; align-items: center;
-            color: #555; font-size: 3rem; transition: 0.1s;
+            color: #555; font-size: 4rem; transition: 0.1s;
             user-select: none; -webkit-user-select: none;
         }
-        .haptic-key:active, .haptic-key.pressed { transform: scale(0.95); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        .morse-stream { font-family: var(--font-mono); font-size: 1.5rem; color: var(--primary); height: 40px; letter-spacing: 3px; text-align: center; }
-        .morse-translation { font-family: var(--font-ui); font-size: 1rem; color: var(--accent); height: 20px; opacity: 0.8; }
+        .haptic-key:active, .haptic-key.pressed { transform: scale(0.96); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .morse-stream { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); height: 50px; letter-spacing: 4px; text-align: center; text-shadow: 0 0 10px var(--primary-dim); }
+        .morse-translation { font-family: var(--font-ui); font-size: 1.2rem; color: var(--accent); height: 30px; opacity: 0.9; }
         
-        .morse-info-btn { position: absolute; top: 15px; right: 15px; background: none; border: 1px solid #444; color: #888; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
-        .morse-info-btn:hover { color: white; border-color: white; }
+        .morse-info-btn { position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #444; color: #888; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
 
         /* Morse Reference Modal */
         .morse-ref-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 10; display: none;
+            background: rgba(0,0,0,0.95); z-index: 10; display: none;
             flex-direction: column; padding: 20px; overflow-y: auto;
         }
-        .morse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; }
-        .morse-item { background: #222; padding: 5px; border-radius: 4px; text-align: center; }
-        .morse-char { font-weight: bold; color: var(--primary); }
-        .morse-val { font-family: monospace; font-size: 0.8rem; color: #aaa; }
+        .morse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 15px; }
+        .morse-item { background: #222; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .morse-char { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+        .morse-val { font-family: monospace; font-size: 0.9rem; color: #aaa; }
 
         /* Spoiler for Morse Translation */
-        .spoiler { background: #333; color: #333; padding: 2px 6px; border-radius: 4px; cursor: pointer; user-select: none; transition: 0.2s; }
-        .spoiler:hover, .spoiler.revealed { color: white; background: #444; }
+        .spoiler-box {
+            background: #222; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 5px;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .spoiler-content { filter: blur(8px); transition: 0.5s; opacity: 0.5; }
+        .spoiler-label { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 0.7rem; color: #aaa; font-weight: bold; letter-spacing: 1px; pointer-events: none;
+        }
+        .spoiler-box.revealed .spoiler-content { filter: blur(0); opacity: 1; }
+        .spoiler-box.revealed .spoiler-label { display: none; }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            .desktop-icons { 
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
-                gap: 5px; padding: 10px;
-            }
-            .window {
-                width: 100% !important; height: calc(100% - 50px) !important;
+            body.mobile-view .desktop-icons { display: none; }
+            body.mobile-view .window {
+                width: 100% !important; height: calc(100% - 60px) !important;
                 top: 0 !important; left: 0 !important;
                 border-radius: 0 !important; resize: none !important;
                 box-shadow: none !important;
+                border: none;
             }
-            .win-controls { display: none; } /* Can't minimize/close easily on mobile */
-            .chat-sidebar { display: none; } /* Hide sidebar on mobile */
-            .task-item span { display: none; } /* Icons only in taskbar */
-            .task-item { padding: 10px; font-size: 1.2rem; }
-            .start-btn { font-size: 1.5rem; padding: 0 10px; }
+            body.mobile-view .win-header { display: none; } /* Hide header on mobile, use back nav */
+            body.mobile-view .chat-sidebar { display: none; }
             
-            /* Mobile Menu Overlay */
-            #mobile-menu {
-                position: fixed; bottom: 50px; left: 0; width: 100%;
-                background: rgba(10,10,12,0.95); backdrop-filter: blur(10px);
-                border-top: var(--border); padding: 20px;
-                display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
-                transform: translateY(100%); transition: 0.3s; z-index: var(--z-taskbar) - 1;
+            /* Mobile Taskbar / Nav */
+            body.mobile-view #taskbar {
+                height: 60px; justify-content: space-around; padding: 0;
+                background: #111; border-top: 1px solid #333;
             }
-            #mobile-menu.open { transform: translateY(0); }
-            .m-app { display: flex; flex-direction: column; align-items: center; color: white; gap: 5px; font-size: 0.8rem; }
-            .m-app i { font-size: 1.5rem; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; }
+            body.mobile-view .start-btn { display: none; }
+            body.mobile-view .sys-tray { display: none; }
+            body.mobile-view .task-list { justify-content: space-around; width: 100%; }
+            body.mobile-view .task-item { 
+                flex-direction: column; height: 100%; justify-content: center; 
+                background: none !important; padding: 0; border: none;
+            }
+            body.mobile-view .task-item i { font-size: 1.4rem; margin-bottom: 4px; }
+            body.mobile-view .task-item span { font-size: 0.7rem; display: block; }
+            body.mobile-view .task-item.active { color: var(--primary); }
         }
 
         /* --- UTILS --- */
         .hidden { display: none !important; }
-        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
-        .btn-icon:hover { color: white; background: rgba(255,255,255,0.1); }
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-primary:hover { background: #d32f2f; box-shadow: 0 0 10px var(--primary-dim); }
+        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .btn-icon:hover { color: var(--primary); background: rgba(255,255,255,0.1); }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-primary:hover { background: #0071e3; transform: translateY(-1px); }
         
         @keyframes openWindow { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
     </style>
 </head>
 <body>
 
     <!-- BIOS -->
     <div id="bios-screen">
-        <div class="bios-line">PEPETALK OS v7.0.0 (EVENT HORIZON)</div>
+        <div class="bios-logo"><i class="fas fa-frog"></i></div>
+        <div class="bios-line">PEPETALK OS v8.0.0 (HYPER-CONNECTED)</div>
         <div class="bios-line">KERNEL: QUANTUM MESH [SECURE]</div>
-        <div class="bios-line">LOADING DRIVERS... OK</div>
+        <div class="bios-line">DETECTING DEVICE TYPE... <span id="device-type">...</span></div>
         <div class="bios-line">INITIALIZING P2P CANVAS... OK</div>
         <div class="bios-line">LOADING SWEDISH MORSE DICTIONARY... OK</div>
         <div class="bios-line">SYSTEM READY.</div>
@@ -290,31 +328,21 @@
     <!-- DESKTOP -->
     <div id="desktop" class="hidden">
         
-        <!-- Desktop Icons (Grid Layout) -->
+        <!-- Desktop Icons -->
         <div class="desktop-icons">
-            <div class="d-icon" onclick="OS.WM.open('chat')"><i class="fas fa-comment-dots" style="color: #ff2a2a;"></i><span>Chat</span></div>
-            <div class="d-icon" onclick="OS.WM.open('whiteboard')"><i class="fas fa-pen-nib" style="color: #00f0ff;"></i><span>Canvas</span></div>
-            <div class="d-icon" onclick="OS.WM.open('telegraph')"><i class="fas fa-broadcast-tower" style="color: #00e676;"></i><span>Telegraph</span></div>
-            <div class="d-icon" onclick="OS.WM.open('files')"><i class="fas fa-folder-open" style="color: #ffea00;"></i><span>Files</span></div>
-            <div class="d-icon" onclick="OS.WM.open('settings')"><i class="fas fa-cog" style="color: #aaa;"></i><span>Settings</span></div>
-            <div class="d-icon" onclick="OS.WM.open('help')"><i class="fas fa-question-circle" style="color: #bd93f9;"></i><span>Help</span></div>
+            <div class="d-icon" onclick="OS.WM.open('chat')"><i class="fas fa-comment-dots" style="color: #0a84ff;"></i><span>Chat</span></div>
+            <div class="d-icon" onclick="OS.WM.open('whiteboard')"><i class="fas fa-pen-nib" style="color: #5e5ce6;"></i><span>Canvas</span></div>
+            <div class="d-icon" onclick="OS.WM.open('telegraph')"><i class="fas fa-broadcast-tower" style="color: #30d158;"></i><span>Telegraph</span></div>
+            <div class="d-icon" onclick="OS.WM.open('files')"><i class="fas fa-folder-open" style="color: #ffd60a;"></i><span>Files</span></div>
+            <div class="d-icon" onclick="OS.WM.open('settings')"><i class="fas fa-cog" style="color: #8e8e93;"></i><span>Settings</span></div>
         </div>
 
         <!-- Window Area -->
         <div id="window-area"></div>
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu">
-            <div class="m-app" onclick="OS.WM.open('chat'); OS.UI.toggleMenu()"><i class="fas fa-comment-dots" style="color:#ff2a2a"></i>Chat</div>
-            <div class="m-app" onclick="OS.WM.open('whiteboard'); OS.UI.toggleMenu()"><i class="fas fa-pen-nib" style="color:#00f0ff"></i>Canvas</div>
-            <div class="m-app" onclick="OS.WM.open('telegraph'); OS.UI.toggleMenu()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i>Telegraph</div>
-            <div class="m-app" onclick="OS.WM.open('files'); OS.UI.toggleMenu()"><i class="fas fa-folder-open" style="color:#ffea00"></i>Files</div>
-            <div class="m-app" onclick="OS.WM.open('settings'); OS.UI.toggleMenu()"><i class="fas fa-cog" style="color:#aaa"></i>Settings</div>
-        </div>
-
         <!-- Taskbar -->
         <div id="taskbar">
-            <div class="start-btn" onclick="OS.UI.toggleMenu()"><i class="fas fa-frog"></i></div>
+            <div class="start-btn" onclick="OS.WM.minimizeAll()"><i class="fas fa-frog"></i></div>
             <div class="task-list" id="task-list"></div>
             <div class="sys-tray">
                 <div id="conn-status" style="color:var(--danger)"><i class="fas fa-wifi"></i></div>
@@ -332,20 +360,22 @@
     <template id="tpl-chat">
         <div class="chat-layout">
             <div class="chat-sidebar">
-                <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">PEERS</div>
-                <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px;">
-                    <div style="width:8px; height:8px; background:var(--success); border-radius:50%;"></div>
-                    <span style="font-size:0.9rem;">Remote Peer</span>
-                </div>
-                <div style="margin-top:auto; font-size:0.7rem; color:#444;">
-                    v7.0.0 Secure
+                <div class="chat-header">PepeTalk</div>
+                <div class="peer-list">
+                    <div class="peer-item">
+                        <div class="peer-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div style="font-weight:600; font-size:0.9rem;">Remote Peer</div>
+                            <div style="font-size:0.75rem; color:#888;" id="peer-status-text">Waiting...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="chat-main">
                 <div class="chat-feed" id="chat-feed">
                     <div style="text-align:center; opacity:0.5; margin-top:50px;">
-                        <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
-                        <p>Encrypted Channel</p>
+                        <i class="fas fa-lock" style="font-size:3rem; margin-bottom:10px;"></i>
+                        <p>Messages are end-to-end encrypted.<br>History cleared on connection.</p>
                     </div>
                 </div>
                 <div class="chat-input-area">
@@ -357,12 +387,10 @@
                         <button class="btn-primary" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                     <!-- Standard Input -->
-                    <div class="input-row">
-                        <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
-                        <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
-                        <textarea class="chat-input" id="chat-input" placeholder="Message..."></textarea>
-                        <button class="btn-primary" onclick="OS.Apps.Chat.send()"><i class="fas fa-arrow-up"></i></button>
-                    </div>
+                    <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
+                    <textarea class="chat-input" id="chat-input" placeholder="Message..."></textarea>
+                    <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
+                    <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
@@ -376,9 +404,9 @@
                 <canvas id="wb-canvas"></canvas>
             </div>
             <div class="wb-toolbar">
-                <div class="color-dot active" style="background:#ff2a2a" onclick="OS.Apps.Whiteboard.setColor('#ff2a2a', this)"></div>
-                <div class="color-dot" style="background:#00f0ff" onclick="OS.Apps.Whiteboard.setColor('#00f0ff', this)"></div>
-                <div class="color-dot" style="background:#00e676" onclick="OS.Apps.Whiteboard.setColor('#00e676', this)"></div>
+                <div class="color-dot active" style="background:#ff453a" onclick="OS.Apps.Whiteboard.setColor('#ff453a', this)"></div>
+                <div class="color-dot" style="background:#0a84ff" onclick="OS.Apps.Whiteboard.setColor('#0a84ff', this)"></div>
+                <div class="color-dot" style="background:#30d158" onclick="OS.Apps.Whiteboard.setColor('#30d158', this)"></div>
                 <div class="color-dot" style="background:#ffffff" onclick="OS.Apps.Whiteboard.setColor('#ffffff', this)"></div>
                 <div style="width:1px; height:30px; background:#333; margin:0 10px;"></div>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.clear()"><i class="fas fa-trash"></i></button>
@@ -454,41 +482,26 @@
         </div>
     </template>
 
-    <!-- 6. HELP APP -->
-    <template id="tpl-help">
-        <div style="padding:30px; line-height:1.6; color:#ddd;">
-            <h2>PepeTalk OS v7</h2>
-            <p>Welcome to the secure P2P operating system.</p>
-            <ul>
-                <li><strong>Chat:</strong> E2EE text & audio messaging.</li>
-                <li><strong>Canvas:</strong> Real-time vector drawing.</li>
-                <li><strong>Telegraph:</strong> Morse code with Swedish support.</li>
-                <li><strong>Files:</strong> Direct P2P file transfer.</li>
-            </ul>
-            <p>No data is stored on any server. Refreshing clears memory.</p>
-        </div>
-    </template>
-
     <script>
         /**
-         * 🍓 PEPETALK OS v7 - THE EVENT HORIZON
-         * "Structured for scale. Built for silence."
+         * 🍓 PEPETALK OS v8 - HYPER-CONNECTED
+         * "The future is now."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, key: null, isHost: true, windows: {}, zIndex: 100 },
+            State: { peerId: null, conn: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false },
 
             // --- KERNEL ---
             init: async () => {
+                OS.State.isMobile = window.innerWidth < 768;
+                if(OS.State.isMobile) document.body.classList.add('mobile-view');
+                document.getElementById('device-type').innerText = OS.State.isMobile ? "MOBILE" : "DESKTOP";
+
                 const bios = document.getElementById('bios-screen');
-                // Simulate boot sequence
                 const lines = bios.querySelectorAll('.bios-line');
                 let delay = 0;
-                lines.forEach((line, i) => {
-                    setTimeout(() => line.style.opacity = 1, delay);
-                    delay += 300;
-                });
+                lines.forEach((line) => { setTimeout(() => line.style.opacity = 1, delay); delay += 300; });
 
                 setTimeout(async () => {
                     await OS.Security.init();
@@ -517,17 +530,19 @@
                     win.className = 'window';
                     win.id = `win-${app}`;
                     
-                    // Smart positioning
-                    const offset = Object.keys(OS.State.windows).length * 25;
-                    win.style.top = (60 + offset) + 'px';
-                    win.style.left = (60 + offset) + 'px';
-                    win.style.width = app === 'whiteboard' ? '650px' : '420px';
-                    win.style.height = '550px';
+                    // Positioning
+                    if (!OS.State.isMobile) {
+                        const offset = Object.keys(OS.State.windows).length * 25;
+                        win.style.top = (60 + offset) + 'px';
+                        win.style.left = (60 + offset) + 'px';
+                        win.style.width = app === 'whiteboard' ? '700px' : '400px';
+                        win.style.height = '550px';
+                    }
 
                     const titles = { 
                         chat: 'Secure Chat', whiteboard: 'Vector Canvas', 
-                        telegraph: 'Telegraph V4 (SE)', files: 'File Manager', 
-                        settings: 'System Settings', help: 'Help & Info' 
+                        telegraph: 'Telegraph V5', files: 'File Manager', 
+                        settings: 'Settings' 
                     };
 
                     win.innerHTML = `
@@ -548,7 +563,7 @@
                     OS.WM.addTask(app, titles[app]);
                     OS.WM.focus(app);
 
-                    // App Specific Initialization
+                    // App Init
                     if(app === 'whiteboard') setTimeout(OS.Apps.Whiteboard.init, 100);
                     if(app === 'settings') OS.Apps.Settings.render();
                     if(app === 'telegraph') OS.Apps.Telegraph.renderGrid();
@@ -570,16 +585,22 @@
                 },
                 min: (app) => document.getElementById(`win-${app}`).style.display = 'none',
                 max: (app) => document.getElementById(`win-${app}`).classList.toggle('maximized'),
+                minimizeAll: () => {
+                    Object.keys(OS.State.windows).forEach(app => OS.WM.min(app));
+                },
                 addTask: (app, title) => {
                     const bar = document.getElementById('task-list');
                     const item = document.createElement('div');
                     item.className = 'task-item active';
                     item.id = `task-${app}`;
-                    item.innerHTML = `<i class="fas fa-window-maximize"></i> <span>${title}</span>`;
+                    // Mobile icons
+                    const icons = { chat: 'comment-dots', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
+                    item.innerHTML = `<i class="fas fa-${icons[app]}"></i> <span>${title}</span>`;
                     item.onclick = () => OS.WM.focus(app);
                     bar.appendChild(item);
                 },
                 drag: (e, app) => {
+                    if(OS.State.isMobile) return;
                     if(e.target.closest('.win-controls')) return;
                     const win = document.getElementById(`win-${app}`);
                     const shiftX = e.clientX - win.getBoundingClientRect().left;
@@ -645,15 +666,24 @@
                 },
                 bind: (c) => {
                     OS.State.conn = c;
-                    c.on('open', () => { OS.UI.toast('Connected', 'success'); document.getElementById('conn-status').style.color = 'var(--success)'; });
+                    c.on('open', () => { 
+                        OS.UI.toast('Connected', 'success'); 
+                        document.getElementById('conn-status').style.color = 'var(--success)';
+                        document.getElementById('peer-status-text').innerText = "Online";
+                        OS.Apps.Chat.clear(); // Clear history on new connection
+                    });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
-                    c.on('close', () => document.getElementById('conn-status').style.color = 'var(--danger)');
+                    c.on('close', () => {
+                        document.getElementById('conn-status').style.color = 'var(--danger)';
+                        document.getElementById('peer-status-text').innerText = "Offline";
+                    });
                 },
                 send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
                 route: (m) => {
                     if(m.t === 'text') OS.Apps.Chat.render(m.p, 'remote');
                     if(m.t === 'chunk') OS.Net.FileTransfer.recv(m.p);
                     if(m.t === 'draw') OS.Apps.Whiteboard.drawRemote(m.p);
+                    if(m.t === 'draw-clear') OS.Apps.Whiteboard.clearLocal();
                 },
                 copyLink: () => { navigator.clipboard.writeText(OS.State.link); OS.UI.toast('Link Copied', 'success'); },
                 
@@ -686,7 +716,7 @@
                                 return a;
                             });
                             const url = URL.createObjectURL(new Blob(blobs, { type: p.type }));
-                            OS.Apps.Chat.finalize(p.fid, url, p.type);
+                            OS.Apps.Chat.finalize(p.fid, url, p.type, true); // Auto play if audio
                             OS.Apps.Files.add(p.n, url);
                             delete OS.Net.FileTransfer.bufs[p.fid];
                         }
@@ -697,6 +727,10 @@
             // --- APPS ---
             Apps: {
                 Chat: {
+                    clear: () => {
+                        const f = document.getElementById('chat-feed');
+                        if(f) f.innerHTML = `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-lock" style="font-size:3rem; margin-bottom:10px;"></i><p>Session Started.<br>History Cleared.</p></div>`;
+                    },
                     send: () => {
                         const el = document.getElementById('chat-input');
                         const txt = el.value.trim();
@@ -710,7 +744,7 @@
                         if(!f) return;
                         const d = document.createElement('div');
                         d.className = `msg ${s}`;
-                        d.innerHTML = `<div class="msg-bubble">${DOMPurify.sanitize(h)}<div class="msg-meta">${new Date().toLocaleTimeString()}</div></div>`;
+                        d.innerHTML = `<div class="msg-bubble">${DOMPurify.sanitize(h)}<div class="msg-meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} <i class="fas fa-check"></i></div></div>`;
                         f.appendChild(d);
                         f.scrollTop = f.scrollHeight;
                     },
@@ -718,13 +752,18 @@
                         OS.Apps.Chat.render(`<div id="f-${id}"><i class="fas fa-spinner fa-spin"></i> ${f.name}</div>`, s);
                         return id;
                     },
-                    finalize: (id, url, type) => {
+                    finalize: (id, url, type, autoPlay = false) => {
                         const el = document.getElementById(`f-${id}`);
                         if(!el) return;
                         if(type.startsWith('audio/')) {
                             const wid = `w-${id}`;
                             el.innerHTML = `<div id="${wid}" style="width:200px"></div><button class="btn-icon" onclick="OS.Apps.Chat.play('${wid}')"><i class="fas fa-play"></i></button>`;
-                            setTimeout(() => OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#ff2a2a', height: 40, url }), 100);
+                            setTimeout(() => {
+                                OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
+                                if(autoPlay) {
+                                    OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
+                                }
+                            }, 100);
                         } else if(type.startsWith('image/')) {
                             el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px;">`;
                         } else {
@@ -736,17 +775,13 @@
                 },
 
                 Whiteboard: {
-                    ctx: null, drawing: false, color: '#ff2a2a',
+                    ctx: null, drawing: false, color: '#ff453a',
                     init: () => {
                         const c = document.getElementById('wb-canvas');
                         const w = document.getElementById('wb-wrapper');
                         if(!c || !w) return;
                         
-                        // Resize Observer
-                        new ResizeObserver(() => {
-                            c.width = w.clientWidth; c.height = w.clientHeight;
-                        }).observe(w);
-
+                        new ResizeObserver(() => { c.width = w.clientWidth; c.height = w.clientHeight; }).observe(w);
                         const getPos = (e) => {
                             const r = c.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
@@ -754,22 +789,13 @@
                         };
 
                         OS.Apps.Whiteboard.ctx = c.getContext('2d');
-                        const start = (e) => {
-                            OS.Apps.Whiteboard.drawing = true;
-                            const p = getPos(e);
-                            OS.Apps.Whiteboard.last = p;
-                        };
+                        const start = (e) => { OS.Apps.Whiteboard.drawing = true; OS.Apps.Whiteboard.last = getPos(e); };
                         const move = (e) => {
                             if(!OS.Apps.Whiteboard.drawing) return;
                             e.preventDefault();
                             const p = getPos(e);
                             OS.Apps.Whiteboard.draw(OS.Apps.Whiteboard.last, p, OS.Apps.Whiteboard.color);
-                            // Send normalized
-                            OS.Net.send('draw', {
-                                x1: OS.Apps.Whiteboard.last.x / c.width, y1: OS.Apps.Whiteboard.last.y / c.height,
-                                x2: p.x / c.width, y2: p.y / c.height,
-                                c: OS.Apps.Whiteboard.color
-                            });
+                            OS.Net.send('draw', { x1: OS.Apps.Whiteboard.last.x/c.width, y1: OS.Apps.Whiteboard.last.y/c.height, x2: p.x/c.width, y2: p.y/c.height, c: OS.Apps.Whiteboard.color });
                             OS.Apps.Whiteboard.last = p;
                         };
                         const end = () => OS.Apps.Whiteboard.drawing = false;
@@ -784,10 +810,7 @@
                     },
                     drawRemote: (d) => {
                         const c = document.getElementById('wb-canvas');
-                        if(c) OS.Apps.Whiteboard.draw(
-                            {x: d.x1 * c.width, y: d.y1 * c.height},
-                            {x: d.x2 * c.width, y: d.y2 * c.height}, d.c
-                        );
+                        if(c) OS.Apps.Whiteboard.draw({x: d.x1*c.width, y: d.y1*c.height}, {x: d.x2*c.width, y: d.y2*c.height}, d.c);
                     },
                     setColor: (c, el) => {
                         OS.Apps.Whiteboard.color = c;
@@ -795,6 +818,10 @@
                         el.classList.add('active');
                     },
                     clear: () => {
+                        OS.Apps.Whiteboard.clearLocal();
+                        OS.Net.send('draw-clear', {});
+                    },
+                    clearLocal: () => {
                         const c = document.getElementById('wb-canvas');
                         OS.Apps.Whiteboard.ctx.clearRect(0,0,c.width,c.height);
                     },
@@ -816,7 +843,6 @@
                             const an = OS.Apps.Audio.ctx.createAnalyser();
                             src.connect(an);
                             
-                            // Visualizer
                             const cvs = document.getElementById('mic-visualizer');
                             const c = cvs.getContext('2d');
                             const d = new Uint8Array(an.frequencyBinCount);
@@ -825,7 +851,7 @@
                                 requestAnimationFrame(draw);
                                 an.getByteFrequencyData(d);
                                 c.clearRect(0,0,cvs.width,cvs.height);
-                                c.fillStyle = '#ff2a2a';
+                                c.fillStyle = '#0a84ff';
                                 const w = cvs.width/30;
                                 for(let i=0; i<30; i++) {
                                     const h = (d[i]/255)*cvs.height;
@@ -869,8 +895,6 @@
 
                 Telegraph: {
                     ctx: null, osc: null, dest: null, rec: null, chunks: [], startT: 0, seq: "", lastUp: 0,
-                    
-                    // Swedish Morse Dictionary
                     dict: {
                         '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F',
                         '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
@@ -880,7 +904,6 @@
                         '-----': '0', '.----': '1', '..---': '2', '...--': '3', '....-': '4',
                         '.....': '5', '-....': '6', '--...': '7', '---..': '8', '----.': '9'
                     },
-
                     renderGrid: () => {
                         const grid = document.getElementById('morse-grid-content');
                         if(!grid) return;
@@ -892,12 +915,10 @@
                             grid.appendChild(item);
                         }
                     },
-
                     toggleInfo: () => {
                         const el = document.getElementById('morse-ref');
                         el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
                     },
-
                     initAudio: () => {
                         if(OS.Apps.Telegraph.ctx) return;
                         OS.Apps.Telegraph.ctx = new AudioContext();
@@ -913,14 +934,10 @@
                         t.osc = t.ctx.createOscillator();
                         const g = t.ctx.createGain();
                         t.osc.connect(g);
-                        g.connect(t.ctx.destination); // To speakers
-                        g.connect(t.dest); // To recorder
-                        t.osc.frequency.value = 600;
-                        t.osc.start();
+                        g.connect(t.ctx.destination); g.connect(t.dest);
+                        t.osc.frequency.value = 600; t.osc.start();
                         t.startT = Date.now();
                         document.getElementById('telegraph-key').classList.add('pressed');
-                        
-                        // Auto space logic
                         const diff = Date.now() - t.lastUp;
                         if(t.lastUp > 0) {
                             if(diff > 1000) { t.seq += " / "; }
@@ -952,14 +969,17 @@
                         t.rec.stop();
                         t.rec.onstop = () => {
                             const b = new Blob(t.chunks, { type: 'audio/webm' });
-                            // Send audio file
                             OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
                             
-                            // Send text translation as text message
                             const translation = document.getElementById('morse-transcription').innerText;
                             if(t.seq) {
-                                let msg = `[TELEGRAPH] <span class="spoiler" onclick="this.classList.add('revealed')">${t.seq}</span>`;
-                                if(translation) msg += `<br><span style="font-size:0.8rem; color:var(--accent)">DECODED: ${translation}</span>`;
+                                let msg = `<div class="spoiler-box" onclick="this.classList.add('revealed')">
+                                    <div class="spoiler-label">CLICK TO REVEAL MORSE</div>
+                                    <div class="spoiler-content">
+                                        <div style="font-family:monospace; color:var(--primary)">${t.seq}</div>
+                                        <div style="font-weight:bold; color:var(--accent)">${translation}</div>
+                                    </div>
+                                </div>`;
                                 OS.Net.send('text', msg);
                             }
                             t.clear();
@@ -1017,7 +1037,6 @@
                     const osc = ctx.createOscillator();
                     const g = ctx.createGain();
                     osc.connect(g); g.connect(ctx.destination);
-                    
                     if(type === 'startup') {
                         osc.frequency.setValueAtTime(220, ctx.currentTime);
                         osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.5);
