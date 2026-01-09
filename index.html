@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS v8 | Hyper-Connected</title>
-    <meta name="theme-color" content="#0f0f0f">
-    <meta name="description" content="Secure P2P OS with Swedish Morse Support">
+    <title>PepeTalk OS v9 | The Fortress</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- KERNEL LIBRARIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
@@ -17,20 +18,20 @@
 
     <style>
         /* 
-         * 🌌 THEME ENGINE: HYPER-CONNECTED
-         * Modern, clean, and responsive.
+         * 🏰 THEME ENGINE: FORTRESS
+         * "Security through obscurity and chaos."
          */
         :root {
             --bg-root: #000000;
-            --bg-desktop: #0f0f0f;
+            --bg-desktop: #050505;
             --bg-window: #1c1c1e;
             --bg-header: #2c2c2e;
-            --bg-input: #1c1c1e;
+            --bg-input: #151516;
             --bg-bubble-remote: #2c2c2e;
             --bg-bubble-local: #0a84ff;
             
             --primary: #0a84ff;
-            --primary-dim: rgba(10, 132, 255, 0.15);
+            --primary-dim: rgba(10, 132, 255, 0.2);
             
             --accent: #5e5ce6;
             --success: #30d158;
@@ -40,22 +41,25 @@
             --text-main: #ffffff;
             --text-muted: #8e8e93;
             
-            --border: 1px solid rgba(255, 255, 255, 0.1);
-            --shadow-window: 0 20px 50px rgba(0,0,0,0.5);
+            --border: 1px solid rgba(255, 255, 255, 0.12);
+            --shadow-window: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             
             --font-ui: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
             
             --z-desktop: 1;
             --z-window: 100;
+            --z-keyboard: 5000;
             --z-taskbar: 9000;
             --z-toast: 10000;
             --z-boot: 11000;
+            
+            --safe-area-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         /* --- RESET & BASE --- */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100vh; overflow: hidden; }
+        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100vh; overflow: hidden; position: fixed; width: 100%; }
         input, textarea { user-select: text; font-family: var(--font-ui); }
         
         /* --- BOOT SCREEN --- */
@@ -66,15 +70,15 @@
             padding: 40px; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
         }
-        .bios-logo { font-size: 4rem; margin-bottom: 20px; animation: pulse 2s infinite; }
-        .bios-line { margin-bottom: 5px; opacity: 0; animation: typeLine 0.05s forwards; white-space: pre-wrap; font-size: 0.9rem; }
+        .bios-logo { font-size: 5rem; margin-bottom: 30px; animation: pulse 2s infinite; filter: drop-shadow(0 0 20px var(--primary)); }
+        .bios-line { margin-bottom: 8px; opacity: 0; animation: typeLine 0.05s forwards; white-space: pre-wrap; font-size: 0.9rem; letter-spacing: 1px; }
         @keyframes typeLine { to { opacity: 1; } }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes pulse { 0% { opacity: 0.6; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0.6; transform: scale(0.98); } }
 
         /* --- DESKTOP ENVIRONMENT --- */
         #desktop {
             position: relative; width: 100%; height: 100%;
-            background: radial-gradient(circle at bottom right, #1a1a1a 0%, #000 100%);
+            background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
             background-size: cover; overflow: hidden; z-index: var(--z-desktop);
         }
         
@@ -82,110 +86,115 @@
         .desktop-icons {
             position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 60px);
             padding: 20px;
-            display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            grid-auto-rows: 110px;
+            gap: 15px;
+            align-content: start;
             pointer-events: none;
         }
         .d-icon {
             pointer-events: auto;
-            width: 84px; height: 90px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 12px;
+            cursor: pointer; transition: 0.2s; padding: 10px; border-radius: 16px;
             border: 1px solid transparent;
         }
-        .d-icon:hover { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .d-icon:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
         .d-icon:active { transform: scale(0.95); }
-        .d-icon i { font-size: 2.5rem; margin-bottom: 8px; color: var(--text-main); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-        .d-icon span { font-size: 0.8rem; text-shadow: 0 1px 3px black; text-align: center; font-weight: 500; line-height: 1.2; }
+        .d-icon i { font-size: 2.5rem; margin-bottom: 10px; color: var(--text-main); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); transition: 0.2s; }
+        .d-icon:hover i { transform: translateY(-5px); color: var(--primary); }
+        .d-icon span { font-size: 0.85rem; text-shadow: 0 2px 4px black; text-align: center; font-weight: 500; letter-spacing: 0.5px; }
 
         /* --- WINDOW MANAGER --- */
         .window {
             position: absolute; background: var(--bg-window);
-            border: var(--border); border-radius: 12px;
+            border: var(--border); border-radius: 16px;
             box-shadow: var(--shadow-window);
             display: flex; flex-direction: column;
             min-width: 320px; min-height: 200px;
             overflow: hidden; resize: both;
-            animation: openWindow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: openWindow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: var(--z-window);
         }
         .window.active { border-color: rgba(255,255,255,0.2); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-window); }
         .window.minimized { display: none; }
-        .window.maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 50px) !important; border-radius: 0; resize: none; }
+        .window.maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 60px) !important; border-radius: 0; resize: none; }
 
         .win-header {
-            height: 44px; background: var(--bg-header);
+            height: 48px; background: var(--bg-header);
             border-bottom: var(--border);
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 16px; cursor: grab; user-select: none;
         }
         .win-header:active { cursor: grabbing; }
-        .win-title { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #eee; }
+        .win-title { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #eee; letter-spacing: 0.5px; }
         .win-controls { display: flex; gap: 8px; }
-        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
-        .win-btn:hover { filter: brightness(1.2); }
+        .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
+        .win-btn:hover { filter: brightness(1.2); transform: scale(1.1); }
         .wb-close { background: #ff453a; }
         .wb-min { background: #ffd60a; }
         .wb-max { background: #30d158; }
 
         .win-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--bg-window); }
+        
+        /* Scroll Fix for Settings/Files */
+        .scroll-y { overflow-y: auto; height: 100%; }
 
         /* --- TASKBAR --- */
         #taskbar {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
-            background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px);
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(20, 20, 22, 0.8); backdrop-filter: blur(25px);
             border-top: var(--border);
-            display: flex; align-items: center; padding: 0 10px; gap: 10px;
+            display: flex; align-items: center; padding: 0 15px; gap: 15px;
             z-index: var(--z-taskbar);
         }
         .start-btn {
-            font-weight: 700; color: var(--primary); font-size: 1.4rem;
+            font-weight: 700; color: var(--primary); font-size: 1.6rem;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px; border-radius: 10px; transition: 0.2s;
+            width: 44px; height: 44px; border-radius: 12px; transition: 0.2s;
         }
-        .start-btn:hover { background: rgba(255,255,255,0.1); }
+        .start-btn:hover { background: rgba(255,255,255,0.1); box-shadow: 0 0 20px var(--primary-dim); }
         
-        .task-list { flex: 1; display: flex; gap: 5px; overflow-x: auto; height: 100%; align-items: center; }
+        .task-list { flex: 1; display: flex; gap: 8px; overflow-x: auto; height: 100%; align-items: center; }
         .task-item {
-            padding: 0 15px; background: rgba(255,255,255,0.05);
-            border-radius: 8px; color: var(--text-muted); font-size: 0.85rem;
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            padding: 0 16px; background: rgba(255,255,255,0.03);
+            border-radius: 10px; color: var(--text-muted); font-size: 0.9rem;
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
             transition: 0.2s; border-bottom: 2px solid transparent; white-space: nowrap;
-            height: 36px;
+            height: 40px;
         }
-        .task-item:hover { background: rgba(255,255,255,0.1); color: white; }
-        .task-item.active { background: rgba(255,255,255,0.15); color: white; }
+        .task-item:hover { background: rgba(255,255,255,0.08); color: white; }
+        .task-item.active { background: rgba(255,255,255,0.12); color: white; border-bottom-color: var(--primary); }
         
-        .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.8rem; color: var(--text-muted); padding: 0 15px; }
+        .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: var(--text-muted); padding: 0 15px; border-left: 1px solid rgba(255,255,255,0.1); }
 
-        /* --- APP: CHAT (Telegram Style) --- */
+        /* --- APP: CHAT --- */
         .chat-layout { display: flex; height: 100%; }
         .chat-sidebar { width: 260px; background: var(--bg-input); border-right: var(--border); padding: 0; display: flex; flex-direction: column; }
         .chat-main { flex: 1; display: flex; flex-direction: column; background: #000; position: relative; }
         
-        /* Sidebar Items */
-        .chat-header { padding: 15px; border-bottom: var(--border); font-weight: bold; font-size: 1.1rem; }
-        .peer-list { padding: 10px; }
-        .peer-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px;
-            background: rgba(255,255,255,0.03); border-radius: 10px;
-            cursor: pointer; transition: 0.2s;
+        .chat-header { padding: 20px; border-bottom: var(--border); font-weight: 700; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+        .conn-actions { display: flex; gap: 5px; padding: 10px; flex-direction: column; }
+        .conn-btn { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); 
+            color: #ccc; padding: 10px; border-radius: 8px; cursor: pointer; 
+            display: flex; align-items: center; gap: 10px; font-size: 0.85rem; transition: 0.2s;
         }
-        .peer-item:hover { background: rgba(255,255,255,0.08); }
-        .peer-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a84ff, #5e5ce6); display: flex; justify-content: center; align-items: center; font-weight: bold; }
-        
-        /* Messages */
+        .conn-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white; }
+        .conn-btn i { width: 20px; text-align: center; color: var(--primary); }
+
         .chat-feed { 
             flex: 1; overflow-y: auto; padding: 20px 5%; 
-            display: flex; flex-direction: column; gap: 8px; 
-            background-image: radial-gradient(#222 1px, transparent 1px); background-size: 20px 20px;
+            display: flex; flex-direction: column; gap: 10px; 
+            background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 24px 24px;
         }
-        .msg { max-width: 75%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
+        .msg { max-width: 80%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
         .msg.local { align-self: flex-end; align-items: flex-end; }
         .msg.remote { align-self: flex-start; align-items: flex-start; }
         
         .msg-bubble { 
-            padding: 10px 14px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; 
-            position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; 
+            position: relative; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .msg.local .msg-bubble { 
             background: var(--bg-bubble-local); color: white; 
@@ -195,105 +204,101 @@
             background: var(--bg-bubble-remote); color: white; 
             border-bottom-left-radius: 4px; 
         }
-        
         .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
         
-        /* Input Area */
         .chat-input-area { padding: 10px 15px; background: var(--bg-header); display: flex; gap: 10px; align-items: flex-end; min-height: 60px; }
         .chat-input { 
-            flex: 1; background: #1c1c1e; border: none; color: white; 
+            flex: 1; background: #151516; border: 1px solid transparent; color: white; 
             padding: 12px 15px; border-radius: 20px; resize: none; height: 44px; 
             font-family: inherit; transition: 0.2s; 
         }
-        .chat-input:focus { background: #2c2c2e; }
-        
-        /* Audio Deck */
-        .audio-deck {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-header); z-index: 10;
-            display: none; align-items: center; padding: 0 20px; gap: 15px;
-            animation: slideUp 0.2s ease;
-        }
-        .audio-deck.active { display: flex; }
-        #mic-visualizer { flex: 1; height: 40px; background: #000; border-radius: 8px; border: 1px solid #333; }
+        .chat-input:focus { background: #000; border-color: var(--primary); }
+        .chat-input.secure-active { border-color: var(--success); background: #051005; cursor: pointer; }
 
-        /* --- APP: WHITEBOARD --- */
-        .wb-container { flex: 1; position: relative; background: #121212; cursor: crosshair; touch-action: none; overflow: hidden; }
-        .wb-toolbar {
-            height: 60px; background: var(--bg-header); border-top: var(--border);
-            display: flex; justify-content: center; align-items: center; gap: 20px;
+        /* --- APP: VIDEO CALL --- */
+        .video-container { display: grid; grid-template-columns: 1fr; height: 100%; background: #000; position: relative; }
+        .video-container.active { grid-template-columns: 1fr; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #local-video { 
+            position: absolute; bottom: 20px; right: 20px; width: 140px; height: 100px; 
+            border-radius: 12px; border: 2px solid var(--primary); background: #111; 
+            z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover;
         }
-        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .color-dot.active { transform: scale(1.2); border-color: white; box-shadow: 0 0 10px currentColor; }
-
-        /* --- APP: TELEGRAPH --- */
-        .telegraph-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #111; gap: 20px; padding: 20px; position: relative; }
-        .haptic-key {
-            width: 180px; height: 180px; border-radius: 50%;
-            background: radial-gradient(#2c2c2e, #000); border: 6px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer;
+        .video-controls {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; background: rgba(20,20,20,0.8); padding: 15px 30px;
+            border-radius: 40px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .vc-btn {
+            width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
+            background: #333; color: white; font-size: 1.2rem; transition: 0.2s;
             display: flex; justify-content: center; align-items: center;
-            color: #555; font-size: 4rem; transition: 0.1s;
-            user-select: none; -webkit-user-select: none;
         }
-        .haptic-key:active, .haptic-key.pressed { transform: scale(0.96); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .morse-stream { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); height: 50px; letter-spacing: 4px; text-align: center; text-shadow: 0 0 10px var(--primary-dim); }
-        .morse-translation { font-family: var(--font-ui); font-size: 1.2rem; color: var(--accent); height: 30px; opacity: 0.9; }
+        .vc-btn:hover { transform: scale(1.1); }
+        .vc-btn.danger { background: var(--danger); }
+        .vc-btn.active { background: white; color: black; }
+
+        /* --- SECURE KEYBOARD (MOBILE) --- */
+        #secure-keyboard {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: auto;
+            background: #0a0a0a; border-top: 1px solid var(--primary);
+            z-index: var(--z-keyboard); display: none; flex-direction: column;
+            padding-bottom: var(--safe-area-bottom);
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+            animation: slideUp 0.2s ease-out;
+        }
+        #secure-keyboard.open { display: flex; }
         
-        .morse-info-btn { position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #444; color: #888; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
-
-        /* Morse Reference Modal */
-        .morse-ref-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 10; display: none;
-            flex-direction: column; padding: 20px; overflow-y: auto;
+        .kb-header {
+            padding: 10px; display: flex; justify-content: space-between; align-items: center;
+            background: #111; border-bottom: 1px solid #222;
         }
-        .morse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 15px; }
-        .morse-item { background: #222; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
-        .morse-char { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
-        .morse-val { font-family: monospace; font-size: 0.9rem; color: #aaa; }
-
-        /* Spoiler for Morse Translation */
-        .spoiler-box {
-            background: #222; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 5px;
-            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        .kb-status { color: var(--success); font-size: 0.8rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px; }
+        .kb-status::before { content: ''; width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--success); }
+        
+        .kb-grid {
+            display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 8px;
+            user-select: none;
         }
-        .spoiler-content { filter: blur(8px); transition: 0.5s; opacity: 0.5; }
-        .spoiler-label { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 0.7rem; color: #aaa; font-weight: bold; letter-spacing: 1px; pointer-events: none;
+        .kb-key {
+            background: #222; color: white; border-radius: 5px; height: 45px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; cursor: pointer; transition: 0.05s;
+            box-shadow: 0 2px 0 #000; font-weight: 500;
         }
-        .spoiler-box.revealed .spoiler-content { filter: blur(0); opacity: 1; }
-        .spoiler-box.revealed .spoiler-label { display: none; }
+        .kb-key:active { transform: translateY(2px); box-shadow: none; background: var(--primary); }
+        .kb-row-bottom { display: flex; padding: 0 8px 8px; gap: 5px; }
+        .kb-space { flex: 1; }
+        .kb-action { flex: 0 0 15%; background: #333; font-size: 0.9rem; }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
             body.mobile-view .desktop-icons { display: none; }
             body.mobile-view .window {
-                width: 100% !important; height: calc(100% - 60px) !important;
+                width: 100% !important; height: calc(100% - 70px) !important;
                 top: 0 !important; left: 0 !important;
-                border-radius: 0 !important; resize: none !important;
-                box-shadow: none !important;
-                border: none;
+                border-radius: 20px 20px 0 0 !important; resize: none !important;
+                box-shadow: none !important; border: none;
             }
-            body.mobile-view .win-header { display: none; } /* Hide header on mobile, use back nav */
+            body.mobile-view .win-header { display: none; } 
             body.mobile-view .chat-sidebar { display: none; }
             
-            /* Mobile Taskbar / Nav */
+            /* Mobile Dock */
             body.mobile-view #taskbar {
-                height: 60px; justify-content: space-around; padding: 0;
-                background: #111; border-top: 1px solid #333;
+                height: 70px; justify-content: space-around; padding: 0 10px;
+                background: #000; border-top: 1px solid #222;
+                padding-bottom: var(--safe-area-bottom);
             }
-            body.mobile-view .start-btn { display: none; }
-            body.mobile-view .sys-tray { display: none; }
-            body.mobile-view .task-list { justify-content: space-around; width: 100%; }
+            body.mobile-view .start-btn, body.mobile-view .sys-tray { display: none; }
+            body.mobile-view .task-list { justify-content: space-between; width: 100%; gap: 0; }
             body.mobile-view .task-item { 
                 flex-direction: column; height: 100%; justify-content: center; 
-                background: none !important; padding: 0; border: none;
+                background: none !important; padding: 0; border: none; width: 20%;
             }
-            body.mobile-view .task-item i { font-size: 1.4rem; margin-bottom: 4px; }
-            body.mobile-view .task-item span { font-size: 0.7rem; display: block; }
+            body.mobile-view .task-item i { font-size: 1.5rem; margin-bottom: 4px; }
+            body.mobile-view .task-item span { font-size: 0.65rem; display: block; opacity: 0.7; }
             body.mobile-view .task-item.active { color: var(--primary); }
+            body.mobile-view .task-item.active span { opacity: 1; }
         }
 
         /* --- UTILS --- */
@@ -303,8 +308,8 @@
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-primary:hover { background: #0071e3; transform: translateY(-1px); }
         
-        @keyframes openWindow { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes openWindow { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
         
         /* Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -316,12 +321,12 @@
 
     <!-- BIOS -->
     <div id="bios-screen">
-        <div class="bios-logo"><i class="fas fa-frog"></i></div>
-        <div class="bios-line">PEPETALK OS v8.0.0 (HYPER-CONNECTED)</div>
+        <div class="bios-logo"><i class="fas fa-shield-alt"></i></div>
+        <div class="bios-line">PEPETALK OS v9.0.0 (FORTRESS)</div>
         <div class="bios-line">KERNEL: QUANTUM MESH [SECURE]</div>
         <div class="bios-line">DETECTING DEVICE TYPE... <span id="device-type">...</span></div>
-        <div class="bios-line">INITIALIZING P2P CANVAS... OK</div>
-        <div class="bios-line">LOADING SWEDISH MORSE DICTIONARY... OK</div>
+        <div class="bios-line">INITIALIZING VIDEO UPLINK... OK</div>
+        <div class="bios-line">LOADING SCRAMBLE KEYBOARD... OK</div>
         <div class="bios-line">SYSTEM READY.</div>
     </div>
 
@@ -331,6 +336,7 @@
         <!-- Desktop Icons -->
         <div class="desktop-icons">
             <div class="d-icon" onclick="OS.WM.open('chat')"><i class="fas fa-comment-dots" style="color: #0a84ff;"></i><span>Chat</span></div>
+            <div class="d-icon" onclick="OS.WM.open('video')"><i class="fas fa-video" style="color: #ff453a;"></i><span>Video</span></div>
             <div class="d-icon" onclick="OS.WM.open('whiteboard')"><i class="fas fa-pen-nib" style="color: #5e5ce6;"></i><span>Canvas</span></div>
             <div class="d-icon" onclick="OS.WM.open('telegraph')"><i class="fas fa-broadcast-tower" style="color: #30d158;"></i><span>Telegraph</span></div>
             <div class="d-icon" onclick="OS.WM.open('files')"><i class="fas fa-folder-open" style="color: #ffd60a;"></i><span>Files</span></div>
@@ -351,6 +357,21 @@
         </div>
     </div>
 
+    <!-- SECURE KEYBOARD (Mobile) -->
+    <div id="secure-keyboard">
+        <div class="kb-header">
+            <div class="kb-status">SECURE SCRAMBLE ACTIVE</div>
+            <button class="btn-icon" style="font-size:1rem; padding:5px;" onclick="OS.Apps.Keyboard.close()"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        <div class="kb-grid" id="kb-keys"></div>
+        <div class="kb-row-bottom">
+            <div class="kb-key kb-action" onclick="OS.Apps.Keyboard.type('123')">123</div>
+            <div class="kb-key kb-space" onclick="OS.Apps.Keyboard.type(' ')">SPACE</div>
+            <div class="kb-key kb-action" onclick="OS.Apps.Keyboard.backspace()"><i class="fas fa-backspace"></i></div>
+            <div class="kb-key kb-action" style="background:var(--primary)" onclick="OS.Apps.Keyboard.enter()"><i class="fas fa-paper-plane"></i></div>
+        </div>
+    </div>
+
     <!-- TOASTS -->
     <div id="toast-area" style="position:fixed; top:20px; right:20px; z-index:var(--z-toast); display:flex; flex-direction:column; gap:10px;"></div>
 
@@ -361,35 +382,27 @@
         <div class="chat-layout">
             <div class="chat-sidebar">
                 <div class="chat-header">PepeTalk</div>
-                <div class="peer-list">
-                    <div class="peer-item">
-                        <div class="peer-avatar"><i class="fas fa-user"></i></div>
-                        <div>
-                            <div style="font-weight:600; font-size:0.9rem;">Remote Peer</div>
-                            <div style="font-size:0.75rem; color:#888;" id="peer-status-text">Waiting...</div>
-                        </div>
-                    </div>
+                <div style="padding:0 15px; font-size:0.75rem; color:#666; margin-bottom:10px;">COMMAND CENTER</div>
+                <div class="conn-actions">
+                    <div class="conn-btn" onclick="OS.Net.copyId()"><i class="fas fa-id-badge"></i> Copy My ID</div>
+                    <div class="conn-btn" onclick="OS.Net.copyLink()"><i class="fas fa-link"></i> Copy Invite Link</div>
+                    <div class="conn-btn" onclick="OS.UI.showQR()"><i class="fas fa-qrcode"></i> Show QR Code</div>
+                </div>
+                <div style="margin-top:auto; padding:15px; font-size:0.7rem; color:#444;">
+                    v9.0.0 Fortress Build
                 </div>
             </div>
             <div class="chat-main">
                 <div class="chat-feed" id="chat-feed">
                     <div style="text-align:center; opacity:0.5; margin-top:50px;">
-                        <i class="fas fa-lock" style="font-size:3rem; margin-bottom:10px;"></i>
-                        <p>Messages are end-to-end encrypted.<br>History cleared on connection.</p>
+                        <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
+                        <p>End-to-End Encrypted.<br>No Server Storage.</p>
                     </div>
                 </div>
                 <div class="chat-input-area">
-                    <!-- Audio Deck -->
-                    <div class="audio-deck" id="audio-deck">
-                        <span style="color:var(--primary); font-weight:bold; font-family:var(--font-mono)" id="rec-timer">00:00</span>
-                        <canvas id="mic-visualizer"></canvas>
-                        <button class="btn-icon" onclick="OS.Apps.Audio.cancel()"><i class="fas fa-times"></i></button>
-                        <button class="btn-primary" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                    <!-- Standard Input -->
                     <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
-                    <textarea class="chat-input" id="chat-input" placeholder="Message..."></textarea>
-                    <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Message..." autocomplete="off">
+                    <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
                     <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -397,7 +410,25 @@
         <input type="file" id="file-input" hidden onchange="OS.Net.FileTransfer.handle(this)">
     </template>
 
-    <!-- 2. WHITEBOARD APP -->
+    <!-- 2. VIDEO APP -->
+    <template id="tpl-video">
+        <div class="video-container" id="video-container">
+            <video id="remote-video" autoplay playsinline></video>
+            <video id="local-video" autoplay playsinline muted></video>
+            <div class="video-controls">
+                <button class="vc-btn" onclick="OS.Apps.Video.toggleMic()" id="btn-mic"><i class="fas fa-microphone"></i></button>
+                <button class="vc-btn danger" onclick="OS.Apps.Video.endCall()"><i class="fas fa-phone-slash"></i></button>
+                <button class="vc-btn" onclick="OS.Apps.Video.toggleCam()" id="btn-cam"><i class="fas fa-video"></i></button>
+            </div>
+            <div id="video-placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#666;">
+                <i class="fas fa-video-slash" style="font-size:3rem; margin-bottom:15px;"></i>
+                <p>Waiting for connection...</p>
+                <button class="btn-primary" style="margin-top:15px;" onclick="OS.Apps.Video.startCall()">Start Call</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3. WHITEBOARD APP -->
     <template id="tpl-whiteboard">
         <div style="display:flex; flex-direction:column; height:100%;">
             <div class="wb-container" id="wb-wrapper">
@@ -415,14 +446,11 @@
         </div>
     </template>
 
-    <!-- 3. TELEGRAPH APP -->
+    <!-- 4. TELEGRAPH APP -->
     <template id="tpl-telegraph">
         <div class="telegraph-ui">
-            <button class="morse-info-btn" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info"></i></button>
-            
             <div class="morse-stream" id="morse-display"></div>
             <div class="morse-translation" id="morse-transcription"></div>
-            
             <div class="haptic-key" id="telegraph-key"
                  onmousedown="OS.Apps.Telegraph.down()" 
                  onmouseup="OS.Apps.Telegraph.up()" 
@@ -431,40 +459,27 @@
                  ontouchend="OS.Apps.Telegraph.up()">
                 <i class="fas fa-fingerprint"></i>
             </div>
-            
-            <div style="color:#666; text-align:center; margin-top:10px;">
+            <div style="color:#666; text-align:center; margin-top:20px;">
                 TAP = DOT | HOLD = DASH<br>
-                <span style="font-size:0.8rem; color:#444;">Swedish Alphabet Supported (Å, Ä, Ö)</span>
-            </div>
-            
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-primary" style="background:#333" onclick="OS.Apps.Telegraph.clear()">Clear</button>
-                <button class="btn-primary" onclick="OS.Apps.Telegraph.send()">Send Transmission</button>
-            </div>
-
-            <!-- Reference Overlay -->
-            <div class="morse-ref-overlay" id="morse-ref">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>Morse Reference</h3>
-                    <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="morse-grid" id="morse-grid-content"></div>
+                <span style="font-size:0.8rem; color:#444;">Audio Auto-Sent</span>
             </div>
         </div>
     </template>
 
-    <!-- 4. FILES APP -->
+    <!-- 5. FILES APP -->
     <template id="tpl-files">
-        <div style="padding:20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
-            <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
-                <i class="fas fa-folder-open" style="font-size:3rem;"></i><br>No files received.
+        <div class="scroll-y" style="padding:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
+                <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
+                    <i class="fas fa-folder-open" style="font-size:3rem;"></i><br>No files received.
+                </div>
             </div>
         </div>
     </template>
 
-    <!-- 5. SETTINGS APP -->
+    <!-- 6. SETTINGS APP -->
     <template id="tpl-settings">
-        <div style="padding:20px; max-width:500px; margin:0 auto;">
+        <div class="scroll-y" style="padding:20px; max-width:500px; margin:0 auto;">
             <h3>Identity</h3>
             <div style="background:#222; padding:10px; border-radius:8px; font-family:monospace; color:var(--accent); word-break:break-all;" id="my-id">...</div>
             
@@ -473,24 +488,24 @@
                 <input type="text" id="manual-peer-id" placeholder="Paste Peer ID here..." style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white; border-radius:4px; margin-bottom:10px;">
                 <button class="btn-primary" style="width:100%;" onclick="OS.Net.connectManual()">Connect to Peer</button>
             </div>
-
-            <h3>Invite Link</h3>
-            <div style="text-align:center; background:#222; padding:20px; border-radius:8px; margin-top:20px;">
-                <div id="qrcode" style="display:inline-block; background:white; padding:10px; border-radius:8px;"></div>
-                <button class="btn-primary" style="width:100%; margin-top:15px;" onclick="OS.Net.copyLink()">Copy Invite Link</button>
-            </div>
         </div>
     </template>
 
+    <!-- QR MODAL -->
+    <div id="qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:12000; display:none; justify-content:center; align-items:center; flex-direction:column;">
+        <div style="background:white; padding:20px; border-radius:16px;" id="qr-target"></div>
+        <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
+    </div>
+
     <script>
         /**
-         * 🍓 PEPETALK OS v8 - HYPER-CONNECTED
-         * "The future is now."
+         * 🍓 PEPETALK OS v9 - THE FORTRESS
+         * "Secure. Scrambled. Superior."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false },
+            State: { peerId: null, conn: null, call: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false },
 
             // --- KERNEL ---
             init: async () => {
@@ -501,7 +516,7 @@
                 const bios = document.getElementById('bios-screen');
                 const lines = bios.querySelectorAll('.bios-line');
                 let delay = 0;
-                lines.forEach((line) => { setTimeout(() => line.style.opacity = 1, delay); delay += 300; });
+                lines.forEach((line) => { setTimeout(() => line.style.opacity = 1, delay); delay += 200; });
 
                 setTimeout(async () => {
                     await OS.Security.init();
@@ -514,7 +529,7 @@
                         OS.WM.open('chat');
                         OS.UI.playSound('startup');
                     }, 1000);
-                }, 2500);
+                }, 2000);
             },
 
             // --- WINDOW MANAGER ---
@@ -530,20 +545,15 @@
                     win.className = 'window';
                     win.id = `win-${app}`;
                     
-                    // Positioning
                     if (!OS.State.isMobile) {
                         const offset = Object.keys(OS.State.windows).length * 25;
                         win.style.top = (60 + offset) + 'px';
                         win.style.left = (60 + offset) + 'px';
-                        win.style.width = app === 'whiteboard' ? '700px' : '400px';
-                        win.style.height = '550px';
+                        win.style.width = app === 'whiteboard' ? '700px' : (app === 'video' ? '600px' : '400px');
+                        win.style.height = app === 'video' ? '450px' : '550px';
                     }
 
-                    const titles = { 
-                        chat: 'Secure Chat', whiteboard: 'Vector Canvas', 
-                        telegraph: 'Telegraph V5', files: 'File Manager', 
-                        settings: 'Settings' 
-                    };
+                    const titles = { chat: 'Secure Chat', video: 'Video Uplink', whiteboard: 'Vector Canvas', telegraph: 'Telegraph V5', files: 'File Manager', settings: 'Settings' };
 
                     win.innerHTML = `
                         <div class="win-header" onmousedown="OS.WM.drag(event, '${app}')">
@@ -566,13 +576,14 @@
                     // App Init
                     if(app === 'whiteboard') setTimeout(OS.Apps.Whiteboard.init, 100);
                     if(app === 'settings') OS.Apps.Settings.render();
-                    if(app === 'telegraph') OS.Apps.Telegraph.renderGrid();
+                    if(app === 'chat' && OS.State.isMobile) document.getElementById('kb-toggle').style.display = 'block';
                 },
                 close: (app) => {
                     OS.UI.playSound('close');
                     document.getElementById(`win-${app}`).remove();
                     document.getElementById(`task-${app}`).remove();
                     delete OS.State.windows[app];
+                    if(app === 'video') OS.Apps.Video.endCall();
                 },
                 focus: (app) => {
                     const win = document.getElementById(`win-${app}`);
@@ -585,16 +596,13 @@
                 },
                 min: (app) => document.getElementById(`win-${app}`).style.display = 'none',
                 max: (app) => document.getElementById(`win-${app}`).classList.toggle('maximized'),
-                minimizeAll: () => {
-                    Object.keys(OS.State.windows).forEach(app => OS.WM.min(app));
-                },
+                minimizeAll: () => Object.keys(OS.State.windows).forEach(app => OS.WM.min(app)),
                 addTask: (app, title) => {
                     const bar = document.getElementById('task-list');
                     const item = document.createElement('div');
                     item.className = 'task-item active';
                     item.id = `task-${app}`;
-                    // Mobile icons
-                    const icons = { chat: 'comment-dots', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
+                    const icons = { chat: 'comment-dots', video: 'video', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
                     item.innerHTML = `<i class="fas fa-${icons[app]}"></i> <span>${title}</span>`;
                     item.onclick = () => OS.WM.focus(app);
                     bar.appendChild(item);
@@ -658,6 +666,7 @@
                         if(OS.Net.target) OS.Net.connect(OS.Net.target);
                     });
                     OS.Net.peer.on('connection', OS.Net.bind);
+                    OS.Net.peer.on('call', OS.Apps.Video.handleIncoming);
                 },
                 connect: (rid) => OS.Net.bind(OS.Net.peer.connect(rid)),
                 connectManual: () => {
@@ -669,14 +678,10 @@
                     c.on('open', () => { 
                         OS.UI.toast('Connected', 'success'); 
                         document.getElementById('conn-status').style.color = 'var(--success)';
-                        document.getElementById('peer-status-text').innerText = "Online";
-                        OS.Apps.Chat.clear(); // Clear history on new connection
+                        OS.Apps.Chat.clear();
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
-                    c.on('close', () => {
-                        document.getElementById('conn-status').style.color = 'var(--danger)';
-                        document.getElementById('peer-status-text').innerText = "Offline";
-                    });
+                    c.on('close', () => document.getElementById('conn-status').style.color = 'var(--danger)');
                 },
                 send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
                 route: (m) => {
@@ -686,6 +691,7 @@
                     if(m.t === 'draw-clear') OS.Apps.Whiteboard.clearLocal();
                 },
                 copyLink: () => { navigator.clipboard.writeText(OS.State.link); OS.UI.toast('Link Copied', 'success'); },
+                copyId: () => { navigator.clipboard.writeText(OS.State.peerId); OS.UI.toast('ID Copied', 'success'); },
                 
                 FileTransfer: {
                     bufs: {},
@@ -716,7 +722,7 @@
                                 return a;
                             });
                             const url = URL.createObjectURL(new Blob(blobs, { type: p.type }));
-                            OS.Apps.Chat.finalize(p.fid, url, p.type, true); // Auto play if audio
+                            OS.Apps.Chat.finalize(p.fid, url, p.type, true);
                             OS.Apps.Files.add(p.n, url);
                             delete OS.Net.FileTransfer.bufs[p.fid];
                         }
@@ -760,9 +766,7 @@
                             el.innerHTML = `<div id="${wid}" style="width:200px"></div><button class="btn-icon" onclick="OS.Apps.Chat.play('${wid}')"><i class="fas fa-play"></i></button>`;
                             setTimeout(() => {
                                 OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
-                                if(autoPlay) {
-                                    OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
-                                }
+                                if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
                             }, 100);
                         } else if(type.startsWith('image/')) {
                             el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px;">`;
@@ -774,20 +778,114 @@
                     play: (id) => OS.Apps.Chat.waves[id]?.playPause()
                 },
 
+                Video: {
+                    localStream: null,
+                    startCall: async () => {
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                            OS.Apps.Video.localStream = stream;
+                            document.getElementById('local-video').srcObject = stream;
+                            document.getElementById('video-placeholder').classList.add('hidden');
+                            const call = OS.Net.peer.call(OS.State.conn.peer, stream);
+                            OS.Apps.Video.handleCall(call);
+                        } catch(e) { OS.UI.toast('Camera Error', 'danger'); }
+                    },
+                    handleIncoming: (call) => {
+                        OS.WM.open('video');
+                        OS.UI.toast('Incoming Call...', 'warning');
+                        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+                            OS.Apps.Video.localStream = stream;
+                            document.getElementById('local-video').srcObject = stream;
+                            document.getElementById('video-placeholder').classList.add('hidden');
+                            call.answer(stream);
+                            OS.Apps.Video.handleCall(call);
+                        });
+                    },
+                    handleCall: (call) => {
+                        OS.State.call = call;
+                        call.on('stream', remoteStream => {
+                            document.getElementById('remote-video').srcObject = remoteStream;
+                            document.getElementById('video-container').classList.add('active');
+                        });
+                        call.on('close', OS.Apps.Video.endCall);
+                    },
+                    endCall: () => {
+                        if(OS.State.call) OS.State.call.close();
+                        if(OS.Apps.Video.localStream) OS.Apps.Video.localStream.getTracks().forEach(t => t.stop());
+                        document.getElementById('remote-video').srcObject = null;
+                        document.getElementById('video-container')?.classList.remove('active');
+                        document.getElementById('video-placeholder')?.classList.remove('hidden');
+                    },
+                    toggleMic: () => {
+                        const t = OS.Apps.Video.localStream.getAudioTracks()[0];
+                        t.enabled = !t.enabled;
+                        document.getElementById('btn-mic').classList.toggle('active');
+                    },
+                    toggleCam: () => {
+                        const t = OS.Apps.Video.localStream.getVideoTracks()[0];
+                        t.enabled = !t.enabled;
+                        document.getElementById('btn-cam').classList.toggle('active');
+                    }
+                },
+
+                Keyboard: {
+                    chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()",
+                    open: () => {
+                        const kb = document.getElementById('secure-keyboard');
+                        const input = document.getElementById('chat-input');
+                        kb.classList.add('open');
+                        input.classList.add('secure-active');
+                        input.setAttribute('readonly', true); // Prevent native keyboard
+                        OS.Apps.Keyboard.render();
+                    },
+                    close: () => {
+                        document.getElementById('secure-keyboard').classList.remove('open');
+                        const input = document.getElementById('chat-input');
+                        input.classList.remove('secure-active');
+                        input.removeAttribute('readonly');
+                    },
+                    render: () => {
+                        const grid = document.getElementById('kb-keys');
+                        grid.innerHTML = '';
+                        // Scramble
+                        const shuffled = OS.Apps.Keyboard.chars.split('').sort(() => 0.5 - Math.random());
+                        shuffled.forEach(char => {
+                            const k = document.createElement('div');
+                            k.className = 'kb-key';
+                            k.innerText = char;
+                            k.onclick = () => OS.Apps.Keyboard.type(char);
+                            grid.appendChild(k);
+                        });
+                    },
+                    type: (char) => {
+                        const input = document.getElementById('chat-input');
+                        input.value += char;
+                        OS.Apps.Keyboard.render(); // Reshuffle on every tap
+                        OS.UI.playSound('key');
+                    },
+                    backspace: () => {
+                        const input = document.getElementById('chat-input');
+                        input.value = input.value.slice(0, -1);
+                        OS.Apps.Keyboard.render();
+                    },
+                    enter: () => {
+                        OS.Apps.Chat.send();
+                        OS.Apps.Keyboard.render();
+                    }
+                },
+
                 Whiteboard: {
                     ctx: null, drawing: false, color: '#ff453a',
                     init: () => {
                         const c = document.getElementById('wb-canvas');
                         const w = document.getElementById('wb-wrapper');
                         if(!c || !w) return;
-                        
                         new ResizeObserver(() => { c.width = w.clientWidth; c.height = w.clientHeight; }).observe(w);
                         const getPos = (e) => {
                             const r = c.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
                             return { x: t.clientX - r.left, y: t.clientY - r.top };
                         };
-
                         OS.Apps.Whiteboard.ctx = c.getContext('2d');
                         const start = (e) => { OS.Apps.Whiteboard.drawing = true; OS.Apps.Whiteboard.last = getPos(e); };
                         const move = (e) => {
@@ -799,7 +897,6 @@
                             OS.Apps.Whiteboard.last = p;
                         };
                         const end = () => OS.Apps.Whiteboard.drawing = false;
-
                         c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
                         c.addEventListener('touchstart', start); c.addEventListener('touchmove', move); c.addEventListener('touchend', end);
                     },
@@ -832,93 +929,9 @@
                     }
                 },
 
-                Audio: {
-                    rec: null, chunks: [], ctx: null,
-                    start: async () => {
-                        try {
-                            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-                            document.getElementById('audio-deck').classList.add('active');
-                            OS.Apps.Audio.ctx = new AudioContext();
-                            const src = OS.Apps.Audio.ctx.createMediaStreamSource(s);
-                            const an = OS.Apps.Audio.ctx.createAnalyser();
-                            src.connect(an);
-                            
-                            const cvs = document.getElementById('mic-visualizer');
-                            const c = cvs.getContext('2d');
-                            const d = new Uint8Array(an.frequencyBinCount);
-                            const draw = () => {
-                                if(!document.getElementById('audio-deck').classList.contains('active')) return;
-                                requestAnimationFrame(draw);
-                                an.getByteFrequencyData(d);
-                                c.clearRect(0,0,cvs.width,cvs.height);
-                                c.fillStyle = '#0a84ff';
-                                const w = cvs.width/30;
-                                for(let i=0; i<30; i++) {
-                                    const h = (d[i]/255)*cvs.height;
-                                    c.fillRect(i*w, cvs.height-h, w-2, h);
-                                }
-                            };
-                            draw();
-
-                            OS.Apps.Audio.rec = new MediaRecorder(s);
-                            OS.Apps.Audio.chunks = [];
-                            OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
-                            OS.Apps.Audio.rec.start();
-                            
-                            let sec = 0;
-                            OS.Apps.Audio.timer = setInterval(() => {
-                                sec++;
-                                document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
-                            }, 1000);
-
-                        } catch(e) { OS.UI.toast('Mic Error', 'danger'); }
-                    },
-                    send: () => {
-                        if(!OS.Apps.Audio.rec) return;
-                        OS.Apps.Audio.rec.onstop = () => {
-                            const b = new Blob(OS.Apps.Audio.chunks, { type: 'audio/webm' });
-                            OS.Net.FileTransfer.send(new File([b], "voice.webm", { type: 'audio/webm' }));
-                            OS.Apps.Audio.cancel();
-                        };
-                        OS.Apps.Audio.rec.stop();
-                    },
-                    cancel: () => {
-                        if(OS.Apps.Audio.rec) {
-                            OS.Apps.Audio.rec.stream.getTracks().forEach(t => t.stop());
-                            OS.Apps.Audio.rec = null;
-                        }
-                        clearInterval(OS.Apps.Audio.timer);
-                        document.getElementById('rec-timer').innerText = "00:00";
-                        document.getElementById('audio-deck').classList.remove('active');
-                    }
-                },
-
                 Telegraph: {
                     ctx: null, osc: null, dest: null, rec: null, chunks: [], startT: 0, seq: "", lastUp: 0,
-                    dict: {
-                        '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F',
-                        '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
-                        '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P', '--.-': 'Q', '.-.': 'R',
-                        '...': 'S', '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
-                        '-.--': 'Y', '--..': 'Z', '.--.-': 'Å', '.-.-': 'Ä', '---.': 'Ö',
-                        '-----': '0', '.----': '1', '..---': '2', '...--': '3', '....-': '4',
-                        '.....': '5', '-....': '6', '--...': '7', '---..': '8', '----.': '9'
-                    },
-                    renderGrid: () => {
-                        const grid = document.getElementById('morse-grid-content');
-                        if(!grid) return;
-                        grid.innerHTML = '';
-                        for(const [code, char] of Object.entries(OS.Apps.Telegraph.dict)) {
-                            const item = document.createElement('div');
-                            item.className = 'morse-item';
-                            item.innerHTML = `<div class="morse-char">${char}</div><div class="morse-val">${code}</div>`;
-                            grid.appendChild(item);
-                        }
-                    },
-                    toggleInfo: () => {
-                        const el = document.getElementById('morse-ref');
-                        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
-                    },
+                    dict: { '.-':'A', '-...':'B', '-.-.':'C', '-..':'D', '.':'E', '..-.':'F', '--.':'G', '....':'H', '..':'I', '.---':'J', '-.-':'K', '.-..':'L', '--':'M', '-.':'N', '---':'O', '.--.':'P', '--.-':'Q', '.-.':'R', '...':'S', '-':'T', '..-':'U', '...-':'V', '.--':'W', '-..-':'X', '-.--':'Y', '--..':'Z', '.--.-':'Å', '.-.-':'Ä', '---.':'Ö' },
                     initAudio: () => {
                         if(OS.Apps.Telegraph.ctx) return;
                         OS.Apps.Telegraph.ctx = new AudioContext();
@@ -933,16 +946,12 @@
                         const t = OS.Apps.Telegraph;
                         t.osc = t.ctx.createOscillator();
                         const g = t.ctx.createGain();
-                        t.osc.connect(g);
-                        g.connect(t.ctx.destination); g.connect(t.dest);
+                        t.osc.connect(g); g.connect(t.ctx.destination); g.connect(t.dest);
                         t.osc.frequency.value = 600; t.osc.start();
                         t.startT = Date.now();
                         document.getElementById('telegraph-key').classList.add('pressed');
                         const diff = Date.now() - t.lastUp;
-                        if(t.lastUp > 0) {
-                            if(diff > 1000) { t.seq += " / "; }
-                            else if(diff > 400) { t.seq += " "; }
-                        }
+                        if(t.lastUp > 0) { if(diff > 1000) t.seq += " / "; else if(diff > 400) t.seq += " "; }
                     },
                     up: () => {
                         const t = OS.Apps.Telegraph;
@@ -958,9 +967,7 @@
                     transcribe: () => {
                         const t = OS.Apps.Telegraph;
                         const words = t.seq.split(' / ');
-                        const text = words.map(w => {
-                            return w.split(' ').map(c => t.dict[c] || '?').join('');
-                        }).join(' ');
+                        const text = words.map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
                         document.getElementById('morse-transcription').innerText = text;
                     },
                     send: () => {
@@ -970,16 +977,9 @@
                         t.rec.onstop = () => {
                             const b = new Blob(t.chunks, { type: 'audio/webm' });
                             OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
-                            
                             const translation = document.getElementById('morse-transcription').innerText;
                             if(t.seq) {
-                                let msg = `<div class="spoiler-box" onclick="this.classList.add('revealed')">
-                                    <div class="spoiler-label">CLICK TO REVEAL MORSE</div>
-                                    <div class="spoiler-content">
-                                        <div style="font-family:monospace; color:var(--primary)">${t.seq}</div>
-                                        <div style="font-weight:bold; color:var(--accent)">${translation}</div>
-                                    </div>
-                                </div>`;
+                                let msg = `<div class="spoiler-box" onclick="this.classList.add('revealed')"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
                                 OS.Net.send('text', msg);
                             }
                             t.clear();
@@ -1010,7 +1010,6 @@
                 Settings: {
                     render: () => {
                         document.getElementById('my-id').innerText = OS.State.peerId || '...';
-                        if(OS.State.link) new QRCode(document.getElementById('qrcode'), { text: OS.State.link, width: 128, height: 128 });
                     }
                 }
             },
@@ -1025,7 +1024,12 @@
                     document.getElementById('toast-area').appendChild(el);
                     setTimeout(() => el.remove(), 3000);
                 },
-                toggleMenu: () => document.getElementById('mobile-menu').classList.toggle('open'),
+                showQR: () => {
+                    document.getElementById('qr-modal').style.display = 'flex';
+                    const t = document.getElementById('qr-target');
+                    t.innerHTML = '';
+                    new QRCode(t, { text: OS.State.link, width: 200, height: 200 });
+                },
                 dataURLtoFile: (dataurl, filename) => {
                     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -1046,9 +1050,9 @@
                     } else if (type === 'open') {
                         osc.frequency.value = 600; g.gain.value = 0.05;
                         osc.start(); osc.stop(ctx.currentTime + 0.1);
-                    } else if (type === 'close') {
-                        osc.frequency.value = 300; g.gain.value = 0.05;
-                        osc.start(); osc.stop(ctx.currentTime + 0.1);
+                    } else if (type === 'key') {
+                        osc.frequency.value = 800; g.gain.value = 0.02;
+                        osc.start(); osc.stop(ctx.currentTime + 0.05);
                     }
                 }
             }
