@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS X | Apex Edition</title>
+    <title>PepeTalk OS XI | Zenith Edition</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="The Ultimate P2P Operating System">
     
-    <!-- APEX CORE DEPENDENCIES -->
+    <!-- ZENITH CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 
-         * 🏛️ THEME: APEX DARK
-         * "Perfection is not when there is nothing more to add, but nothing left to take away."
+         * 🏛️ THEME: ZENITH DARK
+         * "Beyond the event horizon."
          */
         :root {
             --bg-root: #000000;
@@ -31,7 +33,7 @@
             --bg-panel: #161616;
             --bg-input: #0a0a0a;
             
-            --primary: #3b82f6;
+            --primary: #3b82f6; /* Zenith Blue */
             --primary-dim: rgba(59, 130, 246, 0.15);
             --primary-glow: rgba(59, 130, 246, 0.4);
             
@@ -42,12 +44,13 @@
             
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+            --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(18, 18, 18, 0.8);
+            --glass: rgba(18, 18, 18, 0.85);
             --blur: blur(24px);
             
-            --shadow-win: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            --shadow-win: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
             
             --font-ui: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -140,7 +143,7 @@
             height: 42px; background: var(--bg-header);
             border-bottom: var(--border);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 14px; cursor: grab; user-select: none;
+            padding: 0 14px; cursor: grab; user-select: none; flex-shrink: 0;
         }
         .win-bar:active { cursor: grabbing; }
         .win-title { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #ddd; }
@@ -191,7 +194,7 @@
         .cmd-center { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
         .cmd-btn { 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
-            color: #ccc; padding: 10px 12px; border-radius: 6px; cursor: pointer; 
+            color: #ccc; padding: 8px 12px; border-radius: 6px; cursor: pointer; 
             display: flex; align-items: center; gap: 10px; font-size: 0.8rem; transition: 0.2s;
         }
         .cmd-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); color: white; }
@@ -265,7 +268,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer;
             display: flex; justify-content: center; align-items: center;
             color: #555; font-size: 4rem; transition: 0.1s;
-            user-select: none; -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none; touch-action: none;
         }
         .haptic-key:active, .haptic-key.pressed { transform: scale(0.96); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .morse-stream { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); height: 50px; letter-spacing: 4px; text-align: center; text-shadow: 0 0 10px var(--primary-dim); }
@@ -508,7 +511,7 @@
     <!-- 3. TERMINAL -->
     <template id="tpl-terminal">
         <div class="term-window" id="term-out" onclick="document.getElementById('term-in').focus()">
-            <div class="term-line">PepeTalk OS Kernel v10.0.1</div>
+            <div class="term-line">PepeTalk OS Kernel v11.0.0</div>
             <div class="term-line">Type 'help' for commands.</div>
             <div class="term-input-line">
                 <span class="term-prompt">root@titan:~#</span>
@@ -546,9 +549,12 @@
                  ontouchend="OS.Apps.Telegraph.up()">
                 <i class="fas fa-fingerprint"></i>
             </div>
-            <div style="color:#666; text-align:center; margin-top:20px;">
-                TAP = DOT | HOLD = DASH<br>
-                <span style="font-size:0.8rem; color:#444;">Audio Auto-Sent</span>
+            <div style="color:#666; text-align:center; margin-top:10px; font-size:0.8rem;">
+                TAP = DOT | HOLD = DASH
+            </div>
+            <div style="display:flex; gap:15px; margin-top:15px;">
+                <button class="btn-primary" style="background:#333" onclick="OS.Apps.Telegraph.clear()">RESET</button>
+                <button class="btn-primary" onclick="OS.Apps.Telegraph.send()">SEND</button>
             </div>
             <!-- Reference Overlay -->
             <div class="morse-ref-overlay" id="morse-ref">
@@ -592,17 +598,17 @@
     <!-- 8. WHITEBOARD -->
     <template id="tpl-whiteboard">
         <div style="display:flex; flex-direction:column; height:100%;">
-            <div style="flex:1; position:relative; background:#111; cursor:crosshair;" id="wb-wrap">
+            <div style="flex:1; position:relative; background:#111; cursor:crosshair; touch-action:none;" id="wb-wrap">
                 <canvas id="wb-canvas"></canvas>
             </div>
-            <div style="height:50px; background:var(--bg-header); border-top:var(--border); display:flex; justify-content:center; align-items:center; gap:15px;">
+            <div style="height:60px; background:var(--bg-header); border-top:var(--border); display:flex; justify-content:center; align-items:center; gap:15px; flex-shrink:0;">
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ef4444')"><i class="fas fa-circle" style="color:#ef4444"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#3b82f6')"><i class="fas fa-circle" style="color:#3b82f6"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#10b981')"><i class="fas fa-circle" style="color:#10b981"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ffffff')"><i class="fas fa-circle" style="color:#ffffff"></i></button>
                 <div style="width:1px; height:20px; background:#444;"></div>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.clear()"><i class="fas fa-trash"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Whiteboard.save()"><i class="fas fa-save"></i></button>
+                <button class="btn-icon" onclick="OS.Apps.Whiteboard.save()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </template>
@@ -615,8 +621,8 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS X - APEX EDITION
-         * "The final word in browser-based communication."
+         * 🍓 PEPETALK OS X - ZENITH EDITION
+         * "The pinnacle of browser engineering."
          */
 
         const OS = {
@@ -664,6 +670,22 @@
                         e.target.closest('.spoiler-box').classList.add('revealed');
                     }
                 });
+
+                // Global Key Listener for Enter to Send in Apps
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        const activeWin = document.querySelector('.window.active');
+                        if (activeWin) {
+                            if (activeWin.id === 'win-whiteboard') {
+                                e.preventDefault();
+                                OS.Apps.Whiteboard.save();
+                            } else if (activeWin.id === 'win-telegraph') {
+                                e.preventDefault();
+                                OS.Apps.Telegraph.send();
+                            }
+                        }
+                    }
+                });
             },
 
             // --- WINDOW MANAGER ---
@@ -675,7 +697,7 @@
 
                     OS.UI.playSound('open');
                     const win = document.createElement('div');
-                    win.className = 'window';
+                    win.className = 'window active'; // Start active
                     win.id = `win-${app}`;
                     
                     if (!OS.State.isMobile) {
@@ -686,7 +708,7 @@
                         win.style.height = '500px';
                     }
 
-                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V6', files: 'File Manager', settings: 'Settings' };
+                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V7', files: 'File Manager', settings: 'Settings' };
 
                     win.innerHTML = `
                         <div class="win-bar" onmousedown="OS.WM.drag(event, '${app}')">
@@ -736,6 +758,9 @@
                 focus: (app) => {
                     const win = document.getElementById(`win-${app}`);
                     if(win) {
+                        // Remove active class from all windows
+                        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+                        win.classList.add('active');
                         win.style.display = 'flex';
                         win.style.zIndex = ++OS.State.zIndex;
                         document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
@@ -1016,7 +1041,7 @@
                     exec: (cmd) => {
                         const args = cmd.split(' ');
                         switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix'); break;
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say'); break;
                             case 'clear': document.getElementById('term-out').innerHTML = '<div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div>'; OS.Apps.Terminal.init(); break;
                             case 'ping': OS.Apps.Terminal.log('pong'); break;
                             case 'echo': OS.Apps.Terminal.log(args.slice(1).join(' ')); break;
@@ -1025,6 +1050,16 @@
                             case 'reboot': location.reload(); break;
                             case 'ls': OS.Apps.Terminal.log(Object.keys(OS.State.fs['/'].children).join('  ')); break;
                             case 'matrix': OS.Apps.Terminal.log('Wake up, Neo...'); break;
+                            case 'calc': try { OS.Apps.Terminal.log(eval(args.slice(1).join(' '))); } catch(e) { OS.Apps.Terminal.log('Error'); } break;
+                            case 'sys': OS.Apps.Terminal.log(`UA: ${navigator.userAgent}`); OS.Apps.Terminal.log(`Res: ${window.innerWidth}x${window.innerHeight}`); break;
+                            case 'open': OS.WM.open(args[1]); OS.Apps.Terminal.log(`Opening ${args[1]}...`); break;
+                            case 'connect': OS.Net.connect(args[1]); OS.Apps.Terminal.log(`Connecting to ${args[1]}...`); break;
+                            case 'say': 
+                                const msg = args.slice(1).join(' ');
+                                OS.Net.send('text', msg);
+                                OS.Apps.Chat.render(msg, 'local');
+                                OS.Apps.Terminal.log('Message sent.');
+                                break;
                             default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
                         }
                     }
@@ -1139,6 +1174,8 @@
                         const c = document.getElementById('wb-canvas');
                         const u = c.toDataURL('image/png');
                         OS.Net.FileTransfer.send(OS.UI.dataURLtoFile(u, 'drawing.png'));
+                        // Local Echo
+                        OS.Apps.Chat.render(`<img src="${u}" style="max-width:100%; border-radius:8px;">`, 'local');
                         OS.UI.toast('Sent to Chat', 'success');
                     }
                 },
@@ -1210,6 +1247,8 @@
                             if(t.seq) {
                                 let msg = `<div class="spoiler-box"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
                                 OS.Net.send('text', msg);
+                                // Local Echo
+                                OS.Apps.Chat.render(msg, 'local');
                             }
                             t.clear();
                         };
