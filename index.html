@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XI | Zenith Edition</title>
+    <title>PepeTalk OS XII | Singularity Edition</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="The Ultimate P2P Operating System">
     
-    <!-- ZENITH CORE DEPENDENCIES -->
+    <!-- SINGULARITY CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -22,8 +22,8 @@
 
     <style>
         /* 
-         * 🏛️ THEME: ZENITH DARK
-         * "Beyond the event horizon."
+         * 🏛️ THEME: SINGULARITY DARK
+         * "We have reached the point of no return."
          */
         :root {
             --bg-root: #000000;
@@ -33,7 +33,7 @@
             --bg-panel: #161616;
             --bg-input: #0a0a0a;
             
-            --primary: #3b82f6; /* Zenith Blue */
+            --primary: #3b82f6; /* Singularity Blue */
             --primary-dim: rgba(59, 130, 246, 0.15);
             --primary-glow: rgba(59, 130, 246, 0.4);
             
@@ -225,6 +225,16 @@
         }
         .chat-input:focus { border-color: var(--primary); background: #000; }
         .chat-input.secure-mode { border-color: var(--success); background: rgba(16, 185, 129, 0.05); cursor: pointer; }
+
+        /* Audio Deck */
+        .audio-deck {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-header); z-index: 10;
+            display: none; align-items: center; padding: 0 20px; gap: 15px;
+            animation: slideUp 0.2s ease;
+        }
+        .audio-deck.active { display: flex; }
+        #mic-visualizer { flex: 1; height: 40px; background: #000; border-radius: 8px; border: 1px solid #333; }
 
         /* --- APP: VIDEO PRO --- */
         .video-stage { display: grid; grid-template-columns: 1fr; height: 100%; background: #000; position: relative; }
@@ -479,8 +489,21 @@
                     </div>
                 </div>
                 <div class="chat-input-bar">
-                    <button class="btn-icon" onclick="document.getElementById('file-input').click()"><i class="fas fa-paperclip"></i></button>
+                    <!-- Audio Deck -->
+                    <div class="audio-deck" id="audio-deck">
+                        <span style="color:var(--primary); font-weight:bold; font-family:var(--font-mono)" id="rec-timer">00:00</span>
+                        <canvas id="mic-visualizer"></canvas>
+                        <button class="btn-icon" onclick="OS.Apps.Audio.cancel()"><i class="fas fa-times"></i></button>
+                        <button class="btn-primary" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    
+                    <button class="btn-icon" onclick="document.getElementById('file-input').click()" title="File"><i class="fas fa-paperclip"></i></button>
+                    <button class="btn-icon" onclick="OS.WM.open('video')" title="Video Call"><i class="fas fa-video"></i></button>
+                    <button class="btn-icon" onclick="OS.WM.open('whiteboard')" title="Canvas"><i class="fas fa-pen-nib"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Audio.start()" title="Voice Note"><i class="fas fa-microphone"></i></button>
+                    
                     <textarea class="chat-input" id="chat-input" placeholder="Message... (Enter to send)" autocomplete="off"></textarea>
+                    
                     <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
                     <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -511,7 +534,7 @@
     <!-- 3. TERMINAL -->
     <template id="tpl-terminal">
         <div class="term-window" id="term-out" onclick="document.getElementById('term-in').focus()">
-            <div class="term-line">PepeTalk OS Kernel v11.0.0</div>
+            <div class="term-line">PepeTalk OS Kernel v12.0.0</div>
             <div class="term-line">Type 'help' for commands.</div>
             <div class="term-input-line">
                 <span class="term-prompt">root@titan:~#</span>
@@ -621,8 +644,8 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS X - ZENITH EDITION
-         * "The pinnacle of browser engineering."
+         * 🍓 PEPETALK OS X - SINGULARITY EDITION
+         * "The final word in browser-based communication."
          */
 
         const OS = {
@@ -708,7 +731,7 @@
                         win.style.height = '500px';
                     }
 
-                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V7', files: 'File Manager', settings: 'Settings' };
+                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V8', files: 'File Manager', settings: 'Settings' };
 
                     win.innerHTML = `
                         <div class="win-bar" onmousedown="OS.WM.drag(event, '${app}')">
@@ -1041,7 +1064,7 @@
                     exec: (cmd) => {
                         const args = cmd.split(' ');
                         switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say'); break;
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme'); break;
                             case 'clear': document.getElementById('term-out').innerHTML = '<div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div>'; OS.Apps.Terminal.init(); break;
                             case 'ping': OS.Apps.Terminal.log('pong'); break;
                             case 'echo': OS.Apps.Terminal.log(args.slice(1).join(' ')); break;
@@ -1060,6 +1083,10 @@
                                 OS.Apps.Chat.render(msg, 'local');
                                 OS.Apps.Terminal.log('Message sent.');
                                 break;
+                            case 'weather': OS.Apps.Terminal.log('Stockholm: 2°C, Overcast. Wind: 5m/s SW.'); break;
+                            case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
+                            case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
+                            case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
                             default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
                         }
                     }
