@@ -3,37 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XII | Singularity Edition</title>
+    <title>PepeTalk OS XIII | Omega Protocol</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="The Ultimate P2P Operating System">
     
-    <!-- SINGULARITY CORE DEPENDENCIES -->
+    <!-- OMEGA CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 
-         * 🏛️ THEME: SINGULARITY DARK
-         * "We have reached the point of no return."
+         * 🏛️ THEME: OMEGA DARK
+         * "The end of the line."
          */
         :root {
             --bg-root: #000000;
             --bg-desktop: #050505;
-            --bg-window: #121212;
+            --bg-window: #101010;
             --bg-header: #1a1a1a;
-            --bg-panel: #161616;
+            --bg-panel: #141414;
             --bg-input: #0a0a0a;
             
-            --primary: #3b82f6; /* Singularity Blue */
+            --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
             --primary-glow: rgba(59, 130, 246, 0.4);
             
@@ -47,10 +45,10 @@
             --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(18, 18, 18, 0.85);
-            --blur: blur(24px);
+            --glass: rgba(16, 16, 16, 0.9);
+            --blur: blur(30px);
             
-            --shadow-win: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            --shadow-win: 0 30px 60px -12px rgba(0, 0, 0, 1);
             
             --font-ui: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -124,7 +122,7 @@
         .icon-img::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom right, rgba(255,255,255,0.15), transparent); z-index: 1; }
         .app-label { font-size: 0.85rem; text-shadow: 0 2px 4px black; font-weight: 500; letter-spacing: 0.3px; color: #eee; }
 
-        /* --- WINDOW MANAGER (APEX ENGINE) --- */
+        /* --- WINDOW MANAGER (OMEGA ENGINE) --- */
         .window {
             position: absolute; background: var(--bg-window);
             border: var(--border); border-radius: 12px;
@@ -217,24 +215,43 @@
         .msg.remote .msg-bubble { background: var(--bg-header); color: white; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
         .msg-meta { font-size: 0.65rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
         
-        .chat-input-bar { padding: 10px 15px; background: var(--bg-header); display: flex; gap: 10px; align-items: flex-end; min-height: 60px; border-top: var(--border); }
+        /* Omni-Bar */
+        .chat-input-bar { 
+            padding: 10px 15px; background: var(--bg-header); 
+            display: flex; gap: 10px; align-items: flex-end; min-height: 60px; 
+            border-top: var(--border); position: relative;
+        }
         .chat-input { 
             flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: white; 
-            padding: 10px 14px; border-radius: 8px; resize: none; height: 40px; 
+            padding: 10px 14px; border-radius: 20px; resize: none; height: 40px; 
             font-family: inherit; transition: 0.2s; 
         }
         .chat-input:focus { border-color: var(--primary); background: #000; }
-        .chat-input.secure-mode { border-color: var(--success); background: rgba(16, 185, 129, 0.05); cursor: pointer; }
-
-        /* Audio Deck */
-        .audio-deck {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-header); z-index: 10;
-            display: none; align-items: center; padding: 0 20px; gap: 15px;
+        
+        /* Attachment Menu */
+        .attach-menu {
+            position: absolute; bottom: 70px; left: 15px;
+            background: var(--bg-panel); border: var(--border); border-radius: 12px;
+            padding: 10px; display: none; flex-direction: column; gap: 5px;
+            box-shadow: var(--shadow-win); z-index: 20;
             animation: slideUp 0.2s ease;
         }
-        .audio-deck.active { display: flex; }
-        #mic-visualizer { flex: 1; height: 40px; background: #000; border-radius: 8px; border: 1px solid #333; }
+        .attach-menu.open { display: flex; }
+        .attach-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px;
+            border-radius: 8px; cursor: pointer; color: #ccc; font-size: 0.9rem;
+        }
+        .attach-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .attach-item i { width: 20px; text-align: center; }
+
+        /* Audio Recorder */
+        .audio-recorder {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-header); z-index: 30;
+            display: none; align-items: center; padding: 0 20px; gap: 15px;
+        }
+        .audio-recorder.active { display: flex; }
+        #audio-viz { flex: 1; height: 30px; background: #000; border-radius: 4px; }
 
         /* --- APP: VIDEO PRO --- */
         .video-stage { display: grid; grid-template-columns: 1fr; height: 100%; background: #000; position: relative; }
@@ -264,6 +281,7 @@
         .term-input-line { display: flex; gap: 5px; }
         .term-prompt { color: var(--primary); }
         .term-input { background: transparent; border: none; color: white; flex: 1; font-family: inherit; caret-color: #0f0; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.3; display: none; }
 
         /* --- APP: STUDIO CODE --- */
         .code-layout { display: flex; flex-direction: column; height: 100%; }
@@ -489,21 +507,24 @@
                     </div>
                 </div>
                 <div class="chat-input-bar">
-                    <!-- Audio Deck -->
-                    <div class="audio-deck" id="audio-deck">
-                        <span style="color:var(--primary); font-weight:bold; font-family:var(--font-mono)" id="rec-timer">00:00</span>
-                        <canvas id="mic-visualizer"></canvas>
+                    <!-- Attachment Menu -->
+                    <div class="attach-menu" id="attach-menu">
+                        <div class="attach-item" onclick="OS.WM.open('video'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-video" style="color:#ff453a"></i> Video Call</div>
+                        <div class="attach-item" onclick="OS.WM.open('whiteboard'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-pen-nib" style="color:#ffd60a"></i> Canvas</div>
+                        <div class="attach-item" onclick="document.getElementById('file-input').click(); OS.Apps.Chat.toggleAttach()"><i class="fas fa-file" style="color:#0a84ff"></i> File</div>
+                    </div>
+
+                    <!-- Audio Recorder -->
+                    <div class="audio-recorder" id="audio-recorder">
+                        <span style="color:var(--danger); font-weight:bold; font-family:var(--font-mono)" id="rec-timer">00:00</span>
+                        <canvas id="audio-viz"></canvas>
                         <button class="btn-icon" onclick="OS.Apps.Audio.cancel()"><i class="fas fa-times"></i></button>
                         <button class="btn-primary" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                     
-                    <button class="btn-icon" onclick="document.getElementById('file-input').click()" title="File"><i class="fas fa-paperclip"></i></button>
-                    <button class="btn-icon" onclick="OS.WM.open('video')" title="Video Call"><i class="fas fa-video"></i></button>
-                    <button class="btn-icon" onclick="OS.WM.open('whiteboard')" title="Canvas"><i class="fas fa-pen-nib"></i></button>
-                    <button class="btn-icon" onclick="OS.Apps.Audio.start()" title="Voice Note"><i class="fas fa-microphone"></i></button>
-                    
-                    <textarea class="chat-input" id="chat-input" placeholder="Message... (Enter to send)" autocomplete="off"></textarea>
-                    
+                    <button class="btn-icon" onclick="OS.Apps.Chat.toggleAttach()"><i class="fas fa-plus"></i></button>
+                    <textarea class="chat-input" id="chat-input" placeholder="Message..." autocomplete="off"></textarea>
+                    <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
                     <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
                     <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -534,11 +555,14 @@
     <!-- 3. TERMINAL -->
     <template id="tpl-terminal">
         <div class="term-window" id="term-out" onclick="document.getElementById('term-in').focus()">
-            <div class="term-line">PepeTalk OS Kernel v12.0.0</div>
-            <div class="term-line">Type 'help' for commands.</div>
-            <div class="term-input-line">
-                <span class="term-prompt">root@titan:~#</span>
-                <input type="text" class="term-input" id="term-in" autocomplete="off">
+            <canvas id="matrix-canvas"></canvas>
+            <div style="position:relative; z-index:2;">
+                <div class="term-line">PepeTalk OS Kernel v13.0.0</div>
+                <div class="term-line">Type 'help' for commands.</div>
+                <div class="term-input-line">
+                    <span class="term-prompt">root@titan:~#</span>
+                    <input type="text" class="term-input" id="term-in" autocomplete="off">
+                </div>
             </div>
         </div>
     </template>
@@ -576,8 +600,8 @@
                 TAP = DOT | HOLD = DASH
             </div>
             <div style="display:flex; gap:15px; margin-top:15px;">
-                <button class="btn-primary" style="background:#333" onclick="OS.Apps.Telegraph.clear()">RESET</button>
-                <button class="btn-primary" onclick="OS.Apps.Telegraph.send()">SEND</button>
+                <button class="btn-primary" style="background:#333; padding:10px 30px;" onclick="OS.Apps.Telegraph.clear()">RESET</button>
+                <button class="btn-primary" style="padding:10px 30px;" onclick="OS.Apps.Telegraph.send()">SEND</button>
             </div>
             <!-- Reference Overlay -->
             <div class="morse-ref-overlay" id="morse-ref">
@@ -621,7 +645,7 @@
     <!-- 8. WHITEBOARD -->
     <template id="tpl-whiteboard">
         <div style="display:flex; flex-direction:column; height:100%;">
-            <div style="flex:1; position:relative; background:#111; cursor:crosshair; touch-action:none;" id="wb-wrap">
+            <div style="flex:1; position:relative; background:#111; cursor:crosshair; touch-action:none; overflow:hidden;" id="wb-wrap">
                 <canvas id="wb-canvas"></canvas>
             </div>
             <div style="height:60px; background:var(--bg-header); border-top:var(--border); display:flex; justify-content:center; align-items:center; gap:15px; flex-shrink:0;">
@@ -939,6 +963,9 @@
                         const f = document.getElementById('chat-feed');
                         if(f) f.innerHTML = `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i><p>Session Reset.</p></div>`;
                     },
+                    toggleAttach: () => {
+                        document.getElementById('attach-menu').classList.toggle('open');
+                    },
                     send: () => {
                         const el = document.getElementById('chat-input');
                         const txt = el.value.trim();
@@ -1064,15 +1091,19 @@
                     exec: (cmd) => {
                         const args = cmd.split(' ');
                         switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme'); break;
-                            case 'clear': document.getElementById('term-out').innerHTML = '<div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div>'; OS.Apps.Terminal.init(); break;
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme, neofetch'); break;
+                            case 'clear': document.getElementById('term-out').innerHTML = '<canvas id="matrix-canvas"></canvas><div style="position:relative; z-index:2;"><div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div></div>'; OS.Apps.Terminal.init(); break;
                             case 'ping': OS.Apps.Terminal.log('pong'); break;
                             case 'echo': OS.Apps.Terminal.log(args.slice(1).join(' ')); break;
                             case 'date': OS.Apps.Terminal.log(new Date().toString()); break;
                             case 'whoami': OS.Apps.Terminal.log(OS.State.peerId); break;
                             case 'reboot': location.reload(); break;
                             case 'ls': OS.Apps.Terminal.log(Object.keys(OS.State.fs['/'].children).join('  ')); break;
-                            case 'matrix': OS.Apps.Terminal.log('Wake up, Neo...'); break;
+                            case 'matrix': 
+                                document.getElementById('matrix-canvas').style.display = 'block';
+                                OS.UI.initMatrix();
+                                OS.Apps.Terminal.log('Matrix loaded. Type clear to exit.'); 
+                                break;
                             case 'calc': try { OS.Apps.Terminal.log(eval(args.slice(1).join(' '))); } catch(e) { OS.Apps.Terminal.log('Error'); } break;
                             case 'sys': OS.Apps.Terminal.log(`UA: ${navigator.userAgent}`); OS.Apps.Terminal.log(`Res: ${window.innerWidth}x${window.innerHeight}`); break;
                             case 'open': OS.WM.open(args[1]); OS.Apps.Terminal.log(`Opening ${args[1]}...`); break;
@@ -1087,6 +1118,15 @@
                             case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
                             case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
                             case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
+                            case 'neofetch':
+                                OS.Apps.Terminal.log(`
+       .---.       OS: PepeTalk OS XIII
+      /     \\      Kernel: Quantum Mesh
+      |  O  |      Uptime: ${Math.floor(performance.now()/1000)}s
+      \\  _  /      Shell: Titan Bash
+       '.___.'     Theme: Omega Dark
+                                `);
+                                break;
                             default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
                         }
                     }
@@ -1380,6 +1420,25 @@
                         requestAnimationFrame(draw);
                     };
                     draw();
+                },
+                initMatrix: () => {
+                    const c = document.getElementById('matrix-canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight;
+                    const cols = Math.floor(c.width / 20);
+                    const ypos = Array(cols).fill(0);
+                    const draw = () => {
+                        ctx.fillStyle = '#0001'; ctx.fillRect(0,0,c.width,c.height);
+                        ctx.fillStyle = '#0f0'; ctx.font = '15px monospace';
+                        ypos.forEach((y, i) => {
+                            const text = String.fromCharCode(Math.random() * 128);
+                            const x = i * 20;
+                            ctx.fillText(text, x, y);
+                            if(y > 100 + Math.random() * 10000) ypos[i] = 0;
+                            else ypos[i] = y + 20;
+                        });
+                    };
+                    setInterval(draw, 50);
                 }
             }
         };
