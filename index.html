@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XIV | Event Horizon</title>
+    <title>PepeTalk OS XVI | Resurrection</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Secure P2P Communication Suite">
+    <meta name="description" content="Secure P2P Operating System">
     
-    <!-- CORE DEPENDENCIES -->
+    <!-- RESURRECTION CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* 
-         * 🏛️ THEME: EVENT HORIZON
-         * "Where light cannot escape, but data flows freely."
+         * 🏛️ THEME: RESURRECTION DARK
+         * "Structure restores order."
          */
         :root {
             --bg-root: #000000;
-            --bg-app: #0f0f0f;
-            --bg-panel: #181818;
-            --bg-header: #1f1f1f;
-            --bg-input: #121212;
+            --bg-desktop: #050505;
+            --bg-window: #101010;
+            --bg-header: #1a1a1a;
+            --bg-panel: #141414;
+            --bg-input: #0a0a0a;
             
             --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
@@ -42,30 +44,34 @@
             
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+            --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(20, 20, 20, 0.95);
-            --blur: blur(20px);
+            --glass: rgba(16, 16, 16, 0.95);
+            --blur: blur(30px);
+            
+            --shadow-win: 0 30px 60px -12px rgba(0, 0, 0, 1);
             
             --font-ui: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
             
-            --z-base: 1;
-            --z-chat: 10;
-            --z-overlay: 100;
-            --z-modal: 1000;
-            --z-toast: 2000;
-            --z-boot: 9999;
+            --z-desktop: 1;
+            --z-window: 100;
+            --z-overlay: 5000;
+            --z-keyboard: 6000;
+            --z-taskbar: 9000;
+            --z-toast: 10000;
+            --z-boot: 11000;
             
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
-        /* --- RESET --- */
+        /* --- KERNEL RESET --- */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100vh; width: 100vw; overflow: hidden; position: fixed; inset: 0; }
         input, textarea, code, pre { user-select: text; font-family: var(--font-ui); }
         
-        /* --- BOOT SCREEN --- */
+        /* --- BOOT SEQUENCE --- */
         #boot-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: var(--z-boot);
@@ -81,354 +87,395 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- MAIN APP CONTAINER --- */
-        #app-container {
-            display: flex; width: 100%; height: 100%; position: relative;
-            background: var(--bg-app);
+        /* --- DESKTOP --- */
+        #desktop {
+            position: relative; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
+            overflow: hidden; z-index: var(--z-desktop); display: flex;
         }
+        
+        /* --- WINDOW MANAGER --- */
+        .window {
+            position: absolute; background: var(--bg-window);
+            border: var(--border); border-radius: 12px;
+            box-shadow: var(--shadow-win);
+            display: flex; flex-direction: column;
+            min-width: 350px; min-height: 250px;
+            overflow: hidden; resize: both;
+            animation: winOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: var(--z-window);
+        }
+        .window.active { border-color: rgba(255,255,255,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,0.05), var(--shadow-win); }
+        .window.minimized { opacity: 0; transform: scale(0.8) translateY(200px); pointer-events: none; transition: 0.3s; }
+        .window.maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 50px) !important; border-radius: 0; resize: none; }
 
-        /* --- SIDEBAR (CONTACTS) --- */
-        .sidebar {
-            width: 300px; background: var(--bg-panel); border-right: var(--border);
-            display: flex; flex-direction: column; z-index: 5;
+        .win-bar {
+            height: 42px; background: var(--bg-header);
+            border-bottom: var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 14px; cursor: grab; user-select: none; flex-shrink: 0;
         }
-        .sidebar-header {
-            height: 60px; border-bottom: var(--border); display: flex; align-items: center;
-            padding: 0 20px; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px;
-            justify-content: space-between; background: var(--bg-header);
-        }
-        .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .contact-item {
-            display: flex; align-items: center; gap: 15px; padding: 12px;
-            border-radius: 12px; cursor: pointer; transition: 0.2s;
-            background: rgba(255,255,255,0.02); margin-bottom: 5px;
-        }
-        .contact-item:hover, .contact-item.active { background: rgba(59, 130, 246, 0.1); }
-        .avatar {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            display: flex; justify-content: center; align-items: center;
-            font-weight: bold; font-size: 1.2rem; color: white;
-        }
-        .contact-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .contact-name { font-weight: 600; font-size: 0.95rem; }
-        .contact-status { font-size: 0.8rem; color: var(--text-muted); }
+        .win-bar:active { cursor: grabbing; }
+        .win-title { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #ddd; }
+        .win-controls { display: flex; gap: 8px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; position: relative; }
+        .win-btn:hover { transform: scale(1.1); }
+        .btn-close { background: #ff5f57; }
+        .btn-min { background: #febc2e; }
+        .btn-max { background: #28c840; }
 
-        /* --- CHAT VIEW --- */
-        .chat-view {
-            flex: 1; display: flex; flex-direction: column; position: relative;
-            background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
-            background-size: 30px 30px; background-color: var(--bg-app);
+        .win-content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--bg-window); }
+        .scroll-wrap { overflow-y: auto; height: 100%; padding: 0; }
+
+        /* --- TASKBAR (DOCK) --- */
+        #taskbar {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px);
+            border-top: var(--border);
+            display: flex; align-items: center; padding: 0 15px; gap: 15px;
+            z-index: var(--z-taskbar);
         }
-        
-        .chat-header {
-            height: 60px; border-bottom: var(--border); background: var(--bg-header);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        .start-menu-btn {
+            color: var(--primary); font-size: 1.4rem; cursor: pointer;
+            width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+            border-radius: 8px; transition: 0.2s;
         }
-        .chat-title { font-weight: 600; font-size: 1rem; }
-        .chat-actions { display: flex; gap: 15px; }
+        .start-menu-btn:hover { background: rgba(255,255,255,0.1); box-shadow: 0 0 15px var(--primary-dim); }
         
-        .chat-feed {
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+        .task-strip { flex: 1; display: flex; gap: 6px; overflow-x: auto; height: 100%; align-items: center; }
+        .task-tab {
+            padding: 0 14px; background: rgba(255,255,255,0.03);
+            border-radius: 6px; color: var(--text-muted); font-size: 0.8rem;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s; border-bottom: 2px solid transparent; white-space: nowrap;
+            height: 34px; max-width: 160px; overflow: hidden;
         }
+        .task-tab:hover { background: rgba(255,255,255,0.08); color: white; }
+        .task-tab.active { background: rgba(255,255,255,0.1); color: white; border-bottom-color: var(--primary); }
         
-        /* Messages */
-        .msg { max-width: 75%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
+        .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.75rem; color: var(--text-muted); padding-left: 15px; border-left: 1px solid rgba(255,255,255,0.1); }
+
+        /* --- APP: CHAT (MESSENGER PRO) --- */
+        .chat-layout { display: flex; height: 100%; width: 100%; }
+        .chat-sidebar { width: 280px; background: var(--bg-panel); border-right: var(--border); display: flex; flex-direction: column; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: #080808; position: relative; }
+        
+        .chat-header { padding: 15px; border-bottom: var(--border); font-weight: 700; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-header); }
+        .cmd-center { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .cmd-btn { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
+            color: #ccc; padding: 8px 12px; border-radius: 6px; cursor: pointer; 
+            display: flex; align-items: center; gap: 10px; font-size: 0.8rem; transition: 0.2s;
+        }
+        .cmd-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); color: white; }
+        .cmd-btn i { width: 16px; text-align: center; color: var(--primary); }
+
+        .chat-feed { 
+            flex: 1; overflow-y: auto; padding: 20px; 
+            display: flex; flex-direction: column; gap: 12px; 
+            background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 30px 30px;
+        }
+        /* Drag & Drop Zone Highlight */
+        .chat-main.drag-over { border: 2px dashed var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+        .msg { max-width: 80%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
         .msg.local { align-self: flex-end; align-items: flex-end; }
         .msg.remote { align-self: flex-start; align-items: flex-start; }
         
-        .bubble {
-            padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5;
-            position: relative; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            min-width: 60px;
+        .msg-bubble { 
+            padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; 
+            position: relative; word-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .msg.local .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .msg.remote .bubble { background: var(--bg-panel); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+        .msg.local .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg.remote .msg-bubble { background: var(--bg-header); color: white; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
+        .msg-meta { font-size: 0.65rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
         
-        .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
-        
-        /* Input Bar */
-        .input-area {
-            padding: 15px; background: var(--bg-header); border-top: var(--border);
-            display: flex; align-items: flex-end; gap: 10px; position: relative;
-            z-index: 20;
+        /* Omni-Bar */
+        .chat-input-bar { 
+            padding: 10px 15px; background: var(--bg-header); 
+            display: flex; gap: 10px; align-items: flex-end; min-height: 60px; 
+            border-top: var(--border); position: relative;
         }
-        .chat-input {
-            flex: 1; background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 12px 15px; border-radius: 20px; resize: none;
-            height: 46px; font-family: inherit; transition: 0.2s;
+        .chat-input { 
+            flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: white; 
+            padding: 10px 14px; border-radius: 20px; resize: none; height: 40px; 
+            font-family: inherit; transition: 0.2s; 
         }
         .chat-input:focus { border-color: var(--primary); background: #000; }
+        .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* --- OVERLAYS (APPS) --- */
-        .overlay-app {
+        /* Connection Hub (The Fix) */
+        #connection-hub {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-root); z-index: var(--z-overlay);
-            display: none; flex-direction: column;
-            animation: fadeIn 0.3s ease;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            z-index: 50; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 20px;
+            padding: 20px; text-align: center;
         }
-        .overlay-app.active { display: flex; }
+        #connection-hub.hidden { display: none; }
+        .hub-card {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 30px; border-radius: 16px; width: 100%; max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .hub-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
+        .hub-input {
+            width: 100%; padding: 12px; background: #000; border: 1px solid var(--border);
+            color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace;
+        }
         
-        /* Canvas App */
-        #canvas-app { background: #121212; }
-        #canvas-app.ghost { background: rgba(18, 18, 18, 0.5); }
-        .canvas-toolbar {
-            height: 60px; background: var(--bg-header); border-top: var(--border);
-            display: flex; align-items: center; justify-content: center; gap: 20px;
-            flex-shrink: 0; /* Prevent shrinking */
-        }
-        #wb-wrap { flex: 1; position: relative; overflow: hidden; cursor: crosshair; touch-action: none; }
-        
-        /* Telegraph App */
-        #telegraph-app { background: #0e0e0e; }
-        .tele-display {
-            height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-bottom: var(--border); background: #111; padding: 20px;
-        }
-        .tele-code { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); letter-spacing: 2px; min-height: 40px; }
-        .tele-text { font-family: var(--font-ui); font-size: 1.2rem; color: var(--accent); opacity: 0.8; min-height: 30px; }
-        .tele-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
-        .haptic-key {
-            width: 200px; height: 200px; border-radius: 50%;
-            background: radial-gradient(#222, #000); border: 6px solid #333;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
-            color: #444; font-size: 4rem; transition: 0.05s;
-            user-select: none; -webkit-user-select: none; touch-action: none;
-        }
-        .haptic-key:active, .haptic-key.pressed { transform: scale(0.95); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px var(--primary-dim); }
-        
-        /* Video App */
-        #video-app { background: #000; }
-        .video-grid { flex: 1; position: relative; display: grid; grid-template-columns: 1fr; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #local-pip {
-            position: absolute; bottom: 100px; right: 20px; width: 140px; height: 180px;
-            background: #111; border-radius: 12px; border: 2px solid var(--primary);
-            z-index: 10; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .video-controls {
-            height: 90px; background: rgba(0,0,0,0.8); display: flex;
-            justify-content: center; align-items: center; gap: 30px;
-            padding-bottom: var(--safe-bottom);
-        }
-
-        /* --- MENUS & MODALS --- */
+        /* Attachment Menu */
         .attach-menu {
-            position: absolute; bottom: 80px; left: 15px;
+            position: absolute; bottom: 70px; left: 15px;
             background: var(--bg-panel); border: var(--border); border-radius: 12px;
             padding: 10px; display: none; flex-direction: column; gap: 5px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 50; min-width: 200px;
+            box-shadow: var(--shadow-win); z-index: 20;
+            animation: slideUp 0.2s ease;
         }
-        .attach-menu.open { display: flex; animation: slideUp 0.2s; }
-        .menu-item {
-            padding: 12px; display: flex; align-items: center; gap: 15px;
-            cursor: pointer; border-radius: 8px; color: var(--text-main); transition: 0.2s;
+        .attach-menu.open { display: flex; }
+        .attach-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px;
+            border-radius: 8px; cursor: pointer; color: #ccc; font-size: 0.9rem;
         }
-        .menu-item:hover { background: rgba(255,255,255,0.05); }
-        
-        /* Audio Recorder Bar */
-        .audio-bar {
+        .attach-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .attach-item i { width: 20px; text-align: center; }
+
+        /* Audio Recorder */
+        .audio-recorder {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-header); z-index: 30; display: none;
-            align-items: center; padding: 0 20px; gap: 15px;
+            background: var(--bg-header); z-index: 30;
+            display: none; align-items: center; padding: 0 20px; gap: 15px;
         }
-        .audio-bar.active { display: flex; }
+        .audio-recorder.active { display: flex; }
         #audio-viz { flex: 1; height: 30px; background: #000; border-radius: 4px; }
 
-        /* Secure Keyboard */
+        /* --- APP: VIDEO PRO --- */
+        .video-stage { display: grid; grid-template-columns: 1fr; height: 100%; background: #000; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #local-pip { 
+            position: absolute; bottom: 20px; right: 20px; width: 160px; height: 120px; 
+            border-radius: 8px; border: 2px solid var(--primary); background: #111; 
+            z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover;
+        }
+        .video-hud {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; background: rgba(20,20,20,0.9); padding: 12px 25px;
+            border-radius: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .hud-btn {
+            width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+            background: #333; color: white; font-size: 1.1rem; transition: 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .hud-btn:hover { transform: scale(1.1); background: #444; }
+        .hud-btn.danger { background: var(--danger); }
+        .hud-btn.active { background: white; color: black; }
+
+        /* --- APP: TERMINAL --- */
+        .term-window { background: #0c0c0c; color: #0f0; font-family: 'JetBrains Mono', monospace; padding: 10px; height: 100%; overflow-y: auto; font-size: 0.85rem; }
+        .term-line { margin-bottom: 2px; }
+        .term-input-line { display: flex; gap: 5px; }
+        .term-prompt { color: var(--primary); }
+        .term-input { background: transparent; border: none; color: white; flex: 1; font-family: inherit; caret-color: #0f0; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.3; display: none; }
+
+        /* --- APP: TELEGRAPH (MORSE) --- */
+        .telegraph-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #111; gap: 20px; padding: 20px; position: relative; }
+        .haptic-key {
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(#2c2c2e, #000); border: 6px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            color: #555; font-size: 4rem; transition: 0.1s;
+            user-select: none; -webkit-user-select: none; touch-action: none;
+        }
+        .haptic-key:active, .haptic-key.pressed { transform: scale(0.96); border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .morse-stream { font-family: var(--font-mono); font-size: 2rem; color: var(--primary); height: 50px; letter-spacing: 4px; text-align: center; text-shadow: 0 0 10px var(--primary-dim); }
+        .morse-translation { font-family: var(--font-ui); font-size: 1.2rem; color: var(--accent); height: 30px; opacity: 0.9; }
+        
+        .morse-info-btn { position: absolute; top: 20px; right: 20px; background: none; border: 1px solid #444; color: #888; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+
+        /* Morse Reference Modal */
+        .morse-ref-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 10; display: none;
+            flex-direction: column; padding: 20px; overflow-y: auto;
+        }
+        .morse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; margin-top: 15px; }
+        .morse-item { background: #222; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .morse-char { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+        .morse-val { font-family: monospace; font-size: 0.9rem; color: #aaa; }
+
+        /* Spoiler for Morse Translation */
+        .spoiler-box {
+            background: #222; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 5px;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .spoiler-content { filter: blur(8px); transition: 0.5s; opacity: 0.5; }
+        .spoiler-label { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 0.7rem; color: #aaa; font-weight: bold; letter-spacing: 1px; pointer-events: none;
+        }
+        .spoiler-box.revealed .spoiler-content { filter: blur(0); opacity: 1; }
+        .spoiler-box.revealed .spoiler-label { display: none; }
+
+        /* --- SECURE KEYBOARD (MOBILE) --- */
         #secure-kb {
             position: fixed; bottom: 0; left: 0; width: 100%; height: auto;
             background: #0a0a0a; border-top: 1px solid var(--primary);
             z-index: var(--z-keyboard); display: none; flex-direction: column;
-            padding-bottom: var(--safe-bottom); box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+            padding-bottom: var(--safe-bottom);
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+            animation: slideUp 0.2s ease-out;
         }
-        #secure-kb.open { display: flex; animation: slideUp 0.2s; }
-        .kb-preview { padding: 10px; background: #111; color: var(--primary); font-family: monospace; text-align: center; border-bottom: 1px solid #222; min-height: 40px; }
+        #secure-kb.open { display: flex; }
+        .kb-bar { padding: 8px 15px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .kb-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 6px; user-select: none; }
         .kb-key {
-            background: #222; color: white; border-radius: 5px; height: 44px;
+            background: #222; color: white; border-radius: 5px; height: 42px;
             display: flex; justify-content: center; align-items: center;
             font-size: 1.1rem; cursor: pointer; transition: 0.05s;
             box-shadow: 0 2px 0 #000; font-weight: 500;
         }
-        .kb-key:active { transform: translateY(2px); background: var(--primary); }
+        .kb-key:active { transform: translateY(2px); box-shadow: none; background: var(--primary); }
         .kb-row { display: flex; padding: 0 6px 6px; gap: 4px; }
         .kb-space { flex: 1; }
         .kb-func { flex: 0 0 15%; background: #333; font-size: 0.9rem; }
+        .kb-preview { padding: 10px; background: #111; color: var(--primary); font-family: monospace; text-align: center; border-bottom: 1px solid #222; min-height: 40px; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            body.mobile-mode .sidebar { display: none; }
+            body.mobile-mode .window {
+                width: 100% !important; height: 100% !important;
+                top: 0 !important; left: 0 !important;
+                border-radius: 0 !important; resize: none !important;
+                box-shadow: none !important; border: none; z-index: 200 !important;
+            }
+            body.mobile-mode .win-bar { display: flex; } 
+            body.mobile-mode .chat-sidebar { display: none; }
+            body.mobile-mode #taskbar { display: none; } /* Hide dock on mobile, use full screen apps */
+            body.mobile-mode #desktop { display: flex; flex-direction: column; }
+            body.mobile-mode .chat-view { height: 100%; }
+        }
 
         /* --- UTILS --- */
         .hidden { display: none !important; }
-        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; padding: 10px; border-radius: 50%; transition: 0.2s; }
+        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
         .btn-icon:hover { color: var(--primary); background: rgba(255,255,255,0.1); }
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-primary:hover { background: #2563eb; }
-        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .color-dot.active { transform: scale(1.2); border-color: white; box-shadow: 0 0 10px currentColor; }
-        .spoiler { background: #2b2b2b; color: transparent; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.2s; user-select: none; }
-        .spoiler.revealed { color: white; background: transparent; }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .sidebar { display: none; } /* Mobile: Chat only */
-            .msg { max-width: 85%; }
-            .chat-input-area { padding: 10px; }
-            #kb-toggle { display: block !important; }
-        }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        @keyframes winOpen { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body>
 
     <!-- BOOT LAYER -->
     <div id="boot-layer">
-        <div class="boot-logo"><i class="fas fa-atom"></i></div>
-        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XIV</div>
-        <div class="loader-bar"><div class="loader-fill"></div></div>
+        <div class="boot-logo"><i class="fas fa-shield-alt"></i></div>
+        <div class="boot-log" id="boot-log"></div>
+        <div class="loader-ring"></div>
     </div>
 
-    <div id="app-container" class="hidden">
+    <!-- DESKTOP LAYER -->
+    <div id="desktop" class="hidden">
         
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <span>PepeTalk</span>
-                <div style="display:flex; gap:10px;">
-                    <i class="fas fa-qrcode menu-btn" onclick="OS.UI.showQR()" title="Show QR"></i>
-                    <i class="fas fa-sync menu-btn" onclick="OS.Net.refreshIdentity()" title="Refresh ID"></i>
-                </div>
-            </div>
-            <div class="sidebar-list">
-                <div class="contact-item active">
-                    <div class="avatar"><i class="fas fa-user-secret"></i></div>
-                    <div class="contact-info">
-                        <div class="contact-name">Secure Peer</div>
-                        <div class="contact-status" id="conn-status">Waiting for connection...</div>
+        <!-- MAIN CHAT WINDOW (Always Open) -->
+        <div class="window active maximized" id="win-chat" style="z-index: 50;">
+            <div class="win-content">
+                <div class="chat-layout">
+                    <!-- Sidebar -->
+                    <div class="chat-sidebar" id="chat-sidebar">
+                        <div class="chat-header">
+                            <span><i class="fas fa-shield-alt"></i> PepeTalk</span>
+                            <span id="peer-status" style="font-size:0.7rem; color:var(--danger)">OFFLINE</span>
+                        </div>
+                        <div class="cmd-center">
+                            <div class="cmd-btn" onclick="OS.Net.copyId()"><i class="fas fa-fingerprint"></i> Copy ID</div>
+                            <div class="cmd-btn" onclick="OS.Net.copyLink()"><i class="fas fa-link"></i> Copy Link</div>
+                            <div class="cmd-btn" onclick="OS.UI.showQR()"><i class="fas fa-qrcode"></i> Show QR</div>
+                        </div>
+                        <div style="flex:1"></div>
+                        <div style="padding:15px; font-size:0.7rem; color:#444; border-top:1px solid rgba(255,255,255,0.05)">
+                            AES-256-GCM Encrypted
+                        </div>
+                    </div>
+
+                    <!-- Main Chat Area -->
+                    <div class="chat-main" id="chat-drop-zone">
+                        
+                        <!-- Connection Hub (Overlay when disconnected) -->
+                        <div id="connection-hub">
+                            <div class="hub-card">
+                                <div class="hub-title"><i class="fas fa-network-wired"></i> Secure Link</div>
+                                <p style="color:#888; margin-bottom:20px; font-size:0.9rem;">Establish a peer-to-peer encrypted tunnel.</p>
+                                
+                                <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">MY IDENTITY</div>
+                                <div class="hub-input" id="hub-my-id" onclick="OS.Net.copyId()" style="cursor:pointer; color:var(--accent);">Generating...</div>
+                                
+                                <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">REMOTE PEER</div>
+                                <input type="text" class="hub-input" id="hub-remote-id" placeholder="Paste Peer ID here...">
+                                
+                                <button class="btn-primary" style="width:100%; padding:12px;" onclick="OS.Net.connectFromHub()">CONNECT</button>
+                                
+                                <div style="margin-top:20px; display:flex; justify-content:center; gap:20px;">
+                                    <button class="btn-icon" onclick="OS.UI.showQR()" title="Scan QR"><i class="fas fa-qrcode"></i></button>
+                                    <button class="btn-icon" onclick="OS.Net.refreshIdentity()" title="New Identity"><i class="fas fa-sync"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-feed" id="chat-feed">
+                            <div style="text-align:center; opacity:0.3; margin-top:50px;">
+                                <i class="fas fa-lock" style="font-size:4rem; margin-bottom:20px;"></i>
+                                <p>Secure Channel Ready</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-bar">
+                            <!-- Attachment Menu -->
+                            <div class="attach-menu" id="attach-menu">
+                                <div class="attach-item" onclick="OS.WM.open('video'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-video" style="color:#ff453a"></i> Video Call</div>
+                                <div class="attach-item" onclick="OS.WM.open('whiteboard'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-pen-nib" style="color:#ffd60a"></i> Canvas</div>
+                                <div class="attach-item" onclick="OS.WM.open('telegraph'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
+                                <div class="attach-item" onclick="document.getElementById('file-input').click(); OS.Apps.Chat.toggleAttach()"><i class="fas fa-file" style="color:#0a84ff"></i> File</div>
+                                <div class="attach-item" onclick="OS.WM.open('terminal'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> Terminal</div>
+                            </div>
+
+                            <!-- Audio Recorder -->
+                            <div class="audio-recorder" id="audio-recorder">
+                                <span style="color:var(--danger); font-weight:bold; font-family:var(--font-mono)" id="rec-timer">00:00</span>
+                                <canvas id="audio-viz"></canvas>
+                                <button class="btn-icon" onclick="OS.Apps.Audio.cancel()"><i class="fas fa-times"></i></button>
+                                <button class="btn-primary" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                            
+                            <button class="btn-icon" onclick="OS.Apps.Chat.toggleAttach()"><i class="fas fa-plus"></i></button>
+                            <textarea class="chat-input" id="chat-input" placeholder="Message... (Enter to send)" autocomplete="off" disabled></textarea>
+                            <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
+                            <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
+                            <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- MAIN CHAT -->
-        <div class="chat-view" id="chat-view">
-            <div class="chat-header">
-                <div class="chat-title">Secure Channel</div>
-                <div class="chat-actions">
-                    <i class="fas fa-phone menu-btn" onclick="OS.Apps.Video.open()"></i>
-                    <i class="fas fa-terminal menu-btn" onclick="OS.Apps.Terminal.open()"></i>
-                </div>
-            </div>
-
-            <div class="chat-feed" id="chat-feed">
-                <div style="text-align:center; margin-top:50px; opacity:0.5;">
-                    <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
-                    <p>End-to-End Encrypted.<br>No Server Storage.</p>
-                </div>
-            </div>
-
-            <!-- INPUT AREA -->
-            <div class="input-area">
-                <!-- Attach Menu -->
-                <div class="attach-menu" id="attach-menu">
-                    <div class="menu-item" onclick="OS.Apps.Video.open(); OS.UI.toggleAttach()"><i class="fas fa-video" style="color:#ff5252"></i> Video Call</div>
-                    <div class="menu-item" onclick="OS.Apps.Canvas.open(); OS.UI.toggleAttach()"><i class="fas fa-palette" style="color:#ffca28"></i> Whiteboard</div>
-                    <div class="menu-item" onclick="OS.Apps.Telegraph.open(); OS.UI.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
-                    <div class="menu-item" onclick="document.getElementById('file-input').click(); OS.UI.toggleAttach()"><i class="fas fa-file" style="color:#448aff"></i> File</div>
-                    <div class="menu-item" onclick="OS.Apps.Files.downloadAll(); OS.UI.toggleAttach()"><i class="fas fa-download" style="color:#69f0ae"></i> Download All</div>
-                </div>
-
-                <!-- Audio Recorder -->
-                <div class="audio-bar" id="audio-bar">
-                    <span style="color:#ff5252; font-weight:bold; font-family:monospace;" id="rec-timer">00:00</span>
-                    <canvas id="audio-viz"></canvas>
-                    <button class="btn-icon" onclick="OS.Apps.Audio.cancel()"><i class="fas fa-trash"></i></button>
-                    <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Audio.send()"><i class="fas fa-paper-plane"></i></button>
-                </div>
-
-                <button class="btn-icon" onclick="OS.UI.toggleAttach()"><i class="fas fa-plus"></i></button>
-                <textarea class="chat-input" id="chat-input" placeholder="Message" rows="1"></textarea>
-                <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.toggle()"><i class="fas fa-keyboard"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
-                <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-
-        <!-- CANVAS APP (OVERLAY) -->
-        <div id="canvas-app" class="overlay-app">
-            <div class="canvas-toolbar">
-                <button class="btn-icon" onclick="OS.Apps.Canvas.close()"><i class="fas fa-arrow-left"></i> Back</button>
-                <div class="color-dot active" style="background:#3b82f6" onclick="OS.Apps.Canvas.setColor('#3b82f6', this)"></div>
-                <div class="color-dot" style="background:#ef4444" onclick="OS.Apps.Canvas.setColor('#ef4444', this)"></div>
-                <div class="color-dot" style="background:#10b981" onclick="OS.Apps.Canvas.setColor('#10b981', this)"></div>
-                <div class="color-dot" style="background:#ffffff" onclick="OS.Apps.Canvas.setColor('#ffffff', this)"></div>
-                <button class="btn-icon" onclick="OS.Apps.Canvas.toggleGhost()" title="Ghost Mode"><i class="fas fa-eye"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Canvas.clear()"><i class="fas fa-trash"></i></button>
-                <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Canvas.save()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-            <div id="wb-wrap"><canvas id="wb-canvas"></canvas></div>
-        </div>
-
-        <!-- TELEGRAPH APP (OVERLAY) -->
-        <div id="telegraph-app" class="overlay-app">
-            <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
-                <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
-                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V10</span>
-                <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info-circle"></i></button>
-            </div>
-            <div class="tele-display">
-                <div class="tele-code" id="tele-code"></div>
-                <div class="tele-text" id="tele-text"></div>
-            </div>
-            <div class="tele-body">
-                <div class="haptic-key" id="tele-key"
-                     onmousedown="OS.Apps.Telegraph.down()" 
-                     onmouseup="OS.Apps.Telegraph.up()" 
-                     onmouseleave="OS.Apps.Telegraph.up()"
-                     ontouchstart="OS.Apps.Telegraph.down()"
-                     ontouchend="OS.Apps.Telegraph.up()">
-                    <i class="fas fa-fingerprint"></i>
-                </div>
-                <div style="display:flex; gap:20px;">
-                    <button class="btn-primary" style="background:#333; padding:15px 40px;" onclick="OS.Apps.Telegraph.clear()">RESET</button>
-                    <button class="btn-primary" style="padding:15px 40px;" onclick="OS.Apps.Telegraph.send()">SEND</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- VIDEO APP (OVERLAY) -->
-        <div id="video-app" class="overlay-app">
-            <div class="video-grid">
-                <video id="remote-video" autoplay playsinline></video>
-                <video id="local-pip" autoplay playsinline muted></video>
-            </div>
-            <div class="video-controls">
-                <button class="btn-icon" onclick="OS.Apps.Video.close()"><i class="fas fa-arrow-left"></i></button>
-                <button class="v-btn" onclick="OS.Apps.Video.toggleMic()" id="btn-mic"><i class="fas fa-microphone"></i></button>
-                <button class="v-btn danger" onclick="OS.Apps.Video.end()"><i class="fas fa-phone-slash"></i></button>
-                <button class="v-btn" onclick="OS.Apps.Video.toggleCam()" id="btn-cam"><i class="fas fa-video"></i></button>
-                <button class="v-btn" onclick="OS.Apps.Video.shareScreen()"><i class="fas fa-desktop"></i></button>
-            </div>
-        </div>
-
-        <!-- TERMINAL (OVERLAY) -->
-        <div id="terminal-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
-            <div style="display:flex; justify-content:flex-end;"><button class="btn-icon" onclick="document.getElementById('terminal-app').classList.remove('active')"><i class="fas fa-times"></i></button></div>
-            <div id="term-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.9rem;">
-                <div>PepeTalk OS Kernel v14.0.0</div>
-                <div>Type 'help' for commands.</div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <span style="color:var(--primary)">root@omega:~#</span>
-                <input type="text" id="term-in" style="flex:1; background:transparent; border:none; color:white; font-family:inherit;" autocomplete="off">
-            </div>
-        </div>
+        <!-- Window Area for Overlays -->
+        <div id="window-area"></div>
 
     </div>
 
     <!-- HIDDEN FILE INPUT -->
-    <input type="file" id="file-input" multiple hidden onchange="OS.Net.File.handle(this)">
+    <input type="file" id="file-input" multiple hidden onchange="OS.Net.FileTransfer.handle(this)">
 
     <!-- QR MODAL -->
     <div id="qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:var(--z-modal); display:none; justify-content:center; align-items:center; flex-direction:column;">
@@ -441,6 +488,10 @@
 
     <!-- SECURE KEYBOARD -->
     <div id="secure-kb">
+        <div class="kb-bar">
+            <span style="color:var(--success); font-size:0.8rem; font-family:var(--font-mono)"><i class="fas fa-lock"></i> SECURE SCRAMBLE</span>
+            <button class="btn-icon" onclick="OS.Apps.Keyboard.close()"><i class="fas fa-chevron-down"></i></button>
+        </div>
         <div class="kb-preview" id="kb-preview"></div>
         <div class="kb-grid" id="kb-keys"></div>
         <div class="kb-row">
@@ -452,74 +503,275 @@
             <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.backspace()"><i class="fas fa-backspace"></i></div>
             <div class="kb-key kb-func" style="background:var(--primary)" onclick="OS.Apps.Keyboard.enter()"><i class="fas fa-paper-plane"></i></div>
         </div>
-        <div style="text-align:center; padding:5px; color:#666; font-size:0.7rem;">SECURE SCRAMBLE ACTIVE</div>
-        <button class="btn-icon" style="position:absolute; top:5px; right:5px;" onclick="OS.Apps.Keyboard.close()"><i class="fas fa-chevron-down"></i></button>
     </div>
 
     <!-- TOASTS -->
     <div id="toast-area" style="position:fixed; top:20px; right:20px; z-index:var(--z-toast); display:flex; flex-direction:column; gap:10px;"></div>
 
+    <!-- TEMPLATES -->
+    
+    <!-- 2. VIDEO PRO -->
+    <template id="tpl-video">
+        <div class="video-stage" id="video-stage">
+            <video id="remote-video" autoplay playsinline></video>
+            <video id="local-pip" autoplay playsinline muted></video>
+            <div class="video-hud">
+                <button class="hud-btn" onclick="OS.Apps.Video.toggleMic()" id="btn-mic"><i class="fas fa-microphone"></i></button>
+                <button class="hud-btn danger" onclick="OS.Apps.Video.endCall()"><i class="fas fa-phone-slash"></i></button>
+                <button class="hud-btn" onclick="OS.Apps.Video.toggleCam()" id="btn-cam"><i class="fas fa-video"></i></button>
+                <button class="hud-btn" onclick="OS.Apps.Video.shareScreen()" title="Share Screen"><i class="fas fa-desktop"></i></button>
+            </div>
+            <div id="video-wait" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#666;">
+                <i class="fas fa-satellite-dish" style="font-size:3rem; margin-bottom:15px;"></i>
+                <p>Uplink Standby...</p>
+                <button class="btn-primary" style="margin-top:15px;" onclick="OS.Apps.Video.startCall()">Initialize Uplink</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3. TERMINAL -->
+    <template id="tpl-terminal">
+        <div class="term-window" id="term-out" onclick="document.getElementById('term-in').focus()">
+            <canvas id="matrix-canvas"></canvas>
+            <div style="position:relative; z-index:2;">
+                <div class="term-line">PepeTalk OS Kernel v16.0.0</div>
+                <div class="term-line">Type 'help' for commands.</div>
+                <div class="term-input-line">
+                    <span class="term-prompt">root@titan:~#</span>
+                    <input type="text" class="term-input" id="term-in" autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 5. TELEGRAPH -->
+    <template id="tpl-telegraph">
+        <div class="telegraph-ui">
+            <div style="position:absolute; top:10px; left:10px;">
+                <button class="btn-icon" onclick="OS.WM.close('telegraph')"><i class="fas fa-arrow-left"></i> Back</button>
+            </div>
+            <button class="morse-info-btn" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info"></i></button>
+            <div class="morse-stream" id="morse-display"></div>
+            <div class="morse-translation" id="morse-transcription"></div>
+            <div class="haptic-key" id="telegraph-key"
+                 onmousedown="OS.Apps.Telegraph.down()" 
+                 onmouseup="OS.Apps.Telegraph.up()" 
+                 onmouseleave="OS.Apps.Telegraph.up()"
+                 ontouchstart="OS.Apps.Telegraph.down()"
+                 ontouchend="OS.Apps.Telegraph.up()">
+                <i class="fas fa-fingerprint"></i>
+            </div>
+            <div style="color:#666; text-align:center; margin-top:10px; font-size:0.8rem;">
+                TAP = DOT | HOLD = DASH
+            </div>
+            <div style="display:flex; gap:15px; margin-top:15px;">
+                <button class="btn-primary" style="background:#333; padding:10px 30px;" onclick="OS.Apps.Telegraph.clear()">RESET</button>
+                <button class="btn-primary" style="padding:10px 30px;" onclick="OS.Apps.Telegraph.send()">SEND</button>
+            </div>
+            <!-- Reference Overlay -->
+            <div class="morse-ref-overlay" id="morse-ref">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Morse Reference</h3>
+                    <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="morse-grid" id="morse-grid-content"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 6. FILES -->
+    <template id="tpl-files">
+        <div class="scroll-wrap" style="padding:20px;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                <button class="btn-primary" onclick="OS.Apps.Files.downloadAll()"><i class="fas fa-download"></i> Download All</button>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
+                <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
+                    <i class="fas fa-hdd" style="font-size:3rem;"></i><br>VFS Empty
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 8. WHITEBOARD -->
+    <template id="tpl-whiteboard">
+        <div style="display:flex; flex-direction:column; height:100%;">
+            <div style="height:60px; background:var(--bg-header); border-bottom:var(--border); display:flex; justify-content:space-between; align-items:center; padding:0 15px; flex-shrink:0;">
+                <button class="btn-icon" onclick="OS.WM.close('whiteboard')"><i class="fas fa-arrow-left"></i> Back</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ef4444')"><i class="fas fa-circle" style="color:#ef4444"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#3b82f6')"><i class="fas fa-circle" style="color:#3b82f6"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#10b981')"><i class="fas fa-circle" style="color:#10b981"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ffffff')"><i class="fas fa-circle" style="color:#ffffff"></i></button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.toggleGhost()"><i class="fas fa-eye"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.clear()"><i class="fas fa-trash"></i></button>
+                    <button class="btn-icon" onclick="OS.Apps.Whiteboard.save()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <div style="flex:1; position:relative; background:#111; cursor:crosshair; touch-action:none; overflow:hidden;" id="wb-wrap">
+                <canvas id="wb-canvas"></canvas>
+            </div>
+        </div>
+    </template>
+
     <script>
         /**
-         * 🍓 PEPETALK OS XIV - EVENT HORIZON
-         * "The singularity is here."
+         * 🍓 PEPETALK OS XVI - RESURRECTION
+         * "Structure restores order."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, call: null, key: null, isHost: true, isMobile: false, fs: [] },
+            State: { peerId: null, conn: null, call: null, key: null, isHost: true, windows: {}, zIndex: 100, isMobile: false, fs: {} },
 
+            // --- KERNEL BOOT ---
             init: async () => {
                 OS.State.isMobile = window.innerWidth < 768;
+                if(OS.State.isMobile) document.body.classList.add('mobile-mode');
                 
-                // Boot Animation
-                setTimeout(() => {
-                    document.getElementById('boot-layer').style.display = 'none';
-                    OS.UI.sound('startup');
-                }, 2000);
+                // Boot Sequence
+                const log = document.getElementById('boot-log');
+                const msgs = ["INITIALIZING KERNEL...", "MOUNTING VFS...", "LOADING DRIVERS...", "STARTING NEURAL GRID...", "SYSTEM READY."];
+                let i = 0;
+                const interval = setInterval(() => {
+                    if(i >= msgs.length) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            document.getElementById('boot-layer').style.display = 'none';
+                            document.getElementById('app-container').classList.remove('hidden');
+                            OS.UI.playSound('startup');
+                        }, 500);
+                        return;
+                    }
+                    const div = document.createElement('div');
+                    div.className = 'boot-line';
+                    div.innerText = `> ${msgs[i]}`;
+                    log.appendChild(div);
+                    i++;
+                }, 200);
 
                 await OS.Security.init();
                 OS.Net.init();
                 
-                // Global Listeners
-                document.addEventListener('keydown', (e) => {
-                    if(e.key === 'Enter' && !e.shiftKey) {
-                        if(document.getElementById('telegraph-app').classList.contains('active')) {
-                            e.preventDefault(); OS.Apps.Telegraph.send();
-                        } else if(document.getElementById('canvas-app').classList.contains('active')) {
-                            e.preventDefault(); OS.Apps.Canvas.save();
-                        } else if(document.activeElement === document.getElementById('chat-input') || document.activeElement === document.getElementById('term-in')) {
-                            // Handled by specific inputs
-                        } else {
-                            // Default to chat send if nothing else focused
-                             e.preventDefault(); OS.Apps.Chat.send();
-                        }
+                // Global Event Delegation for Spoiler Reveals
+                document.addEventListener('click', (e) => {
+                    if(e.target.closest('.spoiler-box')) {
+                        e.target.closest('.spoiler-box').classList.add('revealed');
                     }
                 });
 
-                // Drag & Drop
-                const dropZone = document.getElementById('chat-view');
-                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#182533'; });
-                dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.background = ''; });
-                dropZone.addEventListener('drop', (e) => {
-                    e.preventDefault(); dropZone.style.background = '';
-                    if(e.dataTransfer.files.length) OS.Net.File.handle({files: e.dataTransfer.files});
+                // Global Key Listener for Enter to Send in Apps
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        const activeWin = document.querySelector('.window.active');
+                        if (activeWin) {
+                            if (activeWin.id === 'win-whiteboard') {
+                                e.preventDefault();
+                                OS.Apps.Whiteboard.save();
+                            } else if (activeWin.id === 'win-telegraph') {
+                                e.preventDefault();
+                                OS.Apps.Telegraph.send();
+                            }
+                        } else if(document.activeElement === document.getElementById('chat-input')) {
+                             e.preventDefault();
+                             OS.Apps.Chat.send();
+                        }
+                    }
                 });
+            },
+
+            // --- WINDOW MANAGER ---
+            WM: {
+                open: (app) => {
+                    if (OS.State.windows[app]) return OS.WM.focus(app);
+                    const tpl = document.getElementById(`tpl-${app}`);
+                    if (!tpl) return;
+
+                    OS.UI.playSound('open');
+                    const win = document.createElement('div');
+                    win.className = 'window active'; // Start active
+                    win.id = `win-${app}`;
+                    
+                    if (!OS.State.isMobile) {
+                        const offset = Object.keys(OS.State.windows).length * 30;
+                        win.style.top = (50 + offset) + 'px';
+                        win.style.left = (50 + offset) + 'px';
+                        win.style.width = app === 'whiteboard' || app === 'video' ? '700px' : '450px';
+                        win.style.height = '500px';
+                    }
+
+                    const titles = { video: 'Video Pro', terminal: 'Terminal', whiteboard: 'Canvas', telegraph: 'Telegraph V10', files: 'File Manager', settings: 'Settings' };
+
+                    win.innerHTML = `
+                        <div class="win-bar" onmousedown="OS.WM.drag(event, '${app}')">
+                            <div class="win-title"><i class="fas fa-circle" style="font-size:0.5rem; color:var(--primary)"></i> ${titles[app]}</div>
+                            <div class="win-controls">
+                                <button class="win-btn btn-min" onclick="OS.WM.min('${app}')"></button>
+                                <button class="win-btn btn-max" onclick="OS.WM.max('${app}')"></button>
+                                <button class="win-btn btn-close" onclick="OS.WM.close('${app}')"></button>
+                            </div>
+                        </div>
+                        <div class="win-content"></div>
+                    `;
+                    win.querySelector('.win-content').appendChild(tpl.content.cloneNode(true));
+                    win.addEventListener('mousedown', () => OS.WM.focus(app));
+                    document.getElementById('window-area').appendChild(win);
+                    OS.State.windows[app] = win;
+                    OS.WM.focus(app);
+
+                    // App Init Hooks
+                    if(app === 'whiteboard') {
+                        setTimeout(OS.Apps.Whiteboard.init, 100);
+                        OS.Net.send('sys', { msg: 'User opened the Whiteboard', action: 'whiteboard' });
+                    }
+                    if(app === 'settings') OS.Apps.Settings.render();
+                    if(app === 'terminal') OS.Apps.Terminal.init();
+                    if(app === 'telegraph') OS.Apps.Telegraph.renderGrid();
+                },
+                close: (app) => {
+                    OS.UI.playSound('close');
+                    document.getElementById(`win-${app}`).remove();
+                    delete OS.State.windows[app];
+                    if(app === 'video') OS.Apps.Video.endCall();
+                },
+                focus: (app) => {
+                    const win = document.getElementById(`win-${app}`);
+                    if(win) {
+                        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+                        win.classList.add('active');
+                        win.style.display = 'flex';
+                        win.style.zIndex = ++OS.State.zIndex;
+                    }
+                },
+                min: (app) => document.getElementById(`win-${app}`).style.display = 'none',
+                max: (app) => document.getElementById(`win-${app}`).classList.toggle('maximized'),
+                drag: (e, app) => {
+                    if(OS.State.isMobile) return;
+                    if(e.target.closest('.win-controls')) return;
+                    const win = document.getElementById(`win-${app}`);
+                    const shiftX = e.clientX - win.getBoundingClientRect().left;
+                    const shiftY = e.clientY - win.getBoundingClientRect().top;
+                    const move = (ev) => { win.style.left = (ev.pageX - shiftX)+'px'; win.style.top = (ev.pageY - shiftY)+'px'; };
+                    document.addEventListener('mousemove', move);
+                    document.onmouseup = () => document.removeEventListener('mousemove', move);
+                }
             },
 
             // --- SECURITY ---
             Security: {
                 key: null,
                 init: async () => OS.Security.key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]),
-                export: async () => {
-                    const e = await window.crypto.subtle.exportKey("raw", OS.Security.key);
-                    return btoa(String.fromCharCode(...new Uint8Array(e))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-                },
                 import: async (s) => {
                     const b = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
                     const a = new Uint8Array(b.length);
                     for(let i=0; i<b.length; i++) a[i] = b.charCodeAt(i);
                     OS.Security.key = await window.crypto.subtle.importKey("raw", a, "AES-GCM", true, ["encrypt", "decrypt"]);
+                },
+                export: async () => {
+                    const e = await window.crypto.subtle.exportKey("raw", OS.Security.key);
+                    return btoa(String.fromCharCode(...new Uint8Array(e))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 },
                 enc: async (d) => {
                     const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -547,49 +799,65 @@
                     OS.Net.peer = new Peer(null, { config: { iceServers: OS.Config.ICE } });
                     OS.Net.peer.on('open', async (id) => {
                         OS.State.peerId = id;
+                        document.getElementById('hub-my-id').innerText = id;
                         if(OS.State.isHost) {
                             const k = await OS.Security.export();
                             OS.State.link = `${location.origin}${location.pathname}#${id}&k=${k}`;
-                            OS.UI.qr(OS.State.link);
                         }
                         if(OS.Net.target) OS.Net.connect(OS.Net.target);
                     });
                     OS.Net.peer.on('connection', OS.Net.bind);
-                    OS.Net.peer.on('call', OS.Apps.Video.incoming);
+                    OS.Net.peer.on('call', OS.Apps.Video.handleIncoming);
                 },
                 connect: (rid) => OS.Net.bind(OS.Net.peer.connect(rid)),
+                connectManual: () => {
+                    const id = document.getElementById('manual-id').value.trim();
+                    if(id) OS.Net.connect(id);
+                },
+                connectFromHub: () => {
+                    const id = document.getElementById('hub-remote-id').value.trim();
+                    if(id) OS.Net.connect(id);
+                },
                 bind: (c) => {
                     OS.State.conn = c;
-                    c.on('open', () => {
-                        document.getElementById('conn-status').innerText = "Online";
-                        document.getElementById('conn-status').style.color = "var(--success)";
-                        document.getElementById('qr-modal').style.display = 'none'; // Auto close QR
-                        OS.Apps.Chat.sys("Secure Connection Established");
+                    c.on('open', () => { 
+                        OS.UI.toast('Secure Link Established', 'success'); 
+                        document.getElementById('peer-status').innerText = "ONLINE";
+                        document.getElementById('peer-status').style.color = "var(--success)";
+                        document.getElementById('connection-hub').classList.add('hidden');
+                        document.getElementById('chat-input').removeAttribute('disabled');
+                        document.getElementById('qr-modal').style.display = 'none';
+                        OS.Apps.Chat.clear();
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
                     c.on('close', () => {
-                        document.getElementById('conn-status').innerText = "Offline";
-                        document.getElementById('conn-status').style.color = "var(--text-muted)";
+                        document.getElementById('peer-status').innerText = "OFFLINE";
+                        document.getElementById('peer-status').style.color = "var(--danger)";
+                        document.getElementById('connection-hub').classList.remove('hidden');
+                        document.getElementById('chat-input').setAttribute('disabled', true);
                     });
                 },
                 send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
                 route: (m) => {
                     if(m.t === 'text') OS.Apps.Chat.render(m.p, 'remote');
-                    if(m.t === 'chunk') OS.Net.File.recv(m.p);
-                    if(m.t === 'draw') OS.Apps.Canvas.drawRemote(m.p);
-                    if(m.t === 'sys') OS.Apps.Chat.sys(m.p.msg, m.p.action);
+                    if(m.t === 'chunk') OS.Net.FileTransfer.recv(m.p);
+                    if(m.t === 'draw') OS.Apps.Whiteboard.drawRemote(m.p);
+                    if(m.t === 'draw-clear') OS.Apps.Whiteboard.clearLocal();
+                    if(m.t === 'sys') OS.Apps.Chat.renderSys(m.p);
                 },
+                copyLink: () => { navigator.clipboard.writeText(OS.State.link); OS.UI.toast('Link Copied', 'success'); },
+                copyId: () => { navigator.clipboard.writeText(OS.State.peerId); OS.UI.toast('ID Copied', 'success'); },
                 refreshIdentity: () => {
                     OS.Net.peer.destroy();
                     OS.Net.init();
                     OS.UI.toast('Identity Refreshed', 'success');
                 },
                 
-                File: {
+                FileTransfer: {
                     bufs: {},
                     handle: (inp) => { 
                         if(inp.files.length > 0) {
-                            Array.from(inp.files).forEach(f => OS.Net.File.send(f));
+                            Array.from(inp.files).forEach(f => OS.Net.FileTransfer.send(f));
                         }
                     },
                     send: (f) => {
@@ -608,8 +876,8 @@
                         r.readAsDataURL(f.slice(0, OS.Config.CHUNK));
                     },
                     recv: (p) => {
-                        if(!OS.Net.File.bufs[p.fid]) OS.Net.File.bufs[p.fid] = { c: [], n: 0, ui: OS.Apps.Chat.renderFile({name:p.n}, 'remote', p.fid) };
-                        const b = OS.Net.File.bufs[p.fid];
+                        if(!OS.Net.FileTransfer.bufs[p.fid]) OS.Net.FileTransfer.bufs[p.fid] = { c: [], n: 0, ui: OS.Apps.Chat.renderFile({name:p.n}, 'remote', p.fid) };
+                        const b = OS.Net.FileTransfer.bufs[p.fid];
                         b.c[p.idx] = p.d; b.n++;
                         if(b.n === p.total) {
                             const blobs = b.c.map(c => {
@@ -619,9 +887,9 @@
                                 return a;
                             });
                             const url = URL.createObjectURL(new Blob(blobs, { type: p.type }));
-                            OS.Apps.Chat.finalize(p.fid, url, p.type, p.type.startsWith('audio/')); // Auto play audio
-                            OS.Apps.Files.list.push({n:p.n, u:url});
-                            delete OS.Net.File.bufs[p.fid];
+                            OS.Apps.Chat.finalize(p.fid, url, p.type, true);
+                            OS.Apps.Files.add(p.n, url);
+                            delete OS.Net.FileTransfer.bufs[p.fid];
                         }
                     }
                 }
@@ -630,6 +898,10 @@
             // --- APPS ---
             Apps: {
                 Chat: {
+                    clear: () => {
+                        const f = document.getElementById('chat-feed');
+                        if(f) f.innerHTML = `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i><p>Session Reset.</p></div>`;
+                    },
                     toggleAttach: () => {
                         document.getElementById('attach-menu').classList.toggle('open');
                     },
@@ -639,7 +911,8 @@
                         if(!txt) return;
                         OS.Net.send('text', txt);
                         OS.Apps.Chat.render(txt, 'local');
-                        el.value = ''; el.focus();
+                        el.value = '';
+                        el.focus();
                     },
                     render: (h, s) => {
                         const f = document.getElementById('chat-feed');
@@ -649,12 +922,12 @@
                         f.appendChild(d);
                         f.scrollTop = f.scrollHeight;
                     },
-                    sys: (msg, action) => {
+                    renderSys: (data) => {
                         const f = document.getElementById('chat-feed');
                         const d = document.createElement('div');
-                        d.style = "text-align:center; margin:10px 0; font-size:0.8rem; color:var(--text-meta); cursor:pointer;";
-                        d.innerHTML = `<span style="background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:10px;">${msg}</span>`;
-                        if(action === 'canvas') d.onclick = () => OS.Apps.Canvas.open();
+                        d.style = "text-align:center; margin:10px 0; font-size:0.8rem; color:var(--text-dim); cursor:pointer;";
+                        d.innerHTML = `<span style="background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:10px;">${data.msg}</span>`;
+                        if(data.action === 'whiteboard') d.onclick = () => OS.WM.open('whiteboard');
                         f.appendChild(d);
                         f.scrollTop = f.scrollHeight;
                     },
@@ -662,14 +935,14 @@
                         OS.Apps.Chat.render(`<div id="f-${id}"><i class="fas fa-spinner fa-spin"></i> ${f.name}</div>`, s);
                         return id;
                     },
-                    finalize: (id, url, type, autoPlay=false) => {
+                    finalize: (id, url, type, autoPlay = false) => {
                         const el = document.getElementById(`f-${id}`);
                         if(!el) return;
                         if(type.startsWith('audio/')) {
                             const wid = `w-${id}`;
                             el.innerHTML = `<div id="${wid}" style="width:200px"></div><button class="btn-icon" onclick="OS.Apps.Chat.play('${wid}')"><i class="fas fa-play"></i></button>`;
                             setTimeout(() => {
-                                OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#3b82f6', height: 40, url });
+                                OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
                                 if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
                             }, 100);
                         } else if(type.startsWith('image/')) {
@@ -682,79 +955,263 @@
                     play: (id) => OS.Apps.Chat.waves[id]?.playPause()
                 },
 
-                Canvas: {
-                    ctx: null, drawing: false, color: '#3b82f6',
-                    open: () => {
-                        document.getElementById('canvas-app').classList.add('active');
-                        document.getElementById('attach-menu').classList.remove('open');
-                        OS.Apps.Canvas.init();
-                        OS.Net.send('sys', { msg: 'User opened the Whiteboard', action: 'canvas' });
-                        OS.Apps.Canvas.color = OS.State.isHost ? '#00e676' : '#ef4444';
+                Video: {
+                    localStream: null,
+                    startCall: async () => {
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                            OS.Apps.Video.localStream = stream;
+                            document.getElementById('local-pip').srcObject = stream;
+                            document.getElementById('video-wait').classList.add('hidden');
+                            const call = OS.Net.peer.call(OS.State.conn.peer, stream);
+                            OS.Apps.Video.handleCall(call);
+                        } catch(e) { OS.UI.toast('Camera Error', 'danger'); }
                     },
-                    close: () => document.getElementById('canvas-app').classList.remove('active'),
-                    toggleGhost: () => document.getElementById('canvas-app').classList.toggle('ghost'),
+                    shareScreen: async () => {
+                        try {
+                            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                            const videoTrack = stream.getVideoTracks()[0];
+                            const sender = OS.State.call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                            sender.replaceTrack(videoTrack);
+                            videoTrack.onended = () => {
+                                OS.Apps.Video.localStream.getVideoTracks()[0].enabled = true;
+                                sender.replaceTrack(OS.Apps.Video.localStream.getVideoTracks()[0]);
+                            };
+                        } catch(e) { OS.UI.toast('Screen Share Failed', 'danger'); }
+                    },
+                    handleIncoming: (call) => {
+                        OS.WM.open('video');
+                        OS.UI.toast('Incoming Call...', 'warning');
+                        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+                            OS.Apps.Video.localStream = stream;
+                            document.getElementById('local-pip').srcObject = stream;
+                            document.getElementById('video-wait').classList.add('hidden');
+                            call.answer(stream);
+                            OS.Apps.Video.handleCall(call);
+                        });
+                    },
+                    handleCall: (call) => {
+                        OS.State.call = call;
+                        call.on('stream', remoteStream => {
+                            document.getElementById('remote-video').srcObject = remoteStream;
+                        });
+                        call.on('close', OS.Apps.Video.endCall);
+                    },
+                    endCall: () => {
+                        if(OS.State.call) OS.State.call.close();
+                        if(OS.Apps.Video.localStream) OS.Apps.Video.localStream.getTracks().forEach(t => t.stop());
+                        document.getElementById('remote-video').srcObject = null;
+                        document.getElementById('video-wait')?.classList.remove('hidden');
+                    },
+                    toggleMic: () => {
+                        const t = OS.Apps.Video.localStream.getAudioTracks()[0];
+                        t.enabled = !t.enabled;
+                        document.getElementById('btn-mic').classList.toggle('danger');
+                    },
+                    toggleCam: () => {
+                        const t = OS.Apps.Video.localStream.getVideoTracks()[0];
+                        t.enabled = !t.enabled;
+                        document.getElementById('btn-cam').classList.toggle('danger');
+                    }
+                },
+
+                Terminal: {
+                    init: () => {
+                        const input = document.getElementById('term-in');
+                        input.addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter') {
+                                const cmd = input.value.trim();
+                                OS.Apps.Terminal.log(`root@titan:~# ${cmd}`);
+                                OS.Apps.Terminal.exec(cmd);
+                                input.value = '';
+                            }
+                        });
+                    },
+                    log: (txt) => {
+                        const out = document.getElementById('term-out');
+                        const div = document.createElement('div');
+                        div.className = 'term-line';
+                        div.innerText = txt;
+                        out.insertBefore(div, out.lastElementChild);
+                        out.scrollTop = out.scrollHeight;
+                    },
+                    exec: (cmd) => {
+                        const args = cmd.split(' ');
+                        switch(args[0]) {
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme, neofetch'); break;
+                            case 'clear': document.getElementById('term-out').innerHTML = '<canvas id="matrix-canvas"></canvas><div style="position:relative; z-index:2;"><div class="term-input-line"><span class="term-prompt">root@titan:~#</span><input type="text" class="term-input" id="term-in" autocomplete="off"></div></div>'; OS.Apps.Terminal.init(); break;
+                            case 'ping': OS.Apps.Terminal.log('pong'); break;
+                            case 'echo': OS.Apps.Terminal.log(args.slice(1).join(' ')); break;
+                            case 'date': OS.Apps.Terminal.log(new Date().toString()); break;
+                            case 'whoami': OS.Apps.Terminal.log(OS.State.peerId); break;
+                            case 'reboot': location.reload(); break;
+                            case 'ls': OS.Apps.Terminal.log(Object.keys(OS.State.fs['/'].children).join('  ')); break;
+                            case 'matrix': 
+                                document.getElementById('matrix-canvas').style.display = 'block';
+                                OS.UI.initMatrix();
+                                OS.Apps.Terminal.log('Matrix loaded. Type clear to exit.'); 
+                                break;
+                            case 'calc': try { OS.Apps.Terminal.log(eval(args.slice(1).join(' '))); } catch(e) { OS.Apps.Terminal.log('Error'); } break;
+                            case 'sys': OS.Apps.Terminal.log(`UA: ${navigator.userAgent}`); OS.Apps.Terminal.log(`Res: ${window.innerWidth}x${window.innerHeight}`); break;
+                            case 'open': OS.WM.open(args[1]); OS.Apps.Terminal.log(`Opening ${args[1]}...`); break;
+                            case 'connect': OS.Net.connect(args[1]); OS.Apps.Terminal.log(`Connecting to ${args[1]}...`); break;
+                            case 'say': 
+                                const msg = args.slice(1).join(' ');
+                                OS.Net.send('text', msg);
+                                OS.Apps.Chat.render(msg, 'local');
+                                OS.Apps.Terminal.log('Message sent.');
+                                break;
+                            case 'weather': OS.Apps.Terminal.log('Stockholm: 2°C, Overcast. Wind: 5m/s SW.'); break;
+                            case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
+                            case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
+                            case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
+                            case 'neofetch':
+                                OS.Apps.Terminal.log(`
+       .---.       OS: PepeTalk OS XIII
+      /     \\      Kernel: Quantum Mesh
+      |  O  |      Uptime: ${Math.floor(performance.now()/1000)}s
+      \\  _  /      Shell: Titan Bash
+       '.___.'     Theme: Omega Dark
+                                `);
+                                break;
+                            default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
+                        }
+                    }
+                },
+
+                Keyboard: {
+                    chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()",
+                    open: () => {
+                        const kb = document.getElementById('secure-kb');
+                        const input = document.getElementById('chat-input');
+                        kb.classList.add('open');
+                        input.classList.add('secure-mode');
+                        input.setAttribute('readonly', true);
+                        OS.Apps.Keyboard.render();
+                    },
+                    close: () => {
+                        document.getElementById('secure-kb').classList.remove('open');
+                        const input = document.getElementById('chat-input');
+                        input.classList.remove('secure-mode');
+                        input.removeAttribute('readonly');
+                    },
+                    render: () => {
+                        const grid = document.getElementById('kb-keys');
+                        grid.innerHTML = '';
+                        const shuffled = OS.Apps.Keyboard.chars.split('').sort(() => 0.5 - Math.random());
+                        shuffled.forEach(char => {
+                            const k = document.createElement('div');
+                            k.className = 'kb-key';
+                            k.innerText = char;
+                            k.onclick = () => OS.Apps.Keyboard.type(char);
+                            grid.appendChild(k);
+                        });
+                    },
+                    type: (char) => {
+                        const input = document.getElementById('chat-input');
+                        input.value += char;
+                        OS.Apps.Keyboard.render();
+                        OS.UI.playSound('key');
+                    },
+                    backspace: () => {
+                        const input = document.getElementById('chat-input');
+                        input.value = input.value.slice(0, -1);
+                        OS.Apps.Keyboard.render();
+                    },
+                    enter: () => {
+                        OS.Apps.Chat.send();
+                        OS.Apps.Keyboard.render();
+                    }
+                },
+
+                Whiteboard: {
+                    ctx: null, drawing: false, color: '#3b82f6',
                     init: () => {
                         const c = document.getElementById('wb-canvas');
-                        c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight;
-                        OS.Apps.Canvas.ctx = c.getContext('2d');
+                        const w = document.getElementById('wb-wrap');
+                        if(!c || !w) return;
                         
+                        // Auto-assign color based on host status
+                        OS.Apps.Whiteboard.color = OS.State.isHost ? '#00e676' : '#ff453a'; // Green for Host, Red for Guest
+                        
+                        // Force resize immediately
+                        c.width = w.clientWidth; c.height = w.clientHeight;
+                        
+                        new ResizeObserver(() => { 
+                            // Preserve content on resize
+                            const temp = document.createElement('canvas');
+                            temp.width = c.width; temp.height = c.height;
+                            temp.getContext('2d').drawImage(c, 0, 0);
+                            c.width = w.clientWidth; c.height = w.clientHeight; 
+                            c.getContext('2d').drawImage(temp, 0, 0);
+                        }).observe(w);
+
                         const getPos = (e) => {
                             const r = c.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
                             return { x: t.clientX - r.left, y: t.clientY - r.top };
                         };
-                        
-                        const start = (e) => { OS.Apps.Canvas.drawing = true; OS.Apps.Canvas.last = getPos(e); };
+                        OS.Apps.Whiteboard.ctx = c.getContext('2d');
+                        const start = (e) => { OS.Apps.Whiteboard.drawing = true; OS.Apps.Whiteboard.last = getPos(e); };
                         const move = (e) => {
-                            if(!OS.Apps.Canvas.drawing) return;
+                            if(!OS.Apps.Whiteboard.drawing) return;
                             e.preventDefault();
                             const p = getPos(e);
-                            OS.Apps.Canvas.draw(OS.Apps.Canvas.last, p, OS.Apps.Canvas.color);
-                            OS.Net.send('draw', { x1: OS.Apps.Canvas.last.x/c.width, y1: OS.Apps.Canvas.last.y/c.height, x2: p.x/c.width, y2: p.y/c.height, c: OS.Apps.Canvas.color });
-                            OS.Apps.Canvas.last = p;
+                            OS.Apps.Whiteboard.draw(OS.Apps.Whiteboard.last, p, OS.Apps.Whiteboard.color);
+                            OS.Net.send('draw', { x1: OS.Apps.Whiteboard.last.x/c.width, y1: OS.Apps.Whiteboard.last.y/c.height, x2: p.x/c.width, y2: p.y/c.height, c: OS.Apps.Whiteboard.color });
+                            OS.Apps.Whiteboard.last = p;
                         };
-                        const end = () => OS.Apps.Canvas.drawing = false;
-                        
+                        const end = () => OS.Apps.Whiteboard.drawing = false;
                         c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
                         c.addEventListener('touchstart', start); c.addEventListener('touchmove', move); c.addEventListener('touchend', end);
                     },
                     draw: (p1, p2, c) => {
-                        const ctx = OS.Apps.Canvas.ctx;
+                        const ctx = OS.Apps.Whiteboard.ctx;
                         ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
                         ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
                     },
                     drawRemote: (d) => {
                         const c = document.getElementById('wb-canvas');
-                        OS.Apps.Canvas.draw({x: d.x1*c.width, y: d.y1*c.height}, {x: d.x2*c.width, y: d.y2*c.height}, d.c);
+                        if(c) OS.Apps.Whiteboard.draw({x: d.x1*c.width, y: d.y1*c.height}, {x: d.x2*c.width, y: d.y2*c.height}, d.c);
                     },
-                    setColor: (c, el) => {
-                        OS.Apps.Canvas.color = c;
-                        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-                        el.classList.add('active');
-                    },
-                    clear: () => {
-                        const c = document.getElementById('wb-canvas');
-                        OS.Apps.Canvas.ctx.clearRect(0,0,c.width,c.height);
-                    },
+                    setColor: (c) => OS.Apps.Whiteboard.color = c,
+                    clear: () => { OS.Apps.Whiteboard.clearLocal(); OS.Net.send('draw-clear', {}); },
+                    clearLocal: () => { const c = document.getElementById('wb-canvas'); OS.Apps.Whiteboard.ctx.clearRect(0,0,c.width,c.height); },
                     save: () => {
-                        const u = document.getElementById('wb-canvas').toDataURL();
+                        const c = document.getElementById('wb-canvas');
+                        const u = c.toDataURL('image/png');
                         OS.Net.FileTransfer.send(OS.UI.dataURLtoFile(u, 'drawing.png'));
+                        // Local Echo
                         OS.Apps.Chat.render(`<img src="${u}" style="max-width:100%; border-radius:8px;">`, 'local');
-                        OS.Apps.Canvas.close();
+                        OS.UI.toast('Sent to Chat', 'success');
+                    },
+                    toggleGhost: () => {
+                        const layer = document.getElementById('win-whiteboard');
+                        if(layer.style.opacity === '0.5') {
+                            layer.style.opacity = '1';
+                        } else {
+                            layer.style.opacity = '0.5';
+                        }
                     }
                 },
 
                 Telegraph: {
                     ctx: null, osc: null, dest: null, rec: null, chunks: [], startT: 0, seq: "", lastUp: 0,
                     dict: { '.-':'A', '-...':'B', '-.-.':'C', '-..':'D', '.':'E', '..-.':'F', '--.':'G', '....':'H', '..':'I', '.---':'J', '-.-':'K', '.-..':'L', '--':'M', '-.':'N', '---':'O', '.--.':'P', '--.-':'Q', '.-.':'R', '...':'S', '-':'T', '..-':'U', '...-':'V', '.--':'W', '-..-':'X', '-.--':'Y', '--..':'Z', '.--.-':'Å', '.-.-':'Ä', '---.':'Ö' },
-                    open: () => {
-                        document.getElementById('telegraph-app').classList.add('active');
-                        document.getElementById('attach-menu').classList.remove('open');
+                    renderGrid: () => {
+                        const grid = document.getElementById('morse-grid-content');
+                        if(!grid) return;
+                        grid.innerHTML = '';
+                        for(const [code, char] of Object.entries(OS.Apps.Telegraph.dict)) {
+                            const item = document.createElement('div');
+                            item.className = 'morse-item';
+                            item.innerHTML = `<div class="morse-char">${char}</div><div class="morse-val">${code}</div>`;
+                            grid.appendChild(item);
+                        }
                     },
-                    close: () => document.getElementById('telegraph-app').classList.remove('active'),
                     toggleInfo: () => {
-                        // Simple alert for now or modal
-                        alert("Morse Code Reference:\n" + JSON.stringify(OS.Apps.Telegraph.dict, null, 2));
+                        const el = document.getElementById('morse-ref');
+                        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
                     },
                     initAudio: () => {
                         if(OS.Apps.Telegraph.ctx) return;
@@ -773,7 +1230,7 @@
                         t.osc.connect(g); g.connect(t.ctx.destination); g.connect(t.dest);
                         t.osc.frequency.value = 600; t.osc.start();
                         t.startT = Date.now();
-                        document.getElementById('tele-key').classList.add('pressed');
+                        document.getElementById('telegraph-key').classList.add('pressed');
                         const diff = Date.now() - t.lastUp;
                         if(t.lastUp > 0) { if(diff > 1000) t.seq += " / "; else if(diff > 400) t.seq += " "; }
                     },
@@ -781,10 +1238,10 @@
                         const t = OS.Apps.Telegraph;
                         if(!t.osc) return;
                         t.osc.stop(); t.osc = null;
-                        document.getElementById('tele-key').classList.remove('pressed');
+                        document.getElementById('telegraph-key').classList.remove('pressed');
                         const dur = Date.now() - t.startT;
                         t.seq += dur < 200 ? "." : "-";
-                        document.getElementById('tele-code').innerText = t.seq;
+                        document.getElementById('morse-display').innerText = t.seq;
                         t.lastUp = Date.now();
                         t.transcribe();
                     },
@@ -792,7 +1249,7 @@
                         const t = OS.Apps.Telegraph;
                         const words = t.seq.split(' / ');
                         const text = words.map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
-                        document.getElementById('tele-text').innerText = text;
+                        document.getElementById('morse-transcription').innerText = text;
                     },
                     send: () => {
                         const t = OS.Apps.Telegraph;
@@ -801,13 +1258,11 @@
                         t.rec.onstop = () => {
                             const b = new Blob(t.chunks, { type: 'audio/webm' });
                             OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
-                            const translation = document.getElementById('tele-text').innerText;
+                            const translation = document.getElementById('morse-transcription').innerText;
                             if(t.seq) {
-                                let msg = `<div class="spoiler" onclick="this.classList.add('revealed')">
-                                    <div style="font-family:monospace; color:var(--primary)">${t.seq}</div>
-                                    <div style="font-weight:bold; color:var(--accent)">${translation}</div>
-                                </div>`;
+                                let msg = `<div class="spoiler-box"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
                                 OS.Net.send('text', msg);
+                                // Local Echo
                                 OS.Apps.Chat.render(msg, 'local');
                             }
                             t.clear();
@@ -816,277 +1271,134 @@
                     clear: () => {
                         const t = OS.Apps.Telegraph;
                         t.chunks = []; t.seq = ""; t.lastUp = 0;
-                        document.getElementById('tele-code').innerText = "";
-                        document.getElementById('tele-text').innerText = "";
+                        document.getElementById('morse-display').innerText = "";
+                        document.getElementById('morse-transcription').innerText = "";
                         if(t.ctx) { t.ctx.close(); t.ctx = null; }
-                    }
-                },
-
-                Keyboard: {
-                    layers: {
-                        abc: "QWERTYUIOPASDFGHJKLZXCVBNM",
-                        num: "1234567890@#$%&-+()",
-                    },
-                    currentLayer: 'abc',
-                    caps: false,
-                    toggle: () => {
-                        const kb = document.getElementById('secure-kb');
-                        const input = document.getElementById('chat-input');
-                        kb.classList.add('open');
-                        input.setAttribute('readonly', true);
-                        OS.Apps.Keyboard.render();
-                    },
-                    close: () => {
-                        document.getElementById('secure-kb').classList.remove('open');
-                        const input = document.getElementById('chat-input');
-                        input.removeAttribute('readonly');
-                    },
-                    render: () => {
-                        const grid = document.getElementById('kb-keys');
-                        grid.innerHTML = '';
-                        let chars = OS.Apps.Keyboard.layers[OS.Apps.Keyboard.currentLayer].split('');
-                        if(!OS.Apps.Keyboard.caps && OS.Apps.Keyboard.currentLayer === 'abc') chars = chars.map(c => c.toLowerCase());
-                        chars = chars.sort(() => 0.5 - Math.random());
-                        chars.forEach(char => {
-                            const k = document.createElement('div');
-                            k.className = 'kb-key'; k.innerText = char;
-                            k.onclick = () => OS.Apps.Keyboard.type(char);
-                            grid.appendChild(k);
-                        });
-                    },
-                    type: (char) => {
-                        const input = document.getElementById('chat-input');
-                        input.value += char;
-                        document.getElementById('kb-preview').innerText = input.value;
-                        OS.Apps.Keyboard.render();
-                        OS.UI.sound('key');
-                    },
-                    backspace: () => {
-                        const input = document.getElementById('chat-input');
-                        input.value = input.value.slice(0, -1);
-                        document.getElementById('kb-preview').innerText = input.value;
-                        OS.Apps.Keyboard.render();
-                    },
-                    enter: () => {
-                        OS.Apps.Chat.send();
-                        OS.Apps.Keyboard.render();
-                    },
-                    move: (dir) => {
-                        const input = document.getElementById('chat-input');
-                        const pos = input.selectionStart + dir;
-                        input.setSelectionRange(pos, pos);
-                        input.focus();
-                    },
-                    switchLayer: () => {
-                        OS.Apps.Keyboard.currentLayer = OS.Apps.Keyboard.currentLayer === 'abc' ? 'num' : 'abc';
-                        OS.Apps.Keyboard.render();
-                    },
-                    toggleCaps: () => {
-                        OS.Apps.Keyboard.caps = !OS.Apps.Keyboard.caps;
-                        OS.Apps.Keyboard.render();
-                    }
-                },
-
-                Audio: {
-                    rec: null, chunks: [], ctx: null,
-                    start: async () => {
-                        try {
-                            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-                            document.getElementById('audio-bar').classList.add('active');
-                            OS.Apps.Audio.ctx = new AudioContext();
-                            const src = OS.Apps.Audio.ctx.createMediaStreamSource(s);
-                            const an = OS.Apps.Audio.ctx.createAnalyser();
-                            src.connect(an);
-                            
-                            const cvs = document.getElementById('audio-viz');
-                            const c = cvs.getContext('2d');
-                            const d = new Uint8Array(an.frequencyBinCount);
-                            const draw = () => {
-                                if(!document.getElementById('audio-bar').classList.contains('active')) return;
-                                requestAnimationFrame(draw);
-                                an.getByteFrequencyData(d);
-                                c.clearRect(0,0,cvs.width,cvs.height);
-                                c.fillStyle = '#3b82f6';
-                                const w = cvs.width/30;
-                                for(let i=0; i<30; i++) {
-                                    const h = (d[i]/255)*cvs.height;
-                                    c.fillRect(i*w, cvs.height-h, w-2, h);
-                                }
-                            };
-                            draw();
-
-                            OS.Apps.Audio.rec = new MediaRecorder(s);
-                            OS.Apps.Audio.chunks = [];
-                            OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
-                            OS.Apps.Audio.rec.start();
-                            
-                            let sec = 0;
-                            OS.Apps.Audio.timer = setInterval(() => {
-                                sec++;
-                                document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
-                            }, 1000);
-                        } catch(e) { console.error(e); }
-                    },
-                    send: () => {
-                        if(!OS.Apps.Audio.rec) return;
-                        OS.Apps.Audio.rec.onstop = () => {
-                            const b = new Blob(OS.Apps.Audio.chunks, { type: 'audio/webm' });
-                            OS.Net.FileTransfer.send(new File([b], "voice.webm", { type: 'audio/webm' }));
-                            OS.Apps.Audio.cancel();
-                        };
-                        OS.Apps.Audio.rec.stop();
-                    },
-                    cancel: () => {
-                        if(OS.Apps.Audio.rec) {
-                            OS.Apps.Audio.rec.stream.getTracks().forEach(t => t.stop());
-                            OS.Apps.Audio.rec = null;
-                        }
-                        clearInterval(OS.Apps.Audio.timer);
-                        document.getElementById('rec-timer').innerText = "00:00";
-                        document.getElementById('audio-bar').classList.remove('active');
-                    }
-                },
-
-                Video: {
-                    open: () => {
-                        document.getElementById('video-app').classList.add('active');
-                        document.getElementById('attach-menu').classList.remove('open');
-                        OS.Apps.Video.start();
-                    },
-                    close: () => {
-                        document.getElementById('video-app').classList.remove('active');
-                        OS.Apps.Video.end();
-                    },
-                    start: async () => {
-                        try {
-                            const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                            document.getElementById('local-pip').srcObject = s;
-                            OS.Apps.Video.stream = s;
-                            const call = OS.Net.peer.call(OS.State.conn.peer, s);
-                            OS.Apps.Video.handle(call);
-                        } catch(e) { console.error(e); }
-                    },
-                    incoming: (call) => {
-                        document.getElementById('video-app').classList.add('active');
-                        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
-                            document.getElementById('local-pip').srcObject = s;
-                            OS.Apps.Video.stream = s;
-                            call.answer(s);
-                            OS.Apps.Video.handle(call);
-                        });
-                    },
-                    handle: (call) => {
-                        OS.State.call = call;
-                        call.on('stream', s => document.getElementById('remote-video').srcObject = s);
-                        call.on('close', OS.Apps.Video.end);
-                    },
-                    end: () => {
-                        if(OS.State.call) OS.State.call.close();
-                        if(OS.Apps.Video.stream) OS.Apps.Video.stream.getTracks().forEach(t => t.stop());
-                    },
-                    toggleMic: () => {
-                        const t = OS.Apps.Video.stream.getAudioTracks()[0];
-                        t.enabled = !t.enabled;
-                    },
-                    toggleCam: () => {
-                        const t = OS.Apps.Video.stream.getVideoTracks()[0];
-                        t.enabled = !t.enabled;
-                    },
-                    shareScreen: async () => {
-                        try {
-                            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                            const videoTrack = stream.getVideoTracks()[0];
-                            const sender = OS.State.call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                            sender.replaceTrack(videoTrack);
-                            videoTrack.onended = () => {
-                                OS.Apps.Video.stream.getVideoTracks()[0].enabled = true;
-                                sender.replaceTrack(OS.Apps.Video.stream.getVideoTracks()[0]);
-                            };
-                        } catch(e) { console.error(e); }
-                    }
-                },
-
-                Terminal: {
-                    open: () => document.getElementById('terminal-app').classList.add('active'),
-                    init: () => {
-                        const input = document.getElementById('term-in');
-                        input.addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter') {
-                                const cmd = input.value.trim();
-                                OS.Apps.Terminal.log(`root@omega:~# ${cmd}`);
-                                OS.Apps.Terminal.exec(cmd);
-                                input.value = '';
-                            }
-                        });
-                    },
-                    log: (txt) => {
-                        const out = document.getElementById('term-out');
-                        const div = document.createElement('div');
-                        div.innerText = txt;
-                        out.appendChild(div);
-                        out.scrollTop = out.scrollHeight;
-                    },
-                    exec: (cmd) => {
-                        const args = cmd.split(' ');
-                        switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme, neofetch'); break;
-                            case 'clear': document.getElementById('term-out').innerHTML = ''; break;
-                            case 'ping': OS.Apps.Terminal.log('pong'); break;
-                            case 'weather': OS.Apps.Terminal.log('Stockholm: 2°C, Overcast. Wind: 5m/s SW.'); break;
-                            case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
-                            case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
-                            case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
-                            case 'matrix': 
-                                // Matrix effect logic could go here
-                                OS.Apps.Terminal.log('Wake up, Neo...'); 
-                                break;
-                            default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
-                        }
                     }
                 },
 
                 Files: {
                     list: [],
+                    add: (n, u) => {
+                        OS.Apps.Files.list.push({n, u});
+                        const g = document.getElementById('file-grid');
+                        if(g) {
+                            const d = document.createElement('div');
+                            d.style = "text-align:center; cursor:pointer;";
+                            d.innerHTML = `<i class="fas fa-file" style="font-size:2rem; color:var(--accent)"></i><br><span style="font-size:0.8rem">${n}</span>`;
+                            d.onclick = () => { const a = document.createElement('a'); a.href=u; a.download=n; a.click(); };
+                            g.appendChild(d);
+                        }
+                    },
                     downloadAll: () => {
                         OS.Apps.Files.list.forEach(f => {
                             const a = document.createElement('a');
                             a.href = f.u; a.download = f.n; a.click();
                         });
+                        OS.UI.toast('Downloading All Files...', 'success');
+                    }
+                },
+
+                Settings: {
+                    render: () => {
+                        document.getElementById('setting-id').innerText = OS.State.peerId || '...';
                     }
                 }
             },
 
+            // --- UI UTILS ---
             UI: {
-                toggleAttach: () => document.getElementById('attach-menu').classList.toggle('open'),
-                qr: (txt) => {
+                clock: () => setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 1000),
+                toast: (m, t) => {
+                    const el = document.createElement('div');
+                    el.style = `background:#222; border-left:4px solid var(--${t}); padding:15px; color:white; border-radius:4px; animation:slideUp 0.3s;`;
+                    el.innerText = m;
+                    document.getElementById('toast-area').appendChild(el);
+                    setTimeout(() => el.remove(), 3000);
+                },
+                refreshQR: () => {
                     const t = document.getElementById('qr-target');
                     t.innerHTML = '';
-                    new QRCode(t, { text: txt, width: 200, height: 200 });
-                    document.getElementById('qr-modal').style.display = 'flex';
+                    new QRCode(t, { text: OS.State.link, width: 200, height: 200 });
                 },
                 showQR: () => {
-                    if(OS.State.link) OS.UI.qr(OS.State.link);
-                },
-                sound: (t) => {
-                    const c = new AudioContext();
-                    const o = c.createOscillator();
-                    const g = c.createGain();
-                    o.connect(g); g.connect(c.destination);
-                    if(t==='startup') {
-                        o.frequency.setValueAtTime(220, c.currentTime);
-                        o.frequency.exponentialRampToValueAtTime(880, c.currentTime+0.5);
-                        g.gain.exponentialRampToValueAtTime(0.01, c.currentTime+0.5);
-                        o.start(); o.stop(c.currentTime+0.5);
-                    } else if (type === 'key') {
-                        osc.frequency.value = 800; g.gain.value = 0.02;
-                        osc.start(); osc.stop(ctx.currentTime + 0.05);
-                    }
+                    document.getElementById('qr-modal').style.display = 'flex';
+                    OS.UI.refreshQR();
                 },
                 dataURLtoFile: (dataurl, filename) => {
                     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
                     while(n--){ u8arr[n] = bstr.charCodeAt(n); }
                     return new File([u8arr], filename, {type:mime});
+                },
+                playSound: (type) => {
+                    const ctx = new AudioContext();
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.connect(g); g.connect(ctx.destination);
+                    if(type === 'startup') {
+                        osc.frequency.setValueAtTime(220, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.5);
+                        g.gain.setValueAtTime(0.1, ctx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                        osc.start(); osc.stop(ctx.currentTime + 0.5);
+                    } else if (type === 'open') {
+                        osc.frequency.value = 600; g.gain.value = 0.05;
+                        osc.start(); osc.stop(ctx.currentTime + 0.1);
+                    } else if (type === 'close') {
+                        osc.frequency.value = 300; g.gain.value = 0.05;
+                        osc.start(); osc.stop(ctx.currentTime + 0.1);
+                    } else if (type === 'key') {
+                        osc.frequency.value = 800; g.gain.value = 0.02;
+                        osc.start(); osc.stop(ctx.currentTime + 0.05);
+                    }
+                },
+                initNeuralGrid: () => {
+                    const c = document.getElementById('neural-canvas');
+                    const ctx = c.getContext('2d');
+                    let w, h, particles = [];
+                    const resize = () => { w = c.width = window.innerWidth; h = c.height = window.innerHeight; };
+                    window.addEventListener('resize', resize); resize();
+                    
+                    for(let i=0; i<50; i++) particles.push({x:Math.random()*w, y:Math.random()*h, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5});
+                    
+                    const draw = () => {
+                        ctx.clearRect(0,0,w,h);
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+                        particles.forEach((p, i) => {
+                            p.x += p.vx; p.y += p.vy;
+                            if(p.x<0 || p.x>w) p.vx*=-1; if(p.y<0 || p.y>h) p.vy*=-1;
+                            ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                            particles.forEach((p2, j) => {
+                                if(i!==j) {
+                                    const d = Math.hypot(p.x-p2.x, p.y-p2.y);
+                                    if(d<150) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+                                }
+                            });
+                        });
+                        requestAnimationFrame(draw);
+                    };
+                    draw();
+                },
+                initMatrix: () => {
+                    const c = document.getElementById('matrix-canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight;
+                    const cols = Math.floor(c.width / 20);
+                    const ypos = Array(cols).fill(0);
+                    const draw = () => {
+                        ctx.fillStyle = '#0001'; ctx.fillRect(0,0,c.width,c.height);
+                        ctx.fillStyle = '#0f0'; ctx.font = '15px monospace';
+                        ypos.forEach((y, i) => {
+                            const text = String.fromCharCode(Math.random() * 128);
+                            const x = i * 20;
+                            ctx.fillText(text, x, y);
+                            if(y > 100 + Math.random() * 10000) ypos[i] = 0;
+                            else ypos[i] = y + 20;
+                        });
+                    };
+                    setInterval(draw, 50);
                 }
             }
         };
