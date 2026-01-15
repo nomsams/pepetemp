@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XIII | Omega Protocol</title>
+    <title>PepeTalk OS XV | The God Particle</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Secure P2P Operating System">
     
-    <!-- OMEGA CORE DEPENDENCIES -->
+    <!-- GOD PARTICLE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -20,8 +21,8 @@
 
     <style>
         /* 
-         * 🏛️ THEME: OMEGA DARK
-         * "The end of the line."
+         * 🏛️ THEME: GOD PARTICLE
+         * "Complexity is the only path to truth."
          */
         :root {
             --bg-root: #000000;
@@ -30,6 +31,8 @@
             --bg-header: #1a1a1a;
             --bg-panel: #141414;
             --bg-input: #0a0a0a;
+            --bg-bubble-local: #3b82f6;
+            --bg-bubble-remote: #1a1a1a;
             
             --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
@@ -45,7 +48,7 @@
             --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(16, 16, 16, 0.9);
+            --glass: rgba(16, 16, 16, 0.95);
             --blur: blur(30px);
             
             --shadow-win: 0 30px 60px -12px rgba(0, 0, 0, 1);
@@ -55,7 +58,7 @@
             
             --z-desktop: 1;
             --z-window: 100;
-            --z-modal: 5000;
+            --z-overlay: 5000;
             --z-keyboard: 6000;
             --z-taskbar: 9000;
             --z-toast: 10000;
@@ -85,44 +88,14 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- DESKTOP & NEURAL GRID --- */
+        /* --- DESKTOP --- */
         #desktop {
             position: relative; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
             overflow: hidden; z-index: var(--z-desktop);
         }
-        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.2; pointer-events: none; }
         
-        /* Desktop Icons (Grid System) */
-        .icon-grid {
-            position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 60px);
-            padding: 30px; display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            grid-auto-rows: 110px; gap: 15px; align-content: start;
-            pointer-events: none;
-        }
-        .app-icon {
-            pointer-events: auto;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); padding: 10px; border-radius: 16px;
-            border: 1px solid transparent;
-        }
-        .app-icon:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); transform: translateY(-4px); }
-        .app-icon:active { transform: scale(0.95); }
-        .icon-img { 
-            width: 58px; height: 58px; border-radius: 16px; 
-            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.8rem; color: var(--text-main);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            margin-bottom: 10px; position: relative; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .icon-img i { z-index: 2; position: relative; }
-        .icon-img::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom right, rgba(255,255,255,0.15), transparent); z-index: 1; }
-        .app-label { font-size: 0.85rem; text-shadow: 0 2px 4px black; font-weight: 500; letter-spacing: 0.3px; color: #eee; }
-
-        /* --- WINDOW MANAGER (OMEGA ENGINE) --- */
+        /* --- WINDOW MANAGER --- */
         .window {
             position: absolute; background: var(--bg-window);
             border: var(--border); border-radius: 12px;
@@ -155,7 +128,7 @@
         .win-content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--bg-window); }
         .scroll-wrap { overflow-y: auto; height: 100%; padding: 0; }
 
-        /* --- TASKBAR (DOCK) --- */
+        /* --- TASKBAR --- */
         #taskbar {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
             background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px);
@@ -183,9 +156,9 @@
         
         .sys-tray { display: flex; align-items: center; gap: 15px; font-size: 0.75rem; color: var(--text-muted); padding-left: 15px; border-left: 1px solid rgba(255,255,255,0.1); }
 
-        /* --- APP: CHAT (MESSENGER PRO) --- */
+        /* --- APP: MESSENGER (TELEGRAM STYLE) --- */
         .chat-layout { display: flex; height: 100%; }
-        .chat-sidebar { width: 240px; background: var(--bg-panel); border-right: var(--border); display: flex; flex-direction: column; }
+        .chat-sidebar { width: 280px; background: var(--bg-panel); border-right: var(--border); display: flex; flex-direction: column; }
         .chat-main { flex: 1; display: flex; flex-direction: column; background: #080808; position: relative; }
         
         .chat-header { padding: 15px; border-bottom: var(--border); font-weight: 700; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-header); }
@@ -203,6 +176,9 @@
             display: flex; flex-direction: column; gap: 12px; 
             background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 30px 30px;
         }
+        /* Drag & Drop Zone Highlight */
+        .chat-main.drag-over { border: 2px dashed var(--primary); background: rgba(59, 130, 246, 0.1); }
+
         .msg { max-width: 80%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
         .msg.local { align-self: flex-end; align-items: flex-end; }
         .msg.remote { align-self: flex-start; align-items: flex-start; }
@@ -211,8 +187,8 @@
             padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; 
             position: relative; word-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .msg.local .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .msg.remote .msg-bubble { background: var(--bg-header); color: white; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
+        .msg.local .msg-bubble { background: var(--bg-bubble-local); color: white; border-bottom-right-radius: 2px; }
+        .msg.remote .msg-bubble { background: var(--bg-bubble-remote); color: white; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
         .msg-meta { font-size: 0.65rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
         
         /* Omni-Bar */
@@ -227,7 +203,8 @@
             font-family: inherit; transition: 0.2s; 
         }
         .chat-input:focus { border-color: var(--primary); background: #000; }
-        
+        .chat-input.secure-mode { border-color: var(--success); background: rgba(16, 185, 129, 0.05); cursor: pointer; }
+
         /* Attachment Menu */
         .attach-menu {
             position: absolute; bottom: 70px; left: 15px;
@@ -282,11 +259,6 @@
         .term-prompt { color: var(--primary); }
         .term-input { background: transparent; border: none; color: white; flex: 1; font-family: inherit; caret-color: #0f0; }
         #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.3; display: none; }
-
-        /* --- APP: STUDIO CODE --- */
-        .code-layout { display: flex; flex-direction: column; height: 100%; }
-        .code-toolbar { padding: 8px; background: var(--bg-header); border-bottom: var(--border); display: flex; gap: 10px; }
-        .code-editor { flex: 1; background: #1e1e1e; color: #d4d4d4; border: none; padding: 15px; font-family: 'JetBrains Mono', monospace; resize: none; font-size: 0.9rem; line-height: 1.5; }
 
         /* --- APP: TELEGRAPH (MORSE) --- */
         .telegraph-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #111; gap: 20px; padding: 20px; position: relative; }
@@ -350,6 +322,7 @@
         .kb-row { display: flex; padding: 0 6px 6px; gap: 4px; }
         .kb-space { flex: 1; }
         .kb-func { flex: 0 0 15%; background: #333; font-size: 0.9rem; }
+        .kb-preview { padding: 10px; background: #111; color: var(--primary); font-family: monospace; text-align: center; border-bottom: 1px solid #222; min-height: 40px; }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -425,10 +398,6 @@
                 <div class="icon-img" style="color:#30d158"><i class="fas fa-terminal"></i></div>
                 <div class="app-label">Terminal</div>
             </div>
-            <div class="app-icon" onclick="OS.WM.open('code')">
-                <div class="icon-img" style="color:#5e5ce6"><i class="fas fa-code"></i></div>
-                <div class="app-label">Studio</div>
-            </div>
             <div class="app-icon" onclick="OS.WM.open('whiteboard')">
                 <div class="icon-img" style="color:#ffd60a"><i class="fas fa-pen-nib"></i></div>
                 <div class="app-label">Canvas</div>
@@ -467,10 +436,14 @@
             <span style="color:var(--success); font-size:0.8rem; font-family:var(--font-mono)"><i class="fas fa-lock"></i> SECURE SCRAMBLE</span>
             <button class="btn-icon" onclick="OS.Apps.Keyboard.close()"><i class="fas fa-chevron-down"></i></button>
         </div>
+        <div class="kb-preview" id="kb-preview"></div>
         <div class="kb-grid" id="kb-keys"></div>
         <div class="kb-row">
-            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.type('123')">123</div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.switchLayer()">123</div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.toggleCaps()"><i class="fas fa-arrow-up"></i></div>
             <div class="kb-key kb-space" onclick="OS.Apps.Keyboard.type(' ')">SPACE</div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.move(-1)"><i class="fas fa-caret-left"></i></div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.move(1)"><i class="fas fa-caret-right"></i></div>
             <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.backspace()"><i class="fas fa-backspace"></i></div>
             <div class="kb-key kb-func" style="background:var(--primary)" onclick="OS.Apps.Keyboard.enter()"><i class="fas fa-paper-plane"></i></div>
         </div>
@@ -499,7 +472,7 @@
                     AES-256-GCM Encrypted
                 </div>
             </div>
-            <div class="chat-main">
+            <div class="chat-main" id="chat-drop-zone">
                 <div class="chat-feed" id="chat-feed">
                     <div style="text-align:center; opacity:0.3; margin-top:50px;">
                         <i class="fas fa-lock" style="font-size:4rem; margin-bottom:20px;"></i>
@@ -511,6 +484,7 @@
                     <div class="attach-menu" id="attach-menu">
                         <div class="attach-item" onclick="OS.WM.open('video'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-video" style="color:#ff453a"></i> Video Call</div>
                         <div class="attach-item" onclick="OS.WM.open('whiteboard'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-pen-nib" style="color:#ffd60a"></i> Canvas</div>
+                        <div class="attach-item" onclick="OS.WM.open('telegraph'); OS.Apps.Chat.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
                         <div class="attach-item" onclick="document.getElementById('file-input').click(); OS.Apps.Chat.toggleAttach()"><i class="fas fa-file" style="color:#0a84ff"></i> File</div>
                     </div>
 
@@ -523,14 +497,14 @@
                     </div>
                     
                     <button class="btn-icon" onclick="OS.Apps.Chat.toggleAttach()"><i class="fas fa-plus"></i></button>
-                    <textarea class="chat-input" id="chat-input" placeholder="Message..." autocomplete="off"></textarea>
+                    <textarea class="chat-input" id="chat-input" placeholder="Message... (Enter to send)" autocomplete="off"></textarea>
                     <button class="btn-icon" onclick="OS.Apps.Audio.start()"><i class="fas fa-microphone"></i></button>
                     <button class="btn-icon" id="kb-toggle" style="display:none" onclick="OS.Apps.Keyboard.open()"><i class="fas fa-keyboard"></i></button>
                     <button class="btn-icon" style="color:var(--primary)" onclick="OS.Apps.Chat.send()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
-        <input type="file" id="file-input" hidden onchange="OS.Net.FileTransfer.handle(this)">
+        <input type="file" id="file-input" multiple hidden onchange="OS.Net.FileTransfer.handle(this)">
     </template>
 
     <!-- 2. VIDEO PRO -->
@@ -557,28 +531,13 @@
         <div class="term-window" id="term-out" onclick="document.getElementById('term-in').focus()">
             <canvas id="matrix-canvas"></canvas>
             <div style="position:relative; z-index:2;">
-                <div class="term-line">PepeTalk OS Kernel v13.0.0</div>
+                <div class="term-line">PepeTalk OS Kernel v15.0.0</div>
                 <div class="term-line">Type 'help' for commands.</div>
                 <div class="term-input-line">
                     <span class="term-prompt">root@titan:~#</span>
                     <input type="text" class="term-input" id="term-in" autocomplete="off">
                 </div>
             </div>
-        </div>
-    </template>
-
-    <!-- 4. STUDIO CODE -->
-    <template id="tpl-code">
-        <div class="code-layout">
-            <div class="code-toolbar">
-                <button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="OS.Apps.Code.run()">Run / Share</button>
-                <select style="background:#333; color:white; border:none; padding:4px;" id="code-lang">
-                    <option value="js">JavaScript</option>
-                    <option value="html">HTML</option>
-                    <option value="css">CSS</option>
-                </select>
-            </div>
-            <textarea class="code-editor" id="code-editor" spellcheck="false">// Write code here...</textarea>
         </div>
     </template>
 
@@ -617,6 +576,9 @@
     <!-- 6. FILES -->
     <template id="tpl-files">
         <div class="scroll-wrap" style="padding:20px;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                <button class="btn-primary" onclick="OS.Apps.Files.downloadAll()"><i class="fas fa-download"></i> Download All</button>
+            </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:15px;" id="file-grid">
                 <div style="grid-column:1/-1; text-align:center; color:#444; margin-top:50px;">
                     <i class="fas fa-hdd" style="font-size:3rem;"></i><br>VFS Empty
@@ -654,6 +616,7 @@
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#10b981')"><i class="fas fa-circle" style="color:#10b981"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.setColor('#ffffff')"><i class="fas fa-circle" style="color:#ffffff"></i></button>
                 <div style="width:1px; height:20px; background:#444;"></div>
+                <button class="btn-icon" onclick="OS.Apps.Whiteboard.toggleGhost()"><i class="fas fa-eye"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.clear()"><i class="fas fa-trash"></i></button>
                 <button class="btn-icon" onclick="OS.Apps.Whiteboard.save()"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -668,7 +631,7 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS X - SINGULARITY EDITION
+         * 🍓 PEPETALK OS XV - THE GOD PARTICLE
          * "The final word in browser-based communication."
          */
 
@@ -755,7 +718,7 @@
                         win.style.height = '500px';
                     }
 
-                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', code: 'Studio Code', whiteboard: 'Canvas', telegraph: 'Telegraph V8', files: 'File Manager', settings: 'Settings' };
+                    const titles = { chat: 'Secure Chat', video: 'Video Pro', terminal: 'Terminal', whiteboard: 'Canvas', telegraph: 'Telegraph V10', files: 'File Manager', settings: 'Settings' };
 
                     win.innerHTML = `
                         <div class="win-bar" onmousedown="OS.WM.drag(event, '${app}')">
@@ -779,6 +742,8 @@
                     if(app === 'whiteboard') {
                         // Wait for DOM paint
                         setTimeout(OS.Apps.Whiteboard.init, 100);
+                        // Notify Peer
+                        OS.Net.send('sys', { msg: 'User opened the Whiteboard', action: 'whiteboard' });
                     }
                     if(app === 'settings') OS.Apps.Settings.render();
                     if(app === 'terminal') OS.Apps.Terminal.init();
@@ -791,6 +756,17 @@
                             if(e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 OS.Apps.Chat.send();
+                            }
+                        });
+                        // Drag and Drop
+                        const dropZone = document.getElementById('chat-drop-zone');
+                        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+                        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); });
+                        dropZone.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.remove('drag-over');
+                            if(e.dataTransfer.files.length > 0) {
+                                OS.Net.FileTransfer.handle({files: e.dataTransfer.files});
                             }
                         });
                     }
@@ -822,7 +798,7 @@
                     const item = document.createElement('div');
                     item.className = 'task-tab active';
                     item.id = `task-${app}`;
-                    const icons = { chat: 'comment-dots', video: 'video', terminal: 'terminal', code: 'code', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
+                    const icons = { chat: 'comment-dots', video: 'video', terminal: 'terminal', whiteboard: 'pen-nib', telegraph: 'broadcast-tower', files: 'folder-open', settings: 'cog' };
                     item.innerHTML = `<i class="fas fa-${icons[app]}"></i> <span>${title}</span>`;
                     item.onclick = () => OS.WM.focus(app);
                     bar.appendChild(item);
@@ -901,6 +877,8 @@
                         document.getElementById('peer-status').innerText = "ONLINE";
                         document.getElementById('peer-status').style.color = "var(--success)";
                         OS.Apps.Chat.clear();
+                        // Auto close QR
+                        document.getElementById('qr-modal').style.display = 'none';
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
                     c.on('close', () => {
@@ -915,13 +893,18 @@
                     if(m.t === 'chunk') OS.Net.FileTransfer.recv(m.p);
                     if(m.t === 'draw') OS.Apps.Whiteboard.drawRemote(m.p);
                     if(m.t === 'draw-clear') OS.Apps.Whiteboard.clearLocal();
+                    if(m.t === 'sys') OS.Apps.Chat.renderSys(m.p);
                 },
                 copyLink: () => { navigator.clipboard.writeText(OS.State.link); OS.UI.toast('Link Copied', 'success'); },
                 copyId: () => { navigator.clipboard.writeText(OS.State.peerId); OS.UI.toast('ID Copied', 'success'); },
                 
                 FileTransfer: {
                     bufs: {},
-                    handle: (inp) => { if(inp.files[0]) OS.Net.FileTransfer.send(inp.files[0]); },
+                    handle: (inp) => { 
+                        if(inp.files.length > 0) {
+                            Array.from(inp.files).forEach(f => OS.Net.FileTransfer.send(f));
+                        }
+                    },
                     send: (f) => {
                         const fid = Math.random().toString(36).substr(2);
                         const total = Math.ceil(f.size / OS.Config.CHUNK);
@@ -932,7 +915,8 @@
                             await OS.Net.send('chunk', { fid, idx, total, d: e.target.result, n: f.name, type: f.type });
                             idx++; off += OS.Config.CHUNK;
                             if(off < f.size) r.readAsDataURL(f.slice(off, off + OS.Config.CHUNK));
-                            else if(f.type.startsWith('audio/')) OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
+                            else if(f.type.startsWith('audio/') || f.type.startsWith('image/')) OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
+                            else OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
                         };
                         r.readAsDataURL(f.slice(0, OS.Config.CHUNK));
                     },
@@ -981,6 +965,17 @@
                         const d = document.createElement('div');
                         d.className = `msg ${s}`;
                         d.innerHTML = `<div class="msg-bubble">${DOMPurify.sanitize(h)}<div class="msg-meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div></div>`;
+                        f.appendChild(d);
+                        f.scrollTop = f.scrollHeight;
+                    },
+                    renderSys: (data) => {
+                        const f = document.getElementById('chat-feed');
+                        const d = document.createElement('div');
+                        d.style = "text-align:center; margin:10px 0; font-size:0.8rem; color:var(--accent); cursor:pointer;";
+                        d.innerHTML = `<i class="fas fa-info-circle"></i> ${data.msg}`;
+                        d.onclick = () => {
+                            if(data.action === 'whiteboard') OS.WM.open('whiteboard');
+                        };
                         f.appendChild(d);
                         f.scrollTop = f.scrollHeight;
                     },
@@ -1132,19 +1127,14 @@
                     }
                 },
 
-                Code: {
-                    run: () => {
-                        const code = document.getElementById('code-editor').value;
-                        const lang = document.getElementById('code-lang').value;
-                        OS.Net.send('text', `\`\`\`${lang}\n${code}\n\`\`\``);
-                        OS.Apps.Chat.render(`<pre><code class="language-${lang}">${DOMPurify.sanitize(code)}</code></pre>`, 'local');
-                        Prism.highlightAll();
-                    }
-                },
-
                 Keyboard: {
-                    chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()",
-                    open: () => {
+                    layers: {
+                        abc: "QWERTYUIOPASDFGHJKLZXCVBNM",
+                        num: "1234567890@#$%&-+()",
+                    },
+                    currentLayer: 'abc',
+                    caps: false,
+                    toggle: () => {
                         const kb = document.getElementById('secure-kb');
                         const input = document.getElementById('chat-input');
                         kb.classList.add('open');
@@ -1161,8 +1151,13 @@
                     render: () => {
                         const grid = document.getElementById('kb-keys');
                         grid.innerHTML = '';
-                        const shuffled = OS.Apps.Keyboard.chars.split('').sort(() => 0.5 - Math.random());
-                        shuffled.forEach(char => {
+                        let chars = OS.Apps.Keyboard.layers[OS.Apps.Keyboard.currentLayer].split('');
+                        if(!OS.Apps.Keyboard.caps && OS.Apps.Keyboard.currentLayer === 'abc') chars = chars.map(c => c.toLowerCase());
+                        
+                        // Scramble
+                        chars = chars.sort(() => 0.5 - Math.random());
+                        
+                        chars.forEach(char => {
                             const k = document.createElement('div');
                             k.className = 'kb-key';
                             k.innerText = char;
@@ -1172,17 +1167,40 @@
                     },
                     type: (char) => {
                         const input = document.getElementById('chat-input');
-                        input.value += char;
+                        const start = input.selectionStart;
+                        const end = input.selectionEnd;
+                        input.value = input.value.substring(0, start) + char + input.value.substring(end);
+                        input.selectionStart = input.selectionEnd = start + 1;
+                        document.getElementById('kb-preview').innerText = input.value;
                         OS.Apps.Keyboard.render();
                         OS.UI.playSound('key');
                     },
                     backspace: () => {
                         const input = document.getElementById('chat-input');
-                        input.value = input.value.slice(0, -1);
-                        OS.Apps.Keyboard.render();
+                        const start = input.selectionStart;
+                        if(start > 0) {
+                            input.value = input.value.substring(0, start - 1) + input.value.substring(start);
+                            input.selectionStart = input.selectionEnd = start - 1;
+                            document.getElementById('kb-preview').innerText = input.value;
+                            OS.Apps.Keyboard.render();
+                        }
                     },
                     enter: () => {
                         OS.Apps.Chat.send();
+                        OS.Apps.Keyboard.render();
+                    },
+                    move: (dir) => {
+                        const input = document.getElementById('chat-input');
+                        const pos = input.selectionStart + dir;
+                        input.setSelectionRange(pos, pos);
+                        input.focus();
+                    },
+                    switchLayer: () => {
+                        OS.Apps.Keyboard.currentLayer = OS.Apps.Keyboard.currentLayer === 'abc' ? 'num' : 'abc';
+                        OS.Apps.Keyboard.render();
+                    },
+                    toggleCaps: () => {
+                        OS.Apps.Keyboard.caps = !OS.Apps.Keyboard.caps;
                         OS.Apps.Keyboard.render();
                     }
                 },
@@ -1193,6 +1211,9 @@
                         const c = document.getElementById('wb-canvas');
                         const w = document.getElementById('wb-wrap');
                         if(!c || !w) return;
+                        
+                        // Auto-assign color based on host status
+                        OS.Apps.Whiteboard.color = OS.State.isHost ? '#00e676' : '#ff453a'; // Green for Host, Red for Guest
                         
                         // Force resize immediately
                         c.width = w.clientWidth; c.height = w.clientHeight;
@@ -1244,6 +1265,14 @@
                         // Local Echo
                         OS.Apps.Chat.render(`<img src="${u}" style="max-width:100%; border-radius:8px;">`, 'local');
                         OS.UI.toast('Sent to Chat', 'success');
+                    },
+                    toggleGhost: () => {
+                        const layer = document.getElementById('canvas-layer');
+                        if(layer.style.background === 'rgba(23, 33, 43, 0.5)') {
+                            layer.style.background = '#17212b';
+                        } else {
+                            layer.style.background = 'rgba(23, 33, 43, 0.5)';
+                        }
                     }
                 },
 
@@ -1260,6 +1289,11 @@
                             item.innerHTML = `<div class="morse-char">${char}</div><div class="morse-val">${code}</div>`;
                             grid.appendChild(item);
                         }
+                    },
+                    toggle: () => {
+                        const el = document.getElementById('telegraph-panel');
+                        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+                        if(el.style.display === 'flex') OS.Apps.Telegraph.renderGrid();
                     },
                     toggleInfo: () => {
                         const el = document.getElementById('morse-ref');
@@ -1282,7 +1316,7 @@
                         t.osc.connect(g); g.connect(t.ctx.destination); g.connect(t.dest);
                         t.osc.frequency.value = 600; t.osc.start();
                         t.startT = Date.now();
-                        document.getElementById('telegraph-key').classList.add('pressed');
+                        document.getElementById('tele-key').style.borderColor = 'var(--primary)';
                         const diff = Date.now() - t.lastUp;
                         if(t.lastUp > 0) { if(diff > 1000) t.seq += " / "; else if(diff > 400) t.seq += " "; }
                     },
@@ -1290,10 +1324,10 @@
                         const t = OS.Apps.Telegraph;
                         if(!t.osc) return;
                         t.osc.stop(); t.osc = null;
-                        document.getElementById('telegraph-key').classList.remove('pressed');
+                        document.getElementById('tele-key').style.borderColor = '#0e1621';
                         const dur = Date.now() - t.startT;
                         t.seq += dur < 200 ? "." : "-";
-                        document.getElementById('morse-display').innerText = t.seq;
+                        document.getElementById('tele-display').innerText = t.seq;
                         t.lastUp = Date.now();
                         t.transcribe();
                     },
@@ -1301,7 +1335,7 @@
                         const t = OS.Apps.Telegraph;
                         const words = t.seq.split(' / ');
                         const text = words.map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
-                        document.getElementById('morse-transcription').innerText = text;
+                        // No live transcription display in UI to keep it secret until sent
                     },
                     send: () => {
                         const t = OS.Apps.Telegraph;
@@ -1310,7 +1344,7 @@
                         t.rec.onstop = () => {
                             const b = new Blob(t.chunks, { type: 'audio/webm' });
                             OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
-                            const translation = document.getElementById('morse-transcription').innerText;
+                            const translation = t.seq.split(' / ').map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
                             if(t.seq) {
                                 let msg = `<div class="spoiler-box"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
                                 OS.Net.send('text', msg);
@@ -1323,14 +1357,15 @@
                     clear: () => {
                         const t = OS.Apps.Telegraph;
                         t.chunks = []; t.seq = ""; t.lastUp = 0;
-                        document.getElementById('morse-display').innerText = "";
-                        document.getElementById('morse-transcription').innerText = "";
+                        document.getElementById('tele-display').innerText = "";
                         if(t.ctx) { t.ctx.close(); t.ctx = null; }
                     }
                 },
 
                 Files: {
+                    list: [],
                     add: (n, u) => {
+                        OS.Apps.Files.list.push({n, u});
                         const g = document.getElementById('file-grid');
                         if(g) {
                             const d = document.createElement('div');
@@ -1339,6 +1374,13 @@
                             d.onclick = () => { const a = document.createElement('a'); a.href=u; a.download=n; a.click(); };
                             g.appendChild(d);
                         }
+                    },
+                    downloadAll: () => {
+                        OS.Apps.Files.list.forEach(f => {
+                            const a = document.createElement('a');
+                            a.href = f.u; a.download = f.n; a.click();
+                        });
+                        OS.UI.toast('Downloading All Files...', 'success');
                     }
                 },
 
@@ -1359,11 +1401,14 @@
                     document.getElementById('toast-area').appendChild(el);
                     setTimeout(() => el.remove(), 3000);
                 },
-                showQR: () => {
-                    document.getElementById('qr-modal').style.display = 'flex';
+                refreshQR: () => {
                     const t = document.getElementById('qr-target');
                     t.innerHTML = '';
                     new QRCode(t, { text: OS.State.link, width: 200, height: 200 });
+                },
+                showQR: () => {
+                    document.getElementById('qr-modal').style.display = 'flex';
+                    OS.UI.refreshQR();
                 },
                 dataURLtoFile: (dataurl, filename) => {
                     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
