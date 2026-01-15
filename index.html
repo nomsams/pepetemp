@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XVII | The Phoenix</title>
+    <title>PepeTalk OS XVIII | Immortal</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- PHOENIX CORE DEPENDENCIES -->
+    <!-- IMMORTAL CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -20,8 +20,8 @@
 
     <style>
         /* 
-         * 🏛️ THEME: PHOENIX DARK
-         * "Rise from the ashes."
+         * 🏛️ THEME: IMMORTAL DARK
+         * "That which is dead may never die."
          */
         :root {
             --bg-root: #000000;
@@ -47,11 +47,9 @@
             --glass: rgba(20, 20, 20, 0.95);
             --blur: blur(20px);
             
-            --font-ui: 'Inter', system-ui, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            
             --z-base: 1;
             --z-chat: 10;
+            --z-hub: 50;
             --z-overlay: 100;
             --z-modal: 1000;
             --z-toast: 2000;
@@ -65,30 +63,32 @@
         body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100vh; width: 100vw; overflow: hidden; position: fixed; inset: 0; }
         input, textarea, code, pre { user-select: text; font-family: var(--font-ui); }
         
-        /* --- BOOT SCREEN --- */
+        /* --- BOOT SCREEN (CSS ANIMATION ONLY - NO JS BLOCKING) --- */
         #boot-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: var(--z-boot);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-family: var(--font-mono); color: var(--primary);
+            animation: fadeOut 0.5s ease-in-out 2s forwards;
+            pointer-events: none; /* Allows clicking through even if fade fails */
         }
-        .boot-log { width: 320px; height: 200px; overflow: hidden; font-size: 0.8rem; opacity: 0.8; margin-top: 30px; text-align: left; border-left: 2px solid var(--primary-dim); padding-left: 15px; }
-        .boot-line { margin-bottom: 4px; white-space: nowrap; overflow: hidden; animation: type 0.05s steps(20, end); }
+        .boot-logo { font-size: 4rem; margin-bottom: 20px; animation: pulse 1s infinite; }
         .loader-ring {
-            width: 80px; height: 80px; border: 2px solid rgba(59, 130, 246, 0.1);
+            width: 60px; height: 60px; border: 3px solid rgba(59, 130, 246, 0.1);
             border-top-color: var(--primary); border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
         /* --- MAIN APP CONTAINER --- */
         #app-container {
             display: flex; width: 100%; height: 100%; position: relative;
-            background: var(--bg-app); opacity: 0; transition: opacity 0.5s;
+            background: var(--bg-app);
         }
-        #app-container.visible { opacity: 1; }
 
-        /* --- SIDEBAR (CONTACTS) --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 300px; background: var(--bg-panel); border-right: var(--border);
             display: flex; flex-direction: column; z-index: 5;
@@ -165,8 +165,8 @@
         /* --- CONNECTION HUB (THE FIX) --- */
         #connection-hub {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
-            z-index: 50; display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
+            z-index: var(--z-hub); display: flex; flex-direction: column;
             justify-content: center; align-items: center; gap: 20px;
             padding: 20px; text-align: center; transition: opacity 0.3s;
         }
@@ -295,7 +295,7 @@
         @media (max-width: 768px) {
             .sidebar { display: none; } /* Mobile: Chat only */
             .msg { max-width: 85%; }
-            .input-area { padding: 10px; }
+            .chat-input-area { padding: 10px; }
             #kb-toggle { display: block !important; }
         }
 
@@ -308,11 +308,11 @@
     <!-- BOOT LAYER -->
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
-        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XVII</div>
+        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XVIII</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
-    <div id="app-container" class="hidden">
+    <div id="app-container">
         
         <!-- SIDEBAR -->
         <div class="sidebar">
@@ -418,7 +418,7 @@
         <div id="telegraph-app" class="overlay-app">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
-                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V11</span>
+                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V12</span>
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info-circle"></i></button>
             </div>
             <div class="tele-display">
@@ -460,11 +460,11 @@
         <div id="terminal-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
             <div style="display:flex; justify-content:flex-end;"><button class="btn-icon" onclick="document.getElementById('terminal-app').classList.remove('active')"><i class="fas fa-times"></i></button></div>
             <div id="term-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.9rem;">
-                <div>PepeTalk OS Kernel v17.0.0</div>
+                <div>PepeTalk OS Kernel v18.0.0</div>
                 <div>Type 'help' for commands.</div>
             </div>
             <div style="display:flex; gap:10px; margin-top:10px;">
-                <span style="color:var(--primary)">root@phoenix:~#</span>
+                <span style="color:var(--primary)">root@immortal:~#</span>
                 <input type="text" id="term-in" style="flex:1; background:transparent; border:none; color:white; font-family:inherit;" autocomplete="off">
             </div>
         </div>
@@ -505,8 +505,8 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS XVII - THE PHOENIX
-         * "Rise from the ashes."
+         * 🍓 PEPETALK OS XVIII - IMMORTAL
+         * "That which is dead may never die."
          */
 
         const OS = {
@@ -517,11 +517,11 @@
                 OS.State.isMobile = window.innerWidth < 768;
                 
                 // 1. Immediate UI Reveal (Fixes Black Screen)
+                // We do not wait for PeerJS. We show the UI immediately.
                 setTimeout(() => {
-                    document.getElementById('boot-layer').style.display = 'none';
-                    document.getElementById('app-container').classList.add('visible');
+                    // Boot layer fades out via CSS animation
                     OS.UI.sound('startup');
-                }, 1500);
+                }, 100);
 
                 // 2. Async Init
                 try {
