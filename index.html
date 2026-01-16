@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PepeTalk OS XIX | The Eternal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PepeTalk OS XXI | Titanium Monolith</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Secure P2P Operating System">
+    <meta name="description" content="The Ultimate Secure P2P Operating System">
     
-    <!-- ETERNAL CORE DEPENDENCIES -->
+    <!-- TITANIUM CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -21,15 +21,15 @@
 
     <style>
         /* 
-         * 🏛️ THEME: ETERNAL DARK
-         * "Code that survives."
+         * 🏛️ THEME: TITANIUM DARK
+         * "Built to last."
          */
         :root {
             --bg-root: #000000;
-            --bg-app: #0f0f0f;
-            --bg-panel: #181818;
-            --bg-header: #1f1f1f;
-            --bg-input: #121212;
+            --bg-app: #050505;
+            --bg-panel: #121212;
+            --bg-header: #1a1a1a;
+            --bg-input: #0a0a0a;
             
             --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
@@ -45,7 +45,7 @@
             --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(20, 20, 20, 0.95);
+            --glass: rgba(18, 18, 18, 0.95);
             --blur: blur(20px);
             
             --z-base: 1;
@@ -58,6 +58,7 @@
             --z-boot: 9999;
             
             --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-top: env(safe-area-inset-top, 20px);
         }
 
         /* --- RESET --- */
@@ -71,30 +72,31 @@
             background: #000; z-index: var(--z-boot);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-family: var(--font-mono); color: var(--primary);
-            animation: fadeOut 0.5s ease-in-out 1.5s forwards;
-            pointer-events: none;
+            transition: opacity 0.5s ease;
         }
-        .boot-logo { font-size: 4rem; margin-bottom: 20px; animation: pulse 1s infinite; }
+        .boot-logo { font-size: 5rem; margin-bottom: 20px; animation: pulse 2s infinite; filter: drop-shadow(0 0 20px var(--primary-dim)); }
+        .boot-log { width: 320px; height: 150px; overflow: hidden; font-size: 0.8rem; opacity: 0.8; margin-top: 30px; text-align: left; border-left: 2px solid var(--primary-dim); padding-left: 15px; }
+        .boot-line { margin-bottom: 4px; white-space: nowrap; overflow: hidden; animation: type 0.05s steps(20, end); }
         .loader-ring {
-            width: 60px; height: 60px; border: 3px solid rgba(59, 130, 246, 0.1);
+            width: 60px; height: 60px; border: 2px solid rgba(59, 130, 246, 0.1);
             border-top-color: var(--primary); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
         /* --- MAIN APP CONTAINER --- */
         #app-container {
             display: flex; width: 100%; height: 100%; position: relative;
-            background: var(--bg-app);
+            background: var(--bg-app); opacity: 0; transition: opacity 0.5s;
         }
+        #app-container.visible { opacity: 1; }
 
         /* --- SIDEBAR --- */
         .sidebar {
             width: 300px; background: var(--bg-panel); border-right: var(--border);
             display: flex; flex-direction: column; z-index: var(--z-sidebar);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sidebar-header {
             height: 60px; border-bottom: var(--border); display: flex; align-items: center;
@@ -129,7 +131,7 @@
         .chat-header {
             height: 60px; border-bottom: var(--border); background: var(--bg-header);
             display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-            flex-shrink: 0;
+            flex-shrink: 0; z-index: 10;
         }
         .chat-title { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
         .chat-actions { display: flex; gap: 15px; }
@@ -156,9 +158,10 @@
         
         /* Input Bar */
         .input-area {
-            padding: 15px; background: var(--bg-header); border-top: var(--border);
+            padding: 10px 15px; background: var(--bg-header); border-top: var(--border);
             display: flex; align-items: flex-end; gap: 10px; position: relative;
-            z-index: 20; padding-bottom: calc(15px + var(--safe-bottom));
+            z-index: 20; flex-shrink: 0;
+            padding-bottom: calc(10px + var(--safe-bottom));
         }
         .chat-input {
             flex: 1; background: var(--bg-input); border: 1px solid var(--border);
@@ -287,6 +290,15 @@
         .kb-space { flex: 1; }
         .kb-func { flex: 0 0 15%; background: #333; font-size: 0.9rem; }
 
+        /* Media Viewer Modal */
+        #media-viewer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: var(--z-modal);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #media-content { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .media-controls { margin-top: 20px; display: flex; gap: 20px; }
+
         /* --- UTILS --- */
         .hidden { display: none !important; }
         .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; padding: 10px; border-radius: 50%; transition: 0.2s; }
@@ -301,11 +313,11 @@
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .sidebar { position: absolute; left: -100%; height: 100%; width: 85%; box-shadow: 10px 0 50px rgba(0,0,0,0.5); }
-            .sidebar.open { transform: translateX(100%); left: -85%; } /* Slide in logic */
+            .sidebar { position: absolute; left: 0; height: 100%; width: 85%; box-shadow: 10px 0 50px rgba(0,0,0,0.5); transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
             .mobile-menu-btn { display: block; }
             .msg { max-width: 85%; }
-            .input-area { padding: 10px; }
+            .input-area { padding: 10px; padding-bottom: calc(10px + var(--safe-bottom)); }
             #kb-toggle { display: block !important; }
             .chat-title { font-size: 0.9rem; }
         }
@@ -325,7 +337,7 @@
     <!-- BOOT LAYER -->
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
-        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XIX</div>
+        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXI</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
@@ -361,7 +373,7 @@
                 </div>
                 <div class="chat-actions">
                     <i class="fas fa-phone menu-btn" onclick="OS.Apps.Video.open()"></i>
-                    <i class="fas fa-list-alt menu-btn" onclick="OS.Apps.Logs.open()"></i>
+                    <i class="fas fa-terminal menu-btn" onclick="OS.Apps.Terminal.open()"></i>
                 </div>
             </div>
 
@@ -401,7 +413,7 @@
                     <div class="menu-item" onclick="OS.Apps.Canvas.open(); OS.UI.toggleAttach()"><i class="fas fa-palette" style="color:#ffca28"></i> Whiteboard</div>
                     <div class="menu-item" onclick="OS.Apps.Telegraph.open(); OS.UI.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
                     <div class="menu-item" onclick="document.getElementById('file-input').click(); OS.UI.toggleAttach()"><i class="fas fa-file" style="color:#448aff"></i> File</div>
-                    <div class="menu-item" onclick="OS.Apps.Logs.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> System Logs</div>
+                    <div class="menu-item" onclick="OS.Apps.Terminal.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> Terminal</div>
                 </div>
 
                 <!-- Audio Recorder -->
@@ -439,7 +451,7 @@
         <div id="telegraph-app" class="overlay-app">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
-                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V13</span>
+                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V14</span>
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info-circle"></i></button>
             </div>
             <div class="tele-display">
@@ -477,14 +489,18 @@
             </div>
         </div>
 
-        <!-- SYSTEM LOGS (OVERLAY) -->
-        <div id="logs-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
+        <!-- TERMINAL (OVERLAY) -->
+        <div id="terminal-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="color:var(--success)">SYSTEM LOGS</span>
-                <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                <span style="color:var(--success)">TERMINAL V8</span>
+                <button class="btn-icon" onclick="document.getElementById('terminal-app').classList.remove('active')"><i class="fas fa-times"></i></button>
             </div>
-            <div id="log-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.8rem; border:1px solid #333; padding:10px;">
-                <div>[KERNEL] System Initialized.</div>
+            <div id="term-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.9rem; border:1px solid #333; padding:10px; margin-bottom:10px;">
+                <div>[KERNEL] System Initialized. Type 'help'.</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <span style="color:var(--primary)">root@titan:~#</span>
+                <input type="text" id="term-in" style="flex:1; background:transparent; border:none; color:white; font-family:inherit;" autocomplete="off">
             </div>
         </div>
 
@@ -500,6 +516,15 @@
             <div style="margin-top:10px; color:#333; font-weight:bold;">Scan to Connect</div>
         </div>
         <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
+    </div>
+
+    <!-- MEDIA VIEWER MODAL -->
+    <div id="media-viewer">
+        <img id="media-content" src="" alt="Preview">
+        <div class="media-controls">
+            <button class="btn-primary" id="media-download-btn"><i class="fas fa-download"></i> Download</button>
+            <button class="btn-primary" style="background:#333" onclick="document.getElementById('media-viewer').style.display='none'">Close</button>
+        </div>
     </div>
 
     <!-- SECURE KEYBOARD -->
@@ -524,13 +549,13 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS XIX - THE ETERNAL
-         * "Code that survives."
+         * 🍓 PEPETALK OS XXI - TITANIUM MONOLITH
+         * "Built to last."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, call: null, key: null, isHost: true, isMobile: false, fs: [] },
+            State: { peerId: null, conn: null, call: null, key: null, isHost: true, isMobile: false, fs: { '/': { type: 'dir', children: {} } } },
 
             init: async () => {
                 OS.State.isMobile = window.innerWidth < 768;
@@ -538,6 +563,7 @@
                 // 1. Immediate UI Reveal
                 setTimeout(() => {
                     document.getElementById('boot-layer').style.display = 'none';
+                    document.getElementById('app-container').classList.add('visible');
                     OS.UI.sound('startup');
                 }, 1500);
 
@@ -546,7 +572,7 @@
                     await OS.Security.init();
                     OS.Net.init();
                 } catch(e) {
-                    OS.Apps.Logs.add("CRITICAL: Init Failed - " + e.message);
+                    OS.Apps.Terminal.log("CRITICAL: Init Failed - " + e.message);
                     OS.UI.toast("Initialization Failed", "danger");
                 }
                 
@@ -557,6 +583,8 @@
                             e.preventDefault(); OS.Apps.Telegraph.send();
                         } else if(document.getElementById('canvas-app').classList.contains('active')) {
                             e.preventDefault(); OS.Apps.Canvas.save();
+                        } else if(document.getElementById('terminal-app').classList.contains('active')) {
+                            // Terminal handles its own enter
                         } else if(document.activeElement === document.getElementById('chat-input')) {
                              e.preventDefault(); OS.Apps.Chat.send();
                         }
@@ -614,7 +642,7 @@
                     OS.Net.peer.on('open', async (id) => {
                         OS.State.peerId = id;
                         document.getElementById('hub-my-id').innerText = id;
-                        OS.Apps.Logs.add("Peer ID Generated: " + id);
+                        OS.Apps.Terminal.log("Peer ID Generated: " + id);
                         if(OS.State.isHost) {
                             const k = await OS.Security.export();
                             OS.State.link = `${location.origin}${location.pathname}#${id}&k=${k}`;
@@ -624,10 +652,10 @@
                     });
                     OS.Net.peer.on('connection', OS.Net.bind);
                     OS.Net.peer.on('call', OS.Apps.Video.incoming);
-                    OS.Net.peer.on('error', (err) => OS.Apps.Logs.add("Peer Error: " + err.type));
+                    OS.Net.peer.on('error', (err) => OS.Apps.Terminal.log("Peer Error: " + err.type));
                 },
                 connect: (rid) => {
-                    OS.Apps.Logs.add("Connecting to: " + rid);
+                    OS.Apps.Terminal.log("Connecting to: " + rid);
                     OS.Net.bind(OS.Net.peer.connect(rid));
                 },
                 connectFromHub: () => {
@@ -643,14 +671,14 @@
                         document.getElementById('chat-input').removeAttribute('disabled');
                         document.getElementById('qr-modal').style.display = 'none';
                         OS.Apps.Chat.sys("Secure Connection Established");
-                        OS.Apps.Logs.add("Connection Open");
+                        OS.Apps.Terminal.log("Connection Open");
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
                     c.on('close', () => {
                         document.getElementById('conn-status-sidebar').innerText = "Offline";
                         document.getElementById('connection-hub').classList.remove('hidden');
                         document.getElementById('chat-input').setAttribute('disabled', true);
-                        OS.Apps.Logs.add("Connection Closed");
+                        OS.Apps.Terminal.log("Connection Closed");
                     });
                 },
                 send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
@@ -679,7 +707,7 @@
                         const r = new FileReader();
                         let idx = 0, off = 0;
                         OS.Apps.Chat.renderFile(f, 'local', fid);
-                        OS.Apps.Logs.add(`Sending File: ${f.name} (${f.size} bytes)`);
+                        OS.Apps.Terminal.log(`Sending File: ${f.name} (${f.size} bytes)`);
                         
                         r.onload = async (e) => {
                             await OS.Net.send('chunk', { fid, idx, total, d: e.target.result, n: f.name, type: f.type });
@@ -692,7 +720,7 @@
                                 } else {
                                     OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
                                 }
-                                OS.Apps.Logs.add(`File Sent: ${f.name}`);
+                                OS.Apps.Terminal.log(`File Sent: ${f.name}`);
                             }
                         };
                         r.readAsDataURL(f.slice(0, OS.Config.CHUNK));
@@ -712,7 +740,7 @@
                             OS.Apps.Chat.finalize(p.fid, url, p.type, p.type.startsWith('audio/')); // Auto play audio
                             OS.Apps.Files.list.push({n:p.n, u:url});
                             delete OS.Net.File.bufs[p.fid];
-                            OS.Apps.Logs.add(`File Received: ${p.n}`);
+                            OS.Apps.Terminal.log(`File Received: ${p.n}`);
                         }
                     }
                 }
@@ -769,7 +797,7 @@
                                 if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
                             }, 100);
                         } else if(type.startsWith('image/')) {
-                            el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px; cursor:pointer;" onclick="OS.UI.downloadMedia('${url}')">`;
+                            el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px; cursor:pointer;" onclick="OS.UI.openMediaViewer('${url}')">`;
                         } else {
                             el.innerHTML = `<a href="${url}" download class="menu-btn" style="font-size:0.9rem"><i class="fas fa-download"></i> Download</a>`;
                         }
@@ -778,14 +806,46 @@
                     play: (id) => OS.Apps.Chat.waves[id]?.playPause()
                 },
 
-                Logs: {
-                    open: () => document.getElementById('logs-app').classList.add('active'),
-                    add: (msg) => {
-                        const out = document.getElementById('log-out');
-                        const d = document.createElement('div');
-                        d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-                        out.appendChild(d);
+                Terminal: {
+                    open: () => {
+                        document.getElementById('terminal-app').classList.add('active');
+                        document.getElementById('attach-menu').classList.remove('open');
+                        OS.Apps.Terminal.init();
+                    },
+                    init: () => {
+                        const input = document.getElementById('term-in');
+                        input.addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter') {
+                                const cmd = input.value.trim();
+                                OS.Apps.Terminal.log(`root@titan:~# ${cmd}`);
+                                OS.Apps.Terminal.exec(cmd);
+                                input.value = '';
+                            }
+                        });
+                    },
+                    log: (txt) => {
+                        const out = document.getElementById('term-out');
+                        const div = document.createElement('div');
+                        div.innerText = `[${new Date().toLocaleTimeString()}] ${txt}`;
+                        out.appendChild(div);
                         out.scrollTop = out.scrollHeight;
+                    },
+                    exec: (cmd) => {
+                        const args = cmd.split(' ');
+                        switch(args[0]) {
+                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme, neofetch'); break;
+                            case 'clear': document.getElementById('term-out').innerHTML = ''; break;
+                            case 'ping': OS.Apps.Terminal.log('pong'); break;
+                            case 'weather': OS.Apps.Terminal.log('Stockholm: 2°C, Overcast. Wind: 5m/s SW.'); break;
+                            case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
+                            case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
+                            case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
+                            case 'matrix': 
+                                // Matrix effect logic could go here
+                                OS.Apps.Terminal.log('Wake up, Neo...'); 
+                                break;
+                            default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
+                        }
                     }
                 },
 
@@ -1138,11 +1198,11 @@
             UI: {
                 toggleSidebar: () => {
                     const sb = document.getElementById('sidebar');
-                    if(sb.style.left === '0px') {
-                        sb.style.left = '-100%';
+                    if(sb.style.transform === 'translateX(0px)') {
+                        sb.style.transform = 'translateX(-100%)';
                         document.getElementById('close-sidebar').style.display = 'none';
                     } else {
-                        sb.style.left = '0px';
+                        sb.style.transform = 'translateX(0px)';
                         document.getElementById('close-sidebar').style.display = 'block';
                     }
                 },
@@ -1155,6 +1215,22 @@
                 },
                 showQR: () => {
                     if(OS.State.link) OS.UI.qr(OS.State.link);
+                },
+                openMediaViewer: (url) => {
+                    const v = document.getElementById('media-viewer');
+                    const c = document.getElementById('media-content');
+                    const b = document.getElementById('media-download-btn');
+                    c.src = url;
+                    b.onclick = () => OS.UI.downloadMedia(url);
+                    v.style.display = 'flex';
+                },
+                downloadMedia: (url) => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'media-' + Date.now();
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                 },
                 sound: (t) => {
                     const c = new AudioContext();
@@ -1176,14 +1252,6 @@
                         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
                     while(n--){ u8arr[n] = bstr.charCodeAt(n); }
                     return new File([u8arr], filename, {type:mime});
-                },
-                downloadMedia: (url) => {
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'media-' + Date.now();
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
                 }
             }
         };
