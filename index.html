@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PepeTalk OS XXI | Titanium Monolith</title>
+    <title>PepeTalk OS XXII | Vibranium</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="The Ultimate Secure P2P Operating System">
+    <meta name="description" content="Secure P2P Operating System">
     
-    <!-- TITANIUM CORE DEPENDENCIES -->
+    <!-- VIBRANIUM CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -21,15 +21,15 @@
 
     <style>
         /* 
-         * 🏛️ THEME: TITANIUM DARK
-         * "Built to last."
+         * 🏛️ THEME: VIBRANIUM DARK
+         * "Indestructible."
          */
         :root {
             --bg-root: #000000;
-            --bg-app: #050505;
-            --bg-panel: #121212;
-            --bg-header: #1a1a1a;
-            --bg-input: #0a0a0a;
+            --bg-app: #0f0f0f;
+            --bg-panel: #181818;
+            --bg-header: #1f1f1f;
+            --bg-input: #121212;
             
             --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
@@ -45,12 +45,13 @@
             --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(18, 18, 18, 0.95);
+            --glass: rgba(20, 20, 20, 0.95);
             --blur: blur(20px);
             
             --z-base: 1;
             --z-chat: 10;
-            --z-sidebar: 20;
+            --z-input: 20;
+            --z-sidebar: 30;
             --z-hub: 50;
             --z-overlay: 100;
             --z-modal: 1000;
@@ -78,7 +79,7 @@
         .boot-log { width: 320px; height: 150px; overflow: hidden; font-size: 0.8rem; opacity: 0.8; margin-top: 30px; text-align: left; border-left: 2px solid var(--primary-dim); padding-left: 15px; }
         .boot-line { margin-bottom: 4px; white-space: nowrap; overflow: hidden; animation: type 0.05s steps(20, end); }
         .loader-ring {
-            width: 60px; height: 60px; border: 2px solid rgba(59, 130, 246, 0.1);
+            width: 80px; height: 80px; border: 2px solid rgba(59, 130, 246, 0.1);
             border-top-color: var(--primary); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -138,7 +139,7 @@
         
         .chat-feed {
             flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
-            padding-bottom: 20px;
+            padding-bottom: 120px; /* Space for fixed input */
         }
         
         /* Messages */
@@ -156,12 +157,14 @@
         
         .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
         
-        /* Input Bar */
+        /* Input Bar (Mobile Fixed) */
         .input-area {
-            padding: 10px 15px; background: var(--bg-header); border-top: var(--border);
-            display: flex; align-items: flex-end; gap: 10px; position: relative;
-            z-index: 20; flex-shrink: 0;
-            padding-bottom: calc(10px + var(--safe-bottom));
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            padding: 15px; background: var(--bg-header); border-top: var(--border);
+            display: flex; align-items: flex-end; gap: 10px; 
+            z-index: var(--z-input);
+            padding-bottom: calc(15px + var(--safe-bottom));
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
         }
         .chat-input {
             flex: 1; background: var(--bg-input); border: 1px solid var(--border);
@@ -247,7 +250,7 @@
 
         /* --- MENUS & MODALS --- */
         .attach-menu {
-            position: absolute; bottom: 80px; left: 15px;
+            position: absolute; bottom: 90px; left: 15px;
             background: var(--bg-panel); border: var(--border); border-radius: 12px;
             padding: 10px; display: none; flex-direction: column; gap: 5px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 50; min-width: 200px;
@@ -317,9 +320,10 @@
             .sidebar.open { transform: translateX(0); }
             .mobile-menu-btn { display: block; }
             .msg { max-width: 85%; }
-            .input-area { padding: 10px; padding-bottom: calc(10px + var(--safe-bottom)); }
-            #kb-toggle { display: block !important; }
             .chat-title { font-size: 0.9rem; }
+            #kb-toggle { display: block !important; }
+            /* Adjust input area for mobile */
+            .input-area { padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
         }
 
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -337,7 +341,7 @@
     <!-- BOOT LAYER -->
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
-        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXI</div>
+        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXII</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
@@ -361,6 +365,9 @@
                         <div class="contact-status" id="conn-status-sidebar">Waiting for connection...</div>
                     </div>
                 </div>
+                <div style="margin-top:20px; padding:10px;">
+                    <button class="btn-primary" style="width:100%; background:#ff453a;" onclick="OS.Apps.Chat.nuke()">SELF DESTRUCT</button>
+                </div>
             </div>
         </div>
 
@@ -372,8 +379,9 @@
                     Secure Channel
                 </div>
                 <div class="chat-actions">
+                    <i class="fas fa-stopwatch menu-btn" id="ephemeral-btn" onclick="OS.Apps.Chat.toggleEphemeral()" title="Ephemeral Mode"></i>
                     <i class="fas fa-phone menu-btn" onclick="OS.Apps.Video.open()"></i>
-                    <i class="fas fa-terminal menu-btn" onclick="OS.Apps.Terminal.open()"></i>
+                    <i class="fas fa-list-alt menu-btn" onclick="OS.Apps.Logs.open()"></i>
                 </div>
             </div>
 
@@ -400,7 +408,7 @@
                     
                     <div style="margin-top:20px; display:flex; justify-content:center; gap:20px;">
                         <button class="btn-icon" onclick="OS.UI.showQR()" title="Scan QR"><i class="fas fa-qrcode"></i></button>
-                        <button class="btn-icon" onclick="OS.Net.refreshIdentity()" title="New Identity"><i class="fas fa-sync"></i></button>
+                        <button class="btn-icon" onclick="OS.Net.setCustomId()" title="Set Custom ID"><i class="fas fa-user-edit"></i></button>
                     </div>
                 </div>
             </div>
@@ -413,7 +421,7 @@
                     <div class="menu-item" onclick="OS.Apps.Canvas.open(); OS.UI.toggleAttach()"><i class="fas fa-palette" style="color:#ffca28"></i> Whiteboard</div>
                     <div class="menu-item" onclick="OS.Apps.Telegraph.open(); OS.UI.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
                     <div class="menu-item" onclick="document.getElementById('file-input').click(); OS.UI.toggleAttach()"><i class="fas fa-file" style="color:#448aff"></i> File</div>
-                    <div class="menu-item" onclick="OS.Apps.Terminal.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> Terminal</div>
+                    <div class="menu-item" onclick="OS.Apps.Logs.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> System Logs</div>
                 </div>
 
                 <!-- Audio Recorder -->
@@ -451,7 +459,7 @@
         <div id="telegraph-app" class="overlay-app">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
-                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V14</span>
+                <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V15</span>
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info-circle"></i></button>
             </div>
             <div class="tele-display">
@@ -459,12 +467,7 @@
                 <div class="tele-text" id="tele-text"></div>
             </div>
             <div class="tele-body">
-                <div class="haptic-key" id="tele-key"
-                     onmousedown="OS.Apps.Telegraph.down()" 
-                     onmouseup="OS.Apps.Telegraph.up()" 
-                     onmouseleave="OS.Apps.Telegraph.up()"
-                     ontouchstart="OS.Apps.Telegraph.down()"
-                     ontouchend="OS.Apps.Telegraph.up()">
+                <div class="haptic-key" id="tele-key">
                     <i class="fas fa-fingerprint"></i>
                 </div>
                 <div style="display:flex; gap:20px;">
@@ -489,18 +492,14 @@
             </div>
         </div>
 
-        <!-- TERMINAL (OVERLAY) -->
-        <div id="terminal-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
+        <!-- SYSTEM LOGS (OVERLAY) -->
+        <div id="logs-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="color:var(--success)">TERMINAL V8</span>
-                <button class="btn-icon" onclick="document.getElementById('terminal-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                <span style="color:var(--success)">SYSTEM LOGS</span>
+                <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
             </div>
-            <div id="term-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.9rem; border:1px solid #333; padding:10px; margin-bottom:10px;">
-                <div>[KERNEL] System Initialized. Type 'help'.</div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <span style="color:var(--primary)">root@titan:~#</span>
-                <input type="text" id="term-in" style="flex:1; background:transparent; border:none; color:white; font-family:inherit;" autocomplete="off">
+            <div id="log-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.8rem; border:1px solid #333; padding:10px;">
+                <div>[KERNEL] System Initialized.</div>
             </div>
         </div>
 
@@ -549,13 +548,13 @@
 
     <script>
         /**
-         * 🍓 PEPETALK OS XXI - TITANIUM MONOLITH
-         * "Built to last."
+         * 🍓 PEPETALK OS XXII - VIBRANIUM
+         * "Indestructible."
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            State: { peerId: null, conn: null, call: null, key: null, isHost: true, isMobile: false, fs: { '/': { type: 'dir', children: {} } } },
+            State: { peerId: null, conn: null, call: null, key: null, isHost: true, isMobile: false, fs: [], ephemeral: false },
 
             init: async () => {
                 OS.State.isMobile = window.innerWidth < 768;
@@ -572,7 +571,7 @@
                     await OS.Security.init();
                     OS.Net.init();
                 } catch(e) {
-                    OS.Apps.Terminal.log("CRITICAL: Init Failed - " + e.message);
+                    OS.Apps.Logs.add("CRITICAL: Init Failed - " + e.message);
                     OS.UI.toast("Initialization Failed", "danger");
                 }
                 
@@ -583,8 +582,6 @@
                             e.preventDefault(); OS.Apps.Telegraph.send();
                         } else if(document.getElementById('canvas-app').classList.contains('active')) {
                             e.preventDefault(); OS.Apps.Canvas.save();
-                        } else if(document.getElementById('terminal-app').classList.contains('active')) {
-                            // Terminal handles its own enter
                         } else if(document.activeElement === document.getElementById('chat-input')) {
                              e.preventDefault(); OS.Apps.Chat.send();
                         }
@@ -599,6 +596,12 @@
                     e.preventDefault(); dropZone.style.background = '';
                     if(e.dataTransfer.files.length) OS.Net.File.handle({files: e.dataTransfer.files});
                 });
+
+                // Telegraph Pointer Events (Fix Double Dot)
+                const tk = document.getElementById('tele-key');
+                tk.addEventListener('pointerdown', (e) => { e.preventDefault(); OS.Apps.Telegraph.down(); });
+                tk.addEventListener('pointerup', (e) => { e.preventDefault(); OS.Apps.Telegraph.up(); });
+                tk.addEventListener('pointerleave', (e) => { e.preventDefault(); OS.Apps.Telegraph.up(); });
             },
 
             // --- SECURITY ---
@@ -631,31 +634,33 @@
             // --- NETWORK ---
             Net: {
                 peer: null,
-                init: () => {
+                init: (customId = null) => {
                     const h = window.location.hash.substring(1);
                     if(h) {
                         OS.State.isHost = false;
                         const [rid, k] = h.split('&k=');
                         if(rid && k) { OS.Security.import(k); OS.Net.target = rid; }
                     }
-                    OS.Net.peer = new Peer(null, { config: { iceServers: OS.Config.ICE } });
+                    
+                    const opts = { config: { iceServers: OS.Config.ICE } };
+                    OS.Net.peer = customId ? new Peer(customId, opts) : new Peer(null, opts);
+
                     OS.Net.peer.on('open', async (id) => {
                         OS.State.peerId = id;
                         document.getElementById('hub-my-id').innerText = id;
-                        OS.Apps.Terminal.log("Peer ID Generated: " + id);
+                        OS.Apps.Logs.add("Peer ID Generated: " + id);
                         if(OS.State.isHost) {
                             const k = await OS.Security.export();
                             OS.State.link = `${location.origin}${location.pathname}#${id}&k=${k}`;
-                            OS.UI.qr(OS.State.link);
                         }
                         if(OS.Net.target) OS.Net.connect(OS.Net.target);
                     });
                     OS.Net.peer.on('connection', OS.Net.bind);
                     OS.Net.peer.on('call', OS.Apps.Video.incoming);
-                    OS.Net.peer.on('error', (err) => OS.Apps.Terminal.log("Peer Error: " + err.type));
+                    OS.Net.peer.on('error', (err) => OS.Apps.Logs.add("Peer Error: " + err.type));
                 },
                 connect: (rid) => {
-                    OS.Apps.Terminal.log("Connecting to: " + rid);
+                    OS.Apps.Logs.add("Connecting to: " + rid);
                     OS.Net.bind(OS.Net.peer.connect(rid));
                 },
                 connectFromHub: () => {
@@ -671,14 +676,14 @@
                         document.getElementById('chat-input').removeAttribute('disabled');
                         document.getElementById('qr-modal').style.display = 'none';
                         OS.Apps.Chat.sys("Secure Connection Established");
-                        OS.Apps.Terminal.log("Connection Open");
+                        OS.Apps.Logs.add("Connection Open");
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
                     c.on('close', () => {
                         document.getElementById('conn-status-sidebar').innerText = "Offline";
                         document.getElementById('connection-hub').classList.remove('hidden');
                         document.getElementById('chat-input').setAttribute('disabled', true);
-                        OS.Apps.Terminal.log("Connection Closed");
+                        OS.Apps.Logs.add("Connection Closed");
                     });
                 },
                 send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
@@ -692,6 +697,14 @@
                     OS.Net.peer.destroy();
                     OS.Net.init();
                     OS.UI.toast('Identity Refreshed', 'success');
+                },
+                setCustomId: () => {
+                    const id = prompt("Enter Custom ID (e.g. pepeman):");
+                    if(id) {
+                        OS.Net.peer.destroy();
+                        OS.Net.init(id);
+                        OS.UI.toast('Setting Custom ID...', 'info');
+                    }
                 },
                 
                 File: {
@@ -707,7 +720,7 @@
                         const r = new FileReader();
                         let idx = 0, off = 0;
                         OS.Apps.Chat.renderFile(f, 'local', fid);
-                        OS.Apps.Terminal.log(`Sending File: ${f.name} (${f.size} bytes)`);
+                        OS.Apps.Logs.add(`Sending File: ${f.name} (${f.size} bytes)`);
                         
                         r.onload = async (e) => {
                             await OS.Net.send('chunk', { fid, idx, total, d: e.target.result, n: f.name, type: f.type });
@@ -720,7 +733,7 @@
                                 } else {
                                     OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
                                 }
-                                OS.Apps.Terminal.log(`File Sent: ${f.name}`);
+                                OS.Apps.Logs.add(`File Sent: ${f.name}`);
                             }
                         };
                         r.readAsDataURL(f.slice(0, OS.Config.CHUNK));
@@ -740,7 +753,7 @@
                             OS.Apps.Chat.finalize(p.fid, url, p.type, p.type.startsWith('audio/')); // Auto play audio
                             OS.Apps.Files.list.push({n:p.n, u:url});
                             delete OS.Net.File.bufs[p.fid];
-                            OS.Apps.Terminal.log(`File Received: ${p.n}`);
+                            OS.Apps.Logs.add(`File Received: ${p.n}`);
                         }
                     }
                 }
@@ -752,6 +765,22 @@
                     clear: () => {
                         const f = document.getElementById('chat-feed');
                         if(f) f.innerHTML = `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i><p>Session Reset.</p></div>`;
+                    },
+                    nuke: () => {
+                        if(confirm("NUKE: This will overwrite memory and reload. Continue?")) {
+                            const f = document.getElementById('chat-feed');
+                            f.innerHTML = "OVERWRITING MEMORY SECTORS...";
+                            // Simulate overwrite
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    },
+                    toggleEphemeral: () => {
+                        OS.State.ephemeral = !OS.State.ephemeral;
+                        const btn = document.getElementById('ephemeral-btn');
+                        btn.style.color = OS.State.ephemeral ? 'var(--danger)' : 'var(--text-muted)';
+                        OS.UI.toast(`Ephemeral Mode: ${OS.State.ephemeral ? 'ON' : 'OFF'}`, 'info');
                     },
                     toggleAttach: () => {
                         document.getElementById('attach-menu').classList.toggle('open');
@@ -772,6 +801,14 @@
                         d.innerHTML = `<div class="bubble">${DOMPurify.sanitize(h)}<div class="msg-meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div></div>`;
                         f.appendChild(d);
                         f.scrollTop = f.scrollHeight;
+                        
+                        // Ephemeral Logic
+                        if(OS.State.ephemeral) {
+                            setTimeout(() => {
+                                d.innerHTML = "<i>Message Expired</i>";
+                                setTimeout(() => d.remove(), 1000);
+                            }, 30000);
+                        }
                     },
                     sys: (msg, action) => {
                         const f = document.getElementById('chat-feed');
@@ -792,60 +829,38 @@
                         if(type.startsWith('audio/')) {
                             const wid = `w-${id}`;
                             el.innerHTML = `<div id="${wid}" style="width:200px"></div><button class="btn-icon" onclick="OS.Apps.Chat.play('${wid}')"><i class="fas fa-play"></i></button>`;
-                            setTimeout(() => {
-                                OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
-                                if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
-                            }, 100);
+                            // Wait for DOM
+                            requestAnimationFrame(() => {
+                                setTimeout(() => {
+                                    OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
+                                    if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
+                                }, 100);
+                            });
                         } else if(type.startsWith('image/')) {
                             el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px; cursor:pointer;" onclick="OS.UI.openMediaViewer('${url}')">`;
                         } else {
                             el.innerHTML = `<a href="${url}" download class="menu-btn" style="font-size:0.9rem"><i class="fas fa-download"></i> Download</a>`;
+                        }
+                        
+                        // Ephemeral File Logic (60s)
+                        if(OS.State.ephemeral) {
+                            setTimeout(() => {
+                                el.innerHTML = "<i>File Expired</i>";
+                            }, 60000);
                         }
                     },
                     waves: {},
                     play: (id) => OS.Apps.Chat.waves[id]?.playPause()
                 },
 
-                Terminal: {
-                    open: () => {
-                        document.getElementById('terminal-app').classList.add('active');
-                        document.getElementById('attach-menu').classList.remove('open');
-                        OS.Apps.Terminal.init();
-                    },
-                    init: () => {
-                        const input = document.getElementById('term-in');
-                        input.addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter') {
-                                const cmd = input.value.trim();
-                                OS.Apps.Terminal.log(`root@titan:~# ${cmd}`);
-                                OS.Apps.Terminal.exec(cmd);
-                                input.value = '';
-                            }
-                        });
-                    },
-                    log: (txt) => {
-                        const out = document.getElementById('term-out');
-                        const div = document.createElement('div');
-                        div.innerText = `[${new Date().toLocaleTimeString()}] ${txt}`;
-                        out.appendChild(div);
+                Logs: {
+                    open: () => document.getElementById('logs-app').classList.add('active'),
+                    add: (msg) => {
+                        const out = document.getElementById('log-out');
+                        const d = document.createElement('div');
+                        d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+                        out.appendChild(d);
                         out.scrollTop = out.scrollHeight;
-                    },
-                    exec: (cmd) => {
-                        const args = cmd.split(' ');
-                        switch(args[0]) {
-                            case 'help': OS.Apps.Terminal.log('Commands: help, clear, ping, echo, date, whoami, reboot, ls, cd, mkdir, cat, matrix, calc, sys, open, connect, say, weather, coin, hack, theme, neofetch'); break;
-                            case 'clear': document.getElementById('term-out').innerHTML = ''; break;
-                            case 'ping': OS.Apps.Terminal.log('pong'); break;
-                            case 'weather': OS.Apps.Terminal.log('Stockholm: 2°C, Overcast. Wind: 5m/s SW.'); break;
-                            case 'coin': OS.Apps.Terminal.log(Math.random() > 0.5 ? 'Heads' : 'Tails'); break;
-                            case 'hack': OS.Apps.Terminal.log('Initiating brute force...'); setTimeout(()=>OS.Apps.Terminal.log('Access Granted.'), 1000); break;
-                            case 'theme': document.documentElement.style.setProperty('--primary', args[1]); OS.Apps.Terminal.log(`Theme set to ${args[1]}`); break;
-                            case 'matrix': 
-                                // Matrix effect logic could go here
-                                OS.Apps.Terminal.log('Wake up, Neo...'); 
-                                break;
-                            default: OS.Apps.Terminal.log(`Command not found: ${args[0]}`);
-                        }
                     }
                 },
 
@@ -908,8 +923,13 @@
                         c.toBlob(blob => {
                             const file = new File([blob], "drawing.png", { type: "image/png" });
                             OS.Net.File.send(file);
+                            // Local Echo
+                            const u = URL.createObjectURL(blob);
+                            OS.Apps.Chat.render(`<img src="${u}" style="max-width:100%; border-radius:8px;">`, 'local');
                             OS.UI.toast('Sent to Chat', 'success');
+                            // Minimize instead of close
                             OS.Apps.Canvas.close();
+                            OS.Net.send('sys', { msg: 'User minimized the canvas to chat' });
                         });
                     }
                 },
@@ -1067,40 +1087,44 @@
                     rec: null, chunks: [], ctx: null,
                     start: async () => {
                         try {
-                            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-                            document.getElementById('audio-bar').classList.add('active');
-                            OS.Apps.Audio.ctx = new AudioContext();
-                            const src = OS.Apps.Audio.ctx.createMediaStreamSource(s);
-                            const an = OS.Apps.Audio.ctx.createAnalyser();
-                            src.connect(an);
-                            
-                            const cvs = document.getElementById('audio-viz');
-                            const c = cvs.getContext('2d');
-                            const d = new Uint8Array(an.frequencyBinCount);
-                            const draw = () => {
-                                if(!document.getElementById('audio-bar').classList.contains('active')) return;
-                                requestAnimationFrame(draw);
-                                an.getByteFrequencyData(d);
-                                c.clearRect(0,0,cvs.width,cvs.height);
-                                c.fillStyle = '#3b82f6';
-                                const w = cvs.width/30;
-                                for(let i=0; i<30; i++) {
-                                    const h = (d[i]/255)*cvs.height;
-                                    c.fillRect(i*w, cvs.height-h, w-2, h);
-                                }
-                            };
-                            draw();
+                            OS.UI.playSound('ding');
+                            // Delay recording start to catch speech after ding
+                            setTimeout(async () => {
+                                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                document.getElementById('audio-bar').classList.add('active');
+                                OS.Apps.Audio.ctx = new AudioContext();
+                                const src = OS.Apps.Audio.ctx.createMediaStreamSource(s);
+                                const an = OS.Apps.Audio.ctx.createAnalyser();
+                                src.connect(an);
+                                
+                                const cvs = document.getElementById('audio-viz');
+                                const c = cvs.getContext('2d');
+                                const d = new Uint8Array(an.frequencyBinCount);
+                                const draw = () => {
+                                    if(!document.getElementById('audio-bar').classList.contains('active')) return;
+                                    requestAnimationFrame(draw);
+                                    an.getByteFrequencyData(d);
+                                    c.clearRect(0,0,cvs.width,cvs.height);
+                                    c.fillStyle = '#3b82f6';
+                                    const w = cvs.width/30;
+                                    for(let i=0; i<30; i++) {
+                                        const h = (d[i]/255)*cvs.height;
+                                        c.fillRect(i*w, cvs.height-h, w-2, h);
+                                    }
+                                };
+                                draw();
 
-                            OS.Apps.Audio.rec = new MediaRecorder(s);
-                            OS.Apps.Audio.chunks = [];
-                            OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
-                            OS.Apps.Audio.rec.start();
-                            
-                            let sec = 0;
-                            OS.Apps.Audio.timer = setInterval(() => {
-                                sec++;
-                                document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
-                            }, 1000);
+                                OS.Apps.Audio.rec = new MediaRecorder(s);
+                                OS.Apps.Audio.chunks = [];
+                                OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
+                                OS.Apps.Audio.rec.start();
+                                
+                                let sec = 0;
+                                OS.Apps.Audio.timer = setInterval(() => {
+                                    sec++;
+                                    document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
+                                }, 1000);
+                            }, 300);
                         } catch(e) { console.error(e); }
                     },
                     send: () => {
@@ -1245,6 +1269,9 @@
                     } else if (type === 'key') {
                         osc.frequency.value = 800; g.gain.value = 0.02;
                         osc.start(); osc.stop(ctx.currentTime + 0.05);
+                    } else if (type === 'ding') {
+                        osc.frequency.value = 440; g.gain.value = 0.1;
+                        osc.start(); osc.stop(ctx.currentTime + 0.2);
                     }
                 },
                 dataURLtoFile: (dataurl, filename) => {
