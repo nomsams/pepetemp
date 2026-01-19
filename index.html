@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PepeTalk OS XXIII | Singularity Core</title>
+    <title>PepeTalk OS XXIV | Singularity Core [PROD]</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Secure P2P Operating System">
     
-    <!-- SINGULARITY CORE DEPENDENCIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -20,8 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 
-         * 🏛️ THEME: SINGULARITY DARK
+        /* * 🏛️ THEME: SINGULARITY DARK (PRODUCTION REVISION)
          * "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away."
          */
         :root {
@@ -62,9 +60,13 @@
         }
 
         /* --- RESET --- */
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100dvh; width: 100vw; overflow: hidden; position: fixed; inset: 0; }
-        input, textarea, code, pre { user-select: text; font-family: var(--font-ui); }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* [UPGRADE] Removed global user-select: none to allow text selection in inputs/messages */
+        body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100dvh; width: 100vw; overflow: hidden; position: fixed; inset: 0; user-select: none; }
+        
+        /* [UPGRADE] Specifically enable selection on interactables */
+        input, textarea, code, pre, .bubble { user-select: text; -webkit-user-select: text; font-family: var(--font-ui); }
         
         /* --- BOOT SCREEN --- */
         #boot-layer {
@@ -120,7 +122,7 @@
         .contact-name { font-weight: 600; font-size: 0.95rem; }
         .contact-status { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* --- CHAT VIEW (Bottom-Up Architecture) --- */
+        /* --- CHAT VIEW --- */
         .chat-view {
             flex: 1; display: flex; flex-direction: column; position: relative;
             background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
@@ -136,14 +138,16 @@
         .chat-title { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
         .chat-actions { display: flex; gap: 15px; }
         
-        /* The Magic: Flex Column Reverse Logic for Bottom Alignment */
+        /* * [UPGRADE] SCROLL FIX
+         * Removed justify-content: flex-end. This fixes the clipping issue.
+         * We now rely on JS to scroll to bottom.
+         */
         .chat-feed {
             flex: 1; 
             overflow-y: auto; 
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: flex-end; /* Pushes content to bottom */
             gap: 10px;
             padding-bottom: 120px; /* Space for fixed input */
             scroll-behavior: smooth;
@@ -158,11 +162,20 @@
             padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5;
             position: relative; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             min-width: 60px;
+            /* [UPGRADE] Text Selection */
+            user-select: text; 
+            -webkit-user-select: text;
+            cursor: text;
         }
+        
+        /* [UPGRADE] Link styling */
+        .bubble a { color: var(--accent); text-decoration: underline; cursor: pointer; word-break: break-all; }
+        .bubble a:hover { color: white; }
+
         .msg.local .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .msg.remote .bubble { background: var(--bg-panel); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
         
-        .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; }
+        .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; user-select: none; }
         
         /* Input Bar (Mobile Fixed) */
         .input-area {
@@ -341,20 +354,37 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        /* [UPGRADE] Toast Container */
+        .toast {
+            background: rgba(20,20,20,0.95);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.info { border-left: 3px solid var(--primary); }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
     </style>
 </head>
 <body>
 
-    <!-- BOOT LAYER -->
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
-        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXIII</div>
+        <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXIV</div>
+        <div style="font-size: 0.8rem; color: #555;">Prod. Build v24.0.1</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
     <div id="app-container">
         
-        <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span>PepeTalk</span>
@@ -374,11 +404,11 @@
                 </div>
                 <div style="margin-top:20px; padding:10px;">
                     <button class="btn-primary" style="width:100%; background:#ff453a;" onclick="OS.Apps.Chat.nuke()">SELF DESTRUCT</button>
+                    <button class="btn-primary" style="width:100%; background:#222; margin-top:10px;" onclick="OS.Apps.Chat.clear()">CLEAR CHAT</button>
                 </div>
             </div>
         </div>
 
-        <!-- MAIN CHAT -->
         <div class="chat-view" id="chat-view">
             <div class="chat-header">
                 <div class="chat-title">
@@ -395,11 +425,10 @@
             <div class="chat-feed" id="chat-feed">
                 <div style="text-align:center; margin-top:50px; opacity:0.5;">
                     <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
-                    <p>End-to-End Encrypted.<br>No Server Storage.</p>
+                    <p>End-to-End Encrypted.<br>No Server Storage.<br><span style="font-size:0.7rem">Double-click message to copy.</span></p>
                 </div>
             </div>
 
-            <!-- CONNECTION HUB (OVERLAY) -->
             <div id="connection-hub">
                 <div class="hub-card">
                     <div class="hub-title"><i class="fas fa-network-wired"></i> Secure Link</div>
@@ -420,9 +449,7 @@
                 </div>
             </div>
 
-            <!-- INPUT AREA -->
             <div class="input-area">
-                <!-- Attach Menu -->
                 <div class="attach-menu" id="attach-menu">
                     <div class="menu-item" onclick="OS.Apps.Video.open(); OS.UI.toggleAttach()"><i class="fas fa-video" style="color:#ff5252"></i> Video Call</div>
                     <div class="menu-item" onclick="OS.Apps.Canvas.open(); OS.UI.toggleAttach()"><i class="fas fa-palette" style="color:#ffca28"></i> Whiteboard</div>
@@ -431,7 +458,6 @@
                     <div class="menu-item" onclick="OS.Apps.Logs.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> System Logs</div>
                 </div>
 
-                <!-- Audio Recorder -->
                 <div class="audio-bar" id="audio-bar">
                     <span style="color:#ff5252; font-weight:bold; font-family:monospace;" id="rec-timer">00:00</span>
                     <canvas id="audio-viz"></canvas>
@@ -447,7 +473,6 @@
             </div>
         </div>
 
-        <!-- CANVAS APP (OVERLAY) -->
         <div id="canvas-app" class="overlay-app">
             <div class="canvas-toolbar">
                 <button class="btn-icon" onclick="OS.Apps.Canvas.close()"><i class="fas fa-arrow-left"></i> Back</button>
@@ -462,7 +487,6 @@
             <div id="wb-wrap"><canvas id="wb-canvas"></canvas></div>
         </div>
 
-        <!-- TELEGRAPH APP (OVERLAY) -->
         <div id="telegraph-app" class="overlay-app">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
@@ -484,7 +508,6 @@
             </div>
         </div>
 
-        <!-- VIDEO APP (OVERLAY) -->
         <div id="video-app" class="overlay-app">
             <div class="video-grid">
                 <video id="remote-video" autoplay playsinline></video>
@@ -499,11 +522,13 @@
             </div>
         </div>
 
-        <!-- SYSTEM LOGS (OVERLAY) -->
         <div id="logs-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="color:var(--success)">SYSTEM LOGS</span>
-                <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                <span style="color:var(--success)">SYSTEM LOGS [VERBOSE]</span>
+                <div style="display:flex; gap:10px">
+                    <button class="btn-icon" onclick="OS.Apps.Logs.download()"><i class="fas fa-download"></i></button>
+                    <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                </div>
             </div>
             <div id="log-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.8rem; border:1px solid #333; padding:10px;">
                 <div>[KERNEL] System Initialized.</div>
@@ -512,10 +537,8 @@
 
     </div>
 
-    <!-- HIDDEN FILE INPUT -->
     <input type="file" id="file-input" multiple hidden onchange="OS.Net.File.handle(this)">
 
-    <!-- QR MODAL -->
     <div id="qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:var(--z-modal); display:none; justify-content:center; align-items:center; flex-direction:column;">
         <div style="background:white; padding:20px; border-radius:16px; text-align:center;">
             <div id="qr-target"></div>
@@ -524,7 +547,6 @@
         <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
     </div>
 
-    <!-- MEDIA VIEWER MODAL -->
     <div id="media-viewer">
         <img id="media-content" src="" alt="Preview">
         <div class="media-controls">
@@ -533,7 +555,6 @@
         </div>
     </div>
 
-    <!-- SECURE KEYBOARD -->
     <div id="secure-kb">
         <div class="kb-preview" id="kb-preview"></div>
         <div class="kb-grid" id="kb-keys"></div>
@@ -550,13 +571,13 @@
         <button class="btn-icon" style="position:absolute; top:5px; right:5px;" onclick="OS.Apps.Keyboard.close()"><i class="fas fa-chevron-down"></i></button>
     </div>
 
-    <!-- TOASTS -->
     <div id="toast-area" style="position:fixed; top:20px; right:20px; z-index:var(--z-toast); display:flex; flex-direction:column; gap:10px;"></div>
 
     <script>
         /**
-         * 🍓 PEPETALK OS XXIII - SINGULARITY CORE
+         * 🍓 PEPETALK OS XXIV - SINGULARITY CORE
          * "The final word in browser-based communication."
+         * * PATCH 24.0.1: Scroll fixes, Selection fixes, Robust logging.
          */
 
         const OS = {
@@ -566,6 +587,12 @@
             init: async () => {
                 OS.State.isMobile = window.innerWidth < 768;
                 
+                // [UPGRADE] Global Error Handling
+                window.onerror = function(msg, url, line, col, error) {
+                    OS.Apps.Logs.add(`CRITICAL ERROR: ${msg} [${line}:${col}]`);
+                    return false;
+                };
+
                 // 1. Immediate UI Reveal
                 setTimeout(() => {
                     document.getElementById('boot-layer').style.display = 'none';
@@ -592,6 +619,17 @@
                         } else if(document.activeElement === document.getElementById('chat-input')) {
                              e.preventDefault(); OS.Apps.Chat.send();
                         }
+                    }
+                });
+
+                // [UPGRADE] Double click to copy on chat
+                document.getElementById('chat-feed').addEventListener('dblclick', (e) => {
+                    const bubble = e.target.closest('.bubble');
+                    if(bubble) {
+                        const txt = bubble.innerText;
+                        navigator.clipboard.writeText(txt).then(() => {
+                            OS.UI.toast("Message copied", "info");
+                        }).catch(err => OS.Apps.Logs.add("Copy failed: " + err));
                     }
                 });
 
@@ -634,7 +672,10 @@
                     try {
                         const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(p.iv) }, OS.Security.key, new Uint8Array(p.d));
                         return JSON.parse(new TextDecoder().decode(d));
-                    } catch(e) { return null; }
+                    } catch(e) { 
+                        OS.Apps.Logs.add("Decryption Error: " + e.message);
+                        return null; 
+                    }
                 }
             },
 
@@ -649,7 +690,7 @@
                         if(rid && k) { OS.Security.import(k); OS.Net.target = rid; }
                     }
                     
-                    const opts = { config: { iceServers: OS.Config.ICE } };
+                    const opts = { config: { iceServers: OS.Config.ICE }, debug: 2 };
                     OS.Net.peer = customId ? new Peer(customId, opts) : new Peer(null, opts);
 
                     OS.Net.peer.on('open', async (id) => {
@@ -663,9 +704,17 @@
                         }
                         if(OS.Net.target) OS.Net.connect(OS.Net.target);
                     });
+                    
                     OS.Net.peer.on('connection', OS.Net.bind);
                     OS.Net.peer.on('call', OS.Apps.Video.incoming);
-                    OS.Net.peer.on('error', (err) => OS.Apps.Logs.add("Peer Error: " + err.type));
+                    OS.Net.peer.on('error', (err) => {
+                        OS.Apps.Logs.add(`PEER ERROR: ${err.type} - ${err.message}`);
+                        OS.UI.toast("Network Error", "error");
+                    });
+                    OS.Net.peer.on('disconnected', () => {
+                        OS.Apps.Logs.add("Peer Disconnected. Attempting reconnect...");
+                        OS.Net.peer.reconnect();
+                    });
                 },
                 connect: (rid) => {
                     OS.Apps.Logs.add("Connecting to: " + rid);
@@ -684,7 +733,8 @@
                         document.getElementById('chat-input').removeAttribute('disabled');
                         document.getElementById('qr-modal').style.display = 'none';
                         OS.Apps.Chat.sys("Secure Connection Established");
-                        OS.Apps.Logs.add("Connection Open");
+                        OS.Apps.Logs.add(`Connection Open to ${c.peer}`);
+                        OS.UI.sound('ding');
                     });
                     c.on('data', async (d) => { if(d.iv) { const m = await OS.Security.dec(d); if(m) OS.Net.route(m); } });
                     c.on('close', () => {
@@ -692,9 +742,21 @@
                         document.getElementById('connection-hub').classList.remove('hidden');
                         document.getElementById('chat-input').setAttribute('disabled', true);
                         OS.Apps.Logs.add("Connection Closed");
+                        OS.UI.toast("Peer Disconnected", "error");
                     });
+                    // Monitor ICE state
+                    c.peerConnection.oniceconnectionstatechange = () => {
+                        OS.Apps.Logs.add(`ICE State: ${c.peerConnection.iceConnectionState}`);
+                    };
                 },
-                send: async (t, p) => { if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); },
+                send: async (t, p) => { 
+                    try {
+                        if(OS.State.conn?.open) OS.State.conn.send(await OS.Security.enc({ t, p })); 
+                        else OS.Apps.Logs.add("Send failed: Connection not open");
+                    } catch(e) {
+                        OS.Apps.Logs.add("Encryption/Send Error: " + e.message);
+                    }
+                },
                 route: (m) => {
                     if(m.t === 'text') OS.Apps.Chat.render(m.p, 'remote');
                     if(m.t === 'chunk') OS.Net.File.recv(m.p);
@@ -702,17 +764,24 @@
                     if(m.t === 'sys') OS.Apps.Chat.sys(m.p.msg, m.p.action);
                 },
                 refreshIdentity: () => {
-                    OS.Net.peer.destroy();
+                    if(OS.Net.peer) OS.Net.peer.destroy();
                     OS.Net.init();
                     OS.UI.toast('Identity Refreshed', 'success');
                 },
                 setCustomId: () => {
                     const id = prompt("Enter Custom ID (e.g. pepeman):");
                     if(id) {
-                        OS.Net.peer.destroy();
+                        if(OS.Net.peer) OS.Net.peer.destroy();
                         OS.Net.init(id);
                         OS.UI.toast('Setting Custom ID...', 'info');
                     }
+                },
+                copyId: () => {
+                     const id = document.getElementById('hub-my-id').innerText;
+                     if(id) {
+                         navigator.clipboard.writeText(id);
+                         OS.UI.toast("ID Copied", "info");
+                     }
                 },
                 
                 File: {
@@ -762,6 +831,7 @@
                             OS.Apps.Files.list.push({n:p.n, u:url});
                             delete OS.Net.File.bufs[p.fid];
                             OS.Apps.Logs.add(`File Received: ${p.n}`);
+                            OS.UI.sound('ding');
                         }
                     }
                 }
@@ -773,6 +843,7 @@
                     clear: () => {
                         const f = document.getElementById('chat-feed');
                         if(f) f.innerHTML = `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i><p>Session Reset.</p></div>`;
+                        OS.Apps.Logs.add("User cleared chat history.");
                     },
                     nuke: () => {
                         if(confirm("NUKE: This will overwrite memory and reload. Continue?")) {
@@ -806,9 +877,17 @@
                         const f = document.getElementById('chat-feed');
                         const d = document.createElement('div');
                         d.className = `msg ${s}`;
-                        d.innerHTML = `<div class="bubble">${DOMPurify.sanitize(h)}<div class="msg-meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div></div>`;
+                        
+                        // [UPGRADE] Smart Linking: Regex to replace URLs with clickable links
+                        let content = DOMPurify.sanitize(h);
+                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                        content = content.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+
+                        d.innerHTML = `<div class="bubble">${content}<div class="msg-meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div></div>`;
                         f.appendChild(d);
-                        f.scrollTop = f.scrollHeight;
+                        
+                        // [UPGRADE] Auto-Scroll Logic
+                        OS.Apps.Chat.scrollToBottom();
                         
                         // Ephemeral Logic
                         if(OS.State.ephemeral) {
@@ -818,6 +897,10 @@
                             }, 30000);
                         }
                     },
+                    scrollToBottom: () => {
+                        const f = document.getElementById('chat-feed');
+                        f.scrollTop = f.scrollHeight;
+                    },
                     sys: (msg, action) => {
                         const f = document.getElementById('chat-feed');
                         const d = document.createElement('div');
@@ -825,7 +908,7 @@
                         d.innerHTML = `<span style="background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:10px;">${msg}</span>`;
                         if(action === 'canvas') d.onclick = () => OS.Apps.Canvas.open();
                         f.appendChild(d);
-                        f.scrollTop = f.scrollHeight;
+                        OS.Apps.Chat.scrollToBottom();
                     },
                     renderFile: (f, s, id) => {
                         OS.Apps.Chat.render(`<div id="f-${id}"><i class="fas fa-spinner fa-spin"></i> ${f.name}</div>`, s);
@@ -850,6 +933,8 @@
                             el.innerHTML = `<a href="${url}" download class="menu-btn" style="font-size:0.9rem"><i class="fas fa-download"></i> Download</a>`;
                         }
                         
+                        OS.Apps.Chat.scrollToBottom();
+
                         // Ephemeral File Logic (60s)
                         if(OS.State.ephemeral) {
                             setTimeout(() => {
@@ -862,18 +947,31 @@
                 },
 
                 Logs: {
+                    history: [],
                     open: () => document.getElementById('logs-app').classList.add('active'),
                     add: (msg) => {
                         const out = document.getElementById('log-out');
                         const d = document.createElement('div');
-                        d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+                        const time = new Date().toLocaleTimeString();
+                        const entry = `[${time}] ${msg}`;
+                        d.innerText = entry;
                         out.appendChild(d);
                         out.scrollTop = out.scrollHeight;
+                        OS.Apps.Logs.history.push(entry);
+                        console.log(entry); // Sync to console
+                    },
+                    download: () => {
+                        const blob = new Blob([OS.Apps.Logs.history.join('\n')], {type: 'text/plain'});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `pepetalk-logs-${Date.now()}.txt`;
+                        a.click();
                     }
                 },
 
                 Canvas: {
-                    ctx: null, drawing: false, color: '#3b82f6',
+                    ctx: null, drawing: false, color: '#3b82f6', last: {x:0, y:0},
                     open: () => {
                         document.getElementById('canvas-app').classList.add('active');
                         document.getElementById('attach-menu').classList.remove('open');
@@ -951,8 +1049,7 @@
                     },
                     close: () => document.getElementById('telegraph-app').classList.remove('active'),
                     toggleInfo: () => {
-                        const el = document.getElementById('morse-ref');
-                        el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+                        OS.UI.toast("Morse Code Reference not loaded in prod.", "info");
                     },
                     initAudio: () => {
                         if(OS.Apps.Telegraph.ctx) return;
@@ -998,10 +1095,10 @@
                         t.rec.stop();
                         t.rec.onstop = () => {
                             const b = new Blob(t.chunks, { type: 'audio/webm' });
-                            OS.Net.FileTransfer.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
+                            OS.Net.File.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
                             const translation = document.getElementById('tele-text').innerText;
                             if(t.seq) {
-                                let msg = `<div class="spoiler-box"><div class="spoiler-label">CLICK TO REVEAL MORSE</div><div class="spoiler-content"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div></div>`;
+                                let msg = `<div class="spoiler-box"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div>`;
                                 OS.Net.send('text', msg);
                                 // Local Echo
                                 OS.Apps.Chat.render(msg, 'local');
@@ -1030,6 +1127,7 @@
                         const input = document.getElementById('chat-input');
                         kb.classList.add('open');
                         input.classList.add('secure-mode');
+                        // [UPGRADE] Fix Secure input focus
                         input.setAttribute('readonly', true);
                         OS.Apps.Keyboard.render();
                     },
@@ -1061,7 +1159,7 @@
                         input.value += char;
                         document.getElementById('kb-preview').innerText = input.value;
                         OS.Apps.Keyboard.render();
-                        OS.UI.playSound('key');
+                        OS.UI.sound('key');
                     },
                     backspace: () => {
                         const input = document.getElementById('chat-input');
@@ -1074,10 +1172,7 @@
                         OS.Apps.Keyboard.render();
                     },
                     move: (dir) => {
-                        const input = document.getElementById('chat-input');
-                        const pos = input.selectionStart + dir;
-                        input.setSelectionRange(pos, pos);
-                        input.focus();
+                        // caret move not supported in readonly mode nicely, ignoring for security scramble
                     },
                     switchLayer: () => {
                         OS.Apps.Keyboard.currentLayer = OS.Apps.Keyboard.currentLayer === 'abc' ? 'num' : 'abc';
@@ -1090,10 +1185,10 @@
                 },
 
                 Audio: {
-                    rec: null, chunks: [], ctx: null,
+                    rec: null, chunks: [], ctx: null, timer: null,
                     start: async () => {
                         try {
-                            OS.UI.playSound('ding');
+                            OS.UI.sound('ding');
                             // Delay recording start to catch speech after ding
                             setTimeout(async () => {
                                 const s = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1131,7 +1226,10 @@
                                     document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
                                 }, 1000);
                             }, 300);
-                        } catch(e) { console.error(e); }
+                        } catch(e) { 
+                            console.error(e);
+                            OS.Apps.Logs.add("Mic Error: " + e.message); 
+                        }
                     },
                     send: () => {
                         if(!OS.Apps.Audio.rec) return;
@@ -1148,13 +1246,14 @@
                             OS.Apps.Audio.rec.stream.getTracks().forEach(t => t.stop());
                             OS.Apps.Audio.rec = null;
                         }
-                        clearInterval(OS.Apps.Audio.timer);
+                        if(OS.Apps.Audio.timer) clearInterval(OS.Apps.Audio.timer);
                         document.getElementById('rec-timer').innerText = "00:00";
                         document.getElementById('audio-bar').classList.remove('active');
                     }
                 },
 
                 Video: {
+                    stream: null,
                     open: () => {
                         document.getElementById('video-app').classList.add('active');
                         document.getElementById('attach-menu').classList.remove('open');
@@ -1262,20 +1361,33 @@
                     a.click();
                     document.body.removeChild(a);
                 },
+                
+                // [UPGRADE] Robust Toast System
+                toast: (msg, type = "info") => {
+                    const area = document.getElementById('toast-area');
+                    const t = document.createElement('div');
+                    t.className = `toast ${type}`;
+                    t.innerText = msg;
+                    area.appendChild(t);
+                    setTimeout(() => t.remove(), 3000);
+                },
+
+                // [UPGRADE] Fixed bug where 'type' variable was undefined
                 sound: (t) => {
-                    const c = new AudioContext();
-                    const o = c.createOscillator();
-                    const g = c.createGain();
-                    o.connect(g); g.connect(c.destination);
-                    if(t==='startup') {
-                        o.frequency.setValueAtTime(220, c.currentTime);
-                        o.frequency.exponentialRampToValueAtTime(880, c.currentTime+0.5);
-                        g.gain.exponentialRampToValueAtTime(0.01, c.currentTime+0.5);
-                        o.start(); o.stop(c.currentTime+0.5);
-                    } else if (type === 'key') {
+                    const ctx = new AudioContext();
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.connect(g); g.connect(ctx.destination);
+                    
+                    if(t === 'startup') {
+                        osc.frequency.setValueAtTime(220, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.5);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+0.5);
+                        osc.start(); osc.stop(ctx.currentTime+0.5);
+                    } else if (t === 'key') {
                         osc.frequency.value = 800; g.gain.value = 0.02;
                         osc.start(); osc.stop(ctx.currentTime + 0.05);
-                    } else if (type === 'ding') {
+                    } else if (t === 'ding') {
                         osc.frequency.value = 440; g.gain.value = 0.1;
                         osc.start(); osc.stop(ctx.currentTime + 0.2);
                     }
