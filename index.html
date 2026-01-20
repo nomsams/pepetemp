@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PepeTalk OS XXV | Singularity Ultimate [PROD]</title>
+    <title>PepeTalk OS XXV | Singularity Mesh [PROD]</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Secure P2P Multi-Threaded Operating System">
+    <meta name="description" content="Secure Mesh P2P Operating System">
     
+    <!-- LIBRARIES -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* * 🏛️ THEME: SINGULARITY DARK (PRODUCTION REVISION XXV) */
+        /* * 🏛️ THEME: SINGULARITY DARK (MESH REVISION v25) */
         :root {
             --bg-root: #000000;
             --bg-app: #0f0f0f;
@@ -29,7 +28,6 @@
             
             --primary: #3b82f6;
             --primary-dim: rgba(59, 130, 246, 0.15);
-            --primary-glow: rgba(59, 130, 246, 0.4);
             
             --accent: #8b5cf6;
             --success: #10b981;
@@ -38,30 +36,25 @@
             
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
-            --text-dim: #4b5563;
             
             --border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass: rgba(20, 20, 20, 0.95);
-            --blur: blur(20px);
             
-            --z-base: 1;
-            --z-chat: 10;
             --z-sidebar: 30;
             --z-hub: 50;
+            --z-input: 40;
             --z-overlay: 100;
             --z-modal: 1000;
             --z-toast: 2000;
             --z-boot: 9999;
             
             --safe-bottom: env(safe-area-inset-bottom, 20px);
-            --safe-top: env(safe-area-inset-top, 20px);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         /* --- RESET --- */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        
         body { margin: 0; padding: 0; background: var(--bg-root); color: var(--text-main); font-family: var(--font-ui); height: 100dvh; width: 100vw; overflow: hidden; position: fixed; inset: 0; user-select: none; }
-        
         input, textarea, code, pre, .bubble { user-select: text; -webkit-user-select: text; font-family: var(--font-ui); }
         
         /* --- BOOT SCREEN --- */
@@ -73,9 +66,9 @@
             transition: opacity 0.5s ease;
         }
         .boot-logo { font-size: 5rem; margin-bottom: 20px; animation: pulse 2s infinite; filter: drop-shadow(0 0 20px var(--primary-dim)); }
-        .loader-bar { width: 200px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; margin-top: 15px; }
-        .loader-fill { width: 100%; height: 100%; background: var(--primary); transform: translateX(-100%); animation: load 2s ease forwards; }
-        @keyframes load { to { transform: translateX(0); } }
+        .loader-bar { width: 200px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; margin-top: 20px; }
+        .loader-fill { width: 0%; height: 100%; background: var(--primary); animation: load 1.5s ease-out forwards; }
+        @keyframes load { to { width: 100%; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         /* --- MAIN APP CONTAINER --- */
@@ -90,40 +83,44 @@
             width: 300px; background: var(--bg-panel); border-right: var(--border);
             display: flex; flex-direction: column; z-index: var(--z-sidebar);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
         }
         .sidebar-header {
             height: 60px; border-bottom: var(--border); display: flex; align-items: center;
-            padding: 0 15px; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px;
+            padding: 0 20px; font-weight: 700; font-size: 1.1rem;
             justify-content: space-between; background: var(--bg-header);
         }
-        .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; }
         
-        /* NEW: Session Items */
-        .session-item {
-            display: flex; align-items: center; gap: 12px; padding: 10px;
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
-            background: rgba(255,255,255,0.02); border: 1px solid transparent;
-            position: relative; overflow: hidden;
+        .contact-item {
+            display: flex; align-items: center; gap: 15px; padding: 12px;
+            border-radius: 12px; cursor: pointer; transition: 0.2s;
+            background: rgba(255,255,255,0.02); margin-bottom: 5px;
+            position: relative;
         }
-        .session-item:hover { background: rgba(255,255,255,0.05); }
-        .session-item.active { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
-        .session-item.active::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--primary); }
+        .contact-item:hover { background: rgba(255,255,255,0.05); }
+        .contact-item.active { background: rgba(59, 130, 246, 0.15); border: 1px solid var(--primary-dim); }
+        .contact-item.broadcast { border: 1px dashed var(--accent); }
         
         .avatar {
             width: 40px; height: 40px; border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(135deg, #333, #555);
             display: flex; justify-content: center; align-items: center;
-            font-weight: bold; font-size: 1rem; color: white; flex-shrink: 0;
-            position: relative;
+            font-weight: bold; font-size: 1rem; color: white; position: relative;
         }
-        .avatar.group { background: linear-gradient(135deg, var(--accent), #f43f5e); }
-        .status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: #999; border: 2px solid var(--bg-panel); }
-        .status-dot.online { background: var(--success); box-shadow: 0 0 5px var(--success); }
-        
-        .session-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-        .session-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .session-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; }
-        .unread-badge { background: var(--primary); color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; }
+        .avatar.online::after {
+            content: ''; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px;
+            background: var(--success); border-radius: 50%; border: 2px solid var(--bg-panel);
+        }
+        .contact-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .contact-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-status { font-size: 0.75rem; color: var(--text-muted); }
+        .unread-badge { 
+            background: var(--danger); color: white; font-size: 0.7rem; 
+            padding: 2px 6px; border-radius: 10px; font-weight: bold; 
+            display: none; margin-left: auto;
+        }
+        .contact-item.has-unread .unread-badge { display: block; }
 
         /* --- CHAT VIEW --- */
         .chat-view {
@@ -140,8 +137,6 @@
         }
         .chat-title { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
         .chat-actions { display: flex; gap: 15px; }
-        .chat-actions i { opacity: 0.7; transition: 0.2s; cursor: pointer; }
-        .chat-actions i:hover { opacity: 1; color: var(--primary); }
         
         .chat-feed {
             flex: 1; overflow-y: auto; padding: 20px; 
@@ -153,7 +148,7 @@
         .msg { max-width: 75%; display: flex; flex-direction: column; animation: slideUp 0.2s ease; position: relative; }
         .msg.local { align-self: flex-end; align-items: flex-end; }
         .msg.remote { align-self: flex-start; align-items: flex-start; }
-        .msg.sys { align-self: center; max-width: 90%; align-items: center; margin: 10px 0; }
+        .msg.sys { align-self: center; max-width: 90%; align-items: center; }
         
         .bubble {
             padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5;
@@ -165,25 +160,21 @@
 
         .msg.local .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .msg.remote .bubble { background: var(--bg-panel); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-        .msg.sys .bubble { background: rgba(255,255,255,0.05); color: var(--text-muted); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; border: 1px dashed #444; box-shadow: none; }
+        .msg.sys .bubble { background: rgba(255,255,255,0.05); color: var(--text-muted); font-size: 0.8rem; padding: 5px 12px; border-radius: 12px; }
         
         .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; user-select: none; }
-        .sender-name { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; margin-left: 5px; }
         
-        /* Input Bar (Mobile Fixed) */
+        /* Input Bar (FIXED: Desktop Offset) */
         .input-area {
-            position: fixed; bottom: 0; left: 0; width: 100%;
+            position: fixed; bottom: 0; 
+            left: 300px; width: calc(100% - 300px); /* Desktop Fix */
             padding: 15px; background: var(--bg-header); border-top: var(--border);
             display: flex; align-items: flex-end; gap: 10px; 
             z-index: var(--z-input);
             padding-bottom: calc(15px + var(--safe-bottom));
             box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            transition: width 0.3s, left 0.3s;
         }
-        /* Desktop override for input area to stay within grid if needed, but fixed works well for overlays */
-        @media (min-width: 769px) {
-            .input-area { position: absolute; width: 100%; }
-        }
-
         .chat-input {
             flex: 1; background: var(--bg-input); border: 1px solid var(--border);
             color: white; padding: 12px 15px; border-radius: 20px; resize: none;
@@ -203,7 +194,7 @@
         #connection-hub.hidden { opacity: 0; pointer-events: none; }
         .hub-card {
             background: var(--bg-panel); border: 1px solid var(--border);
-            padding: 30px; border-radius: 16px; width: 100%; max-width: 450px;
+            padding: 30px; border-radius: 16px; width: 100%; max-width: 400px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         .hub-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
@@ -213,13 +204,6 @@
             text-align: center; font-size: 1.1rem;
         }
         
-        /* --- TABS in HUB --- */
-        .hub-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .hub-tab { flex: 1; padding: 10px; cursor: pointer; border-radius: 8px; transition: 0.2s; font-weight: 600; color: #666; }
-        .hub-tab.active { background: #222; color: var(--text-main); }
-        .hub-content { display: none; }
-        .hub-content.active { display: block; animation: fadeIn 0.3s; }
-
         /* --- OVERLAYS (APPS) --- */
         .overlay-app {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -345,25 +329,25 @@
             .msg { max-width: 85%; }
             .chat-title { font-size: 0.9rem; }
             #kb-toggle { display: block !important; }
-            .input-area { padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
+            /* Mobile Input Reset */
+            .input-area { left: 0; width: 100%; padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
         }
 
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        
+        /* Toast Container */
         .toast {
             background: rgba(20,20,20,0.95);
             border: 1px solid var(--border);
-            padding: 12px 20px; border-radius: 8px;
-            color: white; animation: fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
-            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-size: 0.9rem; display: flex; align-items: center; gap: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
         }
         .toast.success { border-left: 3px solid var(--success); }
         .toast.error { border-left: 3px solid var(--danger); }
@@ -376,7 +360,7 @@
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
         <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXV</div>
-        <div style="font-size: 0.8rem; color: #555;">Singularity Ultimate Build</div>
+        <div style="font-size: 0.8rem; color: #555;">Singularity Mesh v25.0.0</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
@@ -387,14 +371,28 @@
                 <span>PepeTalk</span>
                 <div style="display:flex; gap:10px;">
                     <i class="fas fa-times menu-btn" onclick="OS.UI.toggleSidebar()" style="display:none;" id="close-sidebar"></i>
-                    <i class="fas fa-plus menu-btn" onclick="OS.UI.showHub()" title="New Chat"></i>
-                    <i class="fas fa-cog menu-btn" onclick="OS.Storage.nuke()" title="Wipe Data"></i>
+                    <i class="fas fa-qrcode menu-btn" onclick="OS.UI.showQR()" title="Show QR"></i>
+                    <i class="fas fa-sync menu-btn" onclick="OS.Net.refreshIdentity()" title="Refresh ID"></i>
                 </div>
             </div>
-            <div class="sidebar-list" id="session-list">
+            <div class="sidebar-list" id="contact-list">
+                <!-- Dynamic Contacts -->
+                <div class="contact-item broadcast active" onclick="OS.Apps.Chat.switchContext('broadcast')">
+                    <div class="avatar"><i class="fas fa-broadcast-tower"></i></div>
+                    <div class="contact-info">
+                        <div class="contact-name">BROADCAST</div>
+                        <div class="contact-status">Send to all peers</div>
+                    </div>
                 </div>
-            <div style="padding:10px; font-size:0.7rem; color:#444; text-align:center;">
-                <span id="my-peer-id-display">Connecting...</span>
+            </div>
+            <div style="padding:10px; border-top:var(--border);">
+                <button class="btn-primary" style="width:100%; background:#222; font-size:0.8rem;" onclick="OS.UI.toggleHub()">
+                    <i class="fas fa-plus"></i> ADD PEER
+                </button>
+                <div style="margin-top:10px; display:flex; gap:5px;">
+                    <button class="btn-primary" style="flex:1; background:#ff453a; font-size:0.7rem;" onclick="OS.Apps.Chat.nuke()">NUKE</button>
+                    <button class="btn-primary" style="flex:1; background:#333; font-size:0.7rem;" onclick="OS.Apps.Chat.clear()">CLEAR</button>
+                </div>
             </div>
         </div>
 
@@ -402,10 +400,10 @@
             <div class="chat-header">
                 <div class="chat-title">
                     <i class="fas fa-bars mobile-menu-btn" onclick="OS.UI.toggleSidebar()"></i>
-                    <span id="active-chat-name">Select a Chat</span>
+                    <span id="chat-title-text">Broadcast Channel</span>
                 </div>
                 <div class="chat-actions">
-                    <i class="fas fa-stopwatch menu-btn" id="ephemeral-btn" onclick="OS.Apps.Chat.toggleEphemeral()" title="Ephemeral"></i>
+                    <i class="fas fa-stopwatch menu-btn" id="ephemeral-btn" onclick="OS.Apps.Chat.toggleEphemeral()" title="Ephemeral Mode"></i>
                     <i class="fas fa-phone menu-btn" onclick="OS.Apps.Video.open()"></i>
                     <i class="fas fa-list-alt menu-btn" onclick="OS.Apps.Logs.open()"></i>
                 </div>
@@ -414,41 +412,28 @@
             <div class="chat-feed" id="chat-feed">
                 <div style="text-align:center; margin-top:50px; opacity:0.5;">
                     <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
-                    <p>PepeTalk XXV<br>Encrypted Local Storage<br>Multi-Session Supported</p>
+                    <p>End-to-End Encrypted Mesh.<br>No Server Storage.<br><span style="font-size:0.7rem">Double-click message to copy.</span></p>
                 </div>
             </div>
 
-            <div id="connection-hub" class="hidden">
+            <div id="connection-hub">
                 <div class="hub-card">
-                    <div class="hub-title"><i class="fas fa-network-wired"></i> Connection Hub</div>
+                    <div class="hub-title"><i class="fas fa-network-wired"></i> Secure Link</div>
+                    <p style="color:#888; margin-bottom:20px; font-size:0.9rem;">Establish a peer-to-peer encrypted tunnel.</p>
                     
-                    <div class="hub-tabs">
-                        <div class="hub-tab active" onclick="OS.UI.tab('p2p')">Direct Peer</div>
-                        <div class="hub-tab" onclick="OS.UI.tab('group')">Group Chat</div>
-                    </div>
+                    <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">MY IDENTITY</div>
+                    <div class="hub-input" id="hub-my-id" onclick="OS.Net.copyId()" style="cursor:pointer; color:var(--accent);">Generating...</div>
                     
-                    <div id="tab-p2p" class="hub-content active">
-                        <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">MY IDENTITY</div>
-                        <div class="hub-input" id="hub-my-id" onclick="OS.Net.copyId()" style="cursor:pointer; color:var(--accent);">Generating...</div>
-                        
-                        <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">REMOTE PEER</div>
-                        <input type="text" class="hub-input" id="hub-remote-id" placeholder="Paste Peer ID...">
-                        <button class="btn-primary" style="width:100%;" onclick="OS.Net.connectFromHub()">CONNECT</button>
+                    <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">REMOTE PEER</div>
+                    <input type="text" class="hub-input" id="hub-remote-id" placeholder="Paste Peer ID here...">
+                    
+                    <button class="btn-primary" style="width:100%; padding:12px;" onclick="OS.Net.connectFromHub()">CONNECT</button>
+                    
+                    <div style="margin-top:20px; display:flex; justify-content:center; gap:20px;">
+                        <button class="btn-icon" onclick="OS.UI.showQR()" title="Scan QR"><i class="fas fa-qrcode"></i></button>
+                        <button class="btn-icon" onclick="OS.Net.setCustomId()" title="Set Custom ID"><i class="fas fa-user-edit"></i></button>
+                        <button class="btn-icon" onclick="OS.UI.toggleHub()" title="Close Hub"><i class="fas fa-times"></i></button>
                     </div>
-
-                    <div id="tab-group" class="hub-content">
-                        <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">CREATE GROUP</div>
-                        <input type="text" class="hub-input" id="group-name" placeholder="Group Name...">
-                        <button class="btn-primary" style="width:100%; background:var(--accent);" onclick="OS.Net.createGroup()">HOST GROUP</button>
-                        
-                        <div style="margin:15px 0; border-bottom:1px solid #333;"></div>
-                        
-                        <div style="text-align:left; margin-bottom:5px; font-size:0.8rem; color:#666;">JOIN GROUP</div>
-                        <input type="text" class="hub-input" id="host-id-input" placeholder="Host Peer ID...">
-                        <button class="btn-primary" style="width:100%;" onclick="OS.Net.joinGroup()">JOIN</button>
-                    </div>
-
-                    <button class="btn-icon" style="margin-top:20px;" onclick="OS.UI.closeHub()"><i class="fas fa-times"></i></button>
                 </div>
             </div>
 
@@ -458,6 +443,7 @@
                     <div class="menu-item" onclick="OS.Apps.Canvas.open(); OS.UI.toggleAttach()"><i class="fas fa-palette" style="color:#ffca28"></i> Whiteboard</div>
                     <div class="menu-item" onclick="OS.Apps.Telegraph.open(); OS.UI.toggleAttach()"><i class="fas fa-broadcast-tower" style="color:#00e676"></i> Telegraph</div>
                     <div class="menu-item" onclick="document.getElementById('file-input').click(); OS.UI.toggleAttach()"><i class="fas fa-file" style="color:#448aff"></i> File</div>
+                    <div class="menu-item" onclick="OS.Apps.Logs.open(); OS.UI.toggleAttach()"><i class="fas fa-terminal" style="color:#ccc"></i> System Logs</div>
                 </div>
 
                 <div class="audio-bar" id="audio-bar">
@@ -475,6 +461,7 @@
             </div>
         </div>
 
+        <!-- APPS -->
         <div id="canvas-app" class="overlay-app">
             <div class="canvas-toolbar">
                 <button class="btn-icon" onclick="OS.Apps.Canvas.close()"><i class="fas fa-arrow-left"></i> Back</button>
@@ -493,7 +480,7 @@
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-header);">
                 <button class="btn-icon" onclick="OS.Apps.Telegraph.close()"><i class="fas fa-arrow-left"></i> Back</button>
                 <span style="font-weight:bold; color:var(--primary)">TELEGRAPH V15</span>
-                <button class="btn-icon" onclick="OS.UI.toast('Morse Code Active', 'info')"><i class="fas fa-info-circle"></i></button>
+                <button class="btn-icon" onclick="OS.Apps.Telegraph.toggleInfo()"><i class="fas fa-info-circle"></i></button>
             </div>
             <div class="tele-display">
                 <div class="tele-code" id="tele-code"></div>
@@ -517,26 +504,37 @@
             </div>
             <div class="video-controls">
                 <button class="btn-icon" onclick="OS.Apps.Video.close()"><i class="fas fa-arrow-left"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Video.toggleMic()"><i class="fas fa-microphone"></i></button>
-                <button class="btn-icon" style="color:var(--danger)" onclick="OS.Apps.Video.end()"><i class="fas fa-phone-slash"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Video.toggleCam()"><i class="fas fa-video"></i></button>
-                <button class="btn-icon" onclick="OS.Apps.Video.shareScreen()"><i class="fas fa-desktop"></i></button>
+                <button class="v-btn" onclick="OS.Apps.Video.toggleMic()" id="btn-mic"><i class="fas fa-microphone"></i></button>
+                <button class="v-btn danger" onclick="OS.Apps.Video.end()"><i class="fas fa-phone-slash"></i></button>
+                <button class="v-btn" onclick="OS.Apps.Video.toggleCam()" id="btn-cam"><i class="fas fa-video"></i></button>
+                <button class="v-btn" onclick="OS.Apps.Video.shareScreen()"><i class="fas fa-desktop"></i></button>
             </div>
         </div>
 
         <div id="logs-app" class="overlay-app" style="background:#0c0c0c; font-family:'JetBrains Mono'; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="color:var(--success)">SYSTEM MONITOR</span>
-                <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                <span style="color:var(--success)">SYSTEM LOGS [VERBOSE]</span>
+                <div style="display:flex; gap:10px">
+                    <button class="btn-icon" onclick="OS.Apps.Logs.download()"><i class="fas fa-download"></i></button>
+                    <button class="btn-icon" onclick="document.getElementById('logs-app').classList.remove('active')"><i class="fas fa-times"></i></button>
+                </div>
             </div>
             <div id="log-out" style="flex:1; overflow-y:auto; color:#0f0; font-size:0.8rem; border:1px solid #333; padding:10px;">
-                <div>[BOOT] Kernel Init...</div>
+                <div>[KERNEL] System Initialized.</div>
             </div>
         </div>
 
     </div>
 
     <input type="file" id="file-input" multiple hidden onchange="OS.Net.File.handle(this)">
+
+    <div id="qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:var(--z-modal); display:none; justify-content:center; align-items:center; flex-direction:column;">
+        <div style="background:white; padding:20px; border-radius:16px; text-align:center;">
+            <div id="qr-target"></div>
+            <div style="margin-top:10px; color:#333; font-weight:bold;">Scan to Connect</div>
+        </div>
+        <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
+    </div>
 
     <div id="media-viewer">
         <img id="media-content" src="" alt="Preview">
@@ -553,6 +551,8 @@
             <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.switchLayer()">123</div>
             <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.toggleCaps()"><i class="fas fa-arrow-up"></i></div>
             <div class="kb-key kb-space" onclick="OS.Apps.Keyboard.type(' ')">SPACE</div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.move(-1)"><i class="fas fa-caret-left"></i></div>
+            <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.move(1)"><i class="fas fa-caret-right"></i></div>
             <div class="kb-key kb-func" onclick="OS.Apps.Keyboard.backspace()"><i class="fas fa-backspace"></i></div>
             <div class="kb-key kb-func" style="background:var(--primary)" onclick="OS.Apps.Keyboard.enter()"><i class="fas fa-paper-plane"></i></div>
         </div>
@@ -564,286 +564,330 @@
 
     <script>
         /**
-         * 🦁 PEPETALK OS XXV - SINGULARITY ULTIMATE
-         * Features: Multi-Session, Group Stars, IndexedDB Persistence, AES-GCM
+         * 🍓 PEPETALK OS XXV - SINGULARITY MESH
+         * "The final word in browser-based communication."
+         * * PATCH 25.0.0: Multi-Peer Mesh, Heartbeat, Fingerprinting, Robust Chunking.
          */
 
         const OS = {
             Config: { CHUNK: 16384, ICE: [{ urls: 'stun:stun.l.google.com:19302' }] },
-            
-            State: {
-                peerId: null,
-                sessions: {}, // Map<id, Session>
-                activeSessionId: null,
-                isMobile: window.innerWidth < 768,
-                ephemeral: false
+            State: { 
+                peerId: null, 
+                connections: {}, // Map of peerId -> DataConnection
+                chats: { 'broadcast': [] }, // History per peer
+                activeContext: 'broadcast', // 'broadcast' or peerId
+                key: null, 
+                isMobile: false, 
+                ephemeral: false,
+                fingerprint: null
             },
 
             init: async () => {
-                // UI Boot
+                OS.State.isMobile = window.innerWidth < 768;
+                
+                // Global Error Handling
+                window.onerror = function(msg, url, line, col, error) {
+                    OS.Apps.Logs.add(`CRITICAL ERROR: ${msg} [${line}:${col}]`, 'ERR');
+                    return false;
+                };
+
+                // 1. Immediate UI Reveal
                 setTimeout(() => {
                     document.getElementById('boot-layer').style.display = 'none';
                     document.getElementById('app-container').classList.add('visible');
                     OS.UI.sound('startup');
-                    OS.UI.showHub(); // Force Hub on start to choose path
                 }, 1500);
 
-                // Modules Init
-                await OS.Storage.init();
-                OS.State.sessions = await OS.Storage.loadSessions() || {};
-                OS.UI.renderSidebar();
-                OS.Net.init();
-
-                // Global Events
-                window.onerror = (m) => OS.Apps.Logs.add(`ERR: ${m}`);
-                document.getElementById('chat-feed').addEventListener('dblclick', (e) => {
-                    if(e.target.closest('.bubble')) {
-                        navigator.clipboard.writeText(e.target.closest('.bubble').innerText);
-                        OS.UI.toast("Copied Text");
+                // 2. Async Init
+                try {
+                    OS.State.fingerprint = await OS.Fingerprint.get();
+                    OS.Apps.Logs.add(`Security Fingerprint: ${OS.State.fingerprint.substring(0,10)}...`, 'SEC');
+                    await OS.Security.init();
+                    OS.Net.init();
+                } catch(e) {
+                    OS.Apps.Logs.add("CRITICAL: Init Failed - " + e.message, 'ERR');
+                    OS.UI.toast("Initialization Failed", "danger");
+                }
+                
+                // Global Listeners
+                document.addEventListener('keydown', (e) => {
+                    if(e.key === 'Enter' && !e.shiftKey) {
+                        if(document.getElementById('telegraph-app').classList.contains('active')) {
+                            e.preventDefault(); OS.Apps.Telegraph.send();
+                        } else if(document.getElementById('canvas-app').classList.contains('active')) {
+                            e.preventDefault(); OS.Apps.Canvas.save();
+                        } else if(document.activeElement === document.getElementById('chat-input')) {
+                             e.preventDefault(); OS.Apps.Chat.send();
+                        }
                     }
                 });
+
+                // Double click to copy
+                document.getElementById('chat-feed').addEventListener('dblclick', (e) => {
+                    const bubble = e.target.closest('.bubble');
+                    if(bubble) {
+                        navigator.clipboard.writeText(bubble.innerText).then(() => {
+                            OS.UI.toast("Message copied", "info");
+                        });
+                    }
+                });
+
+                // Drag & Drop
+                const dropZone = document.getElementById('chat-view');
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#182533'; });
+                dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.background = ''; });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault(); dropZone.style.background = '';
+                    if(e.dataTransfer.files.length) OS.Net.File.handle({files: e.dataTransfer.files});
+                });
+
+                // Telegraph Pointer Events
+                const tk = document.getElementById('tele-key');
+                tk.addEventListener('pointerdown', (e) => { e.preventDefault(); OS.Apps.Telegraph.down(); });
+                tk.addEventListener('pointerup', (e) => { e.preventDefault(); OS.Apps.Telegraph.up(); });
+                tk.addEventListener('pointerleave', (e) => { e.preventDefault(); OS.Apps.Telegraph.up(); });
             },
 
-            // --- INDEXEDDB STORAGE (PERSISTENCE) ---
-            Storage: {
-                db: null,
-                init: () => {
-                    return new Promise((resolve, reject) => {
-                        const r = indexedDB.open("PepeTalkDB_V1", 1);
-                        r.onupgradeneeded = (e) => {
-                            const db = e.target.result;
-                            if(!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'id' });
-                        };
-                        r.onsuccess = (e) => { OS.Storage.db = e.target.result; resolve(); };
-                        r.onerror = (e) => reject(e);
-                    });
+            // --- SECURITY ---
+            Security: {
+                key: null,
+                init: async () => OS.Security.key = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]),
+                export: async () => {
+                    const e = await window.crypto.subtle.exportKey("raw", OS.Security.key);
+                    return btoa(String.fromCharCode(...new Uint8Array(e))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 },
-                saveSession: (session) => {
-                    // Deep clone to avoid circular refs in connection objects if any
-                    const s = {
-                        id: session.id, name: session.name, type: session.type, 
-                        msgs: session.msgs, lastActive: Date.now(),
-                        participants: session.participants || []
-                    };
-                    const tx = OS.Storage.db.transaction(['sessions'], 'readwrite');
-                    tx.objectStore('sessions').put(s);
+                import: async (s) => {
+                    const b = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+                    const a = new Uint8Array(b.length);
+                    for(let i=0; i<b.length; i++) a[i] = b.charCodeAt(i);
+                    OS.Security.key = await window.crypto.subtle.importKey("raw", a, "AES-GCM", true, ["encrypt", "decrypt"]);
                 },
-                loadSessions: () => {
-                    return new Promise((resolve) => {
-                        const tx = OS.Storage.db.transaction(['sessions'], 'readonly');
-                        const req = tx.objectStore('sessions').getAll();
-                        req.onsuccess = () => {
-                            const map = {};
-                            req.result.forEach(s => {
-                                map[s.id] = { ...s, connections: [] }; // Rehydrate
-                            });
-                            resolve(map);
-                        };
-                    });
+                enc: async (d) => {
+                    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                    const c = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, OS.Security.key, new TextEncoder().encode(JSON.stringify(d)));
+                    return { iv: Array.from(iv), d: Array.from(new Uint8Array(c)) };
                 },
-                nuke: () => {
-                    if(confirm("WIPE ALL DATA?")) {
-                        indexedDB.deleteDatabase("PepeTalkDB_V1");
-                        window.location.reload();
+                dec: async (p) => {
+                    try {
+                        const d = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(p.iv) }, OS.Security.key, new Uint8Array(p.d));
+                        return JSON.parse(new TextDecoder().decode(d));
+                    } catch(e) { 
+                        OS.Apps.Logs.add("Decryption Error: " + e.message, 'SEC');
+                        return null; 
                     }
                 }
             },
 
-            // --- NETWORK & SESSIONS ---
+            // --- FINGERPRINTING ---
+            Fingerprint: {
+                get: async () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    ctx.textBaseline = "top";
+                    ctx.font = "14px 'Arial'";
+                    ctx.fillStyle = "#f60";
+                    ctx.fillRect(125,1,62,20);
+                    ctx.fillStyle = "#069";
+                    ctx.fillText("PepeTalk", 2, 15);
+                    const b64 = canvas.toDataURL().replace("data:image/png;base64,","");
+                    const bin = atob(b64);
+                    let hash = 0;
+                    for (let i = 0; i < bin.length; i++) {
+                        hash = ((hash << 5) - hash) + bin.charCodeAt(i);
+                        hash |= 0;
+                    }
+                    return hash + "-" + navigator.userAgent.replace(/\D+/g, '');
+                }
+            },
+
+            // --- NETWORK ---
             Net: {
                 peer: null,
+                target: null,
                 init: (customId = null) => {
-                    const opts = { config: { iceServers: OS.Config.ICE }, debug: 1 };
-                    OS.Net.peer = customId ? new Peer(customId, opts) : new Peer(opts);
+                    const h = window.location.hash.substring(1);
+                    if(h) {
+                        const [rid, k] = h.split('&k=');
+                        if(rid && k) { OS.Security.import(k); OS.Net.target = rid; }
+                    }
                     
-                    OS.Net.peer.on('open', (id) => {
+                    const opts = { config: { iceServers: OS.Config.ICE }, debug: 1 };
+                    OS.Net.peer = customId ? new Peer(customId, opts) : new Peer(null, opts);
+
+                    OS.Net.peer.on('open', async (id) => {
                         OS.State.peerId = id;
                         document.getElementById('hub-my-id').innerText = id;
-                        document.getElementById('my-peer-id-display').innerText = `ID: ${id.substr(0,6)}...`;
-                        OS.Apps.Logs.add(`Network Online: ${id}`);
+                        OS.Apps.Logs.add("Peer ID Generated: " + id, 'NET');
+                        
+                        // Generate Share Link
+                        const k = await OS.Security.export();
+                        OS.State.link = `${location.origin}${location.pathname}#${id}&k=${k}`;
+                        
+                        if(OS.Net.target) OS.Net.connect(OS.Net.target);
+                        
+                        // Start Heartbeat Loop
+                        OS.Net.startHeartbeat();
                     });
                     
-                    OS.Net.peer.on('connection', (conn) => {
-                        // Incoming Connection Logic
-                        conn.on('open', () => {
-                            // Check if we know this peer or new session
-                            OS.Net.handleIncomingConnection(conn);
-                        });
-                    });
-                    
+                    OS.Net.peer.on('connection', OS.Net.bind);
                     OS.Net.peer.on('call', OS.Apps.Video.incoming);
-                    OS.Net.peer.on('error', (e) => OS.UI.toast(`Net Error: ${e.type}`, 'error'));
+                    OS.Net.peer.on('error', (err) => {
+                        OS.Apps.Logs.add(`PEER ERROR: ${err.type} - ${err.message}`, 'ERR');
+                        OS.UI.toast("Network Error", "error");
+                    });
+                    OS.Net.peer.on('disconnected', () => {
+                        OS.Apps.Logs.add("Peer Disconnected. Attempting reconnect...", 'NET');
+                        OS.Net.peer.reconnect();
+                    });
                 },
-
+                connect: (rid) => {
+                    OS.Apps.Logs.add("Connecting to: " + rid, 'NET');
+                    OS.Net.bind(OS.Net.peer.connect(rid));
+                },
                 connectFromHub: () => {
                     const id = document.getElementById('hub-remote-id').value.trim();
-                    if(id) OS.Net.startP2P(id);
+                    if(id) OS.Net.connect(id);
                 },
-
-                // 1. P2P Direct
-                startP2P: (remoteId) => {
-                    const sessionId = `p2p-${remoteId}`; // Simple deterministic ID for 1:1
-                    if(!OS.State.sessions[sessionId]) {
-                        OS.State.sessions[sessionId] = {
-                            id: sessionId, type: 'p2p', name: `Peer ${remoteId.substr(0,4)}`,
-                            msgs: [], connections: [], participants: [remoteId]
-                        };
-                    }
-                    const conn = OS.Net.peer.connect(remoteId);
-                    OS.Net.bindConnection(conn, sessionId);
-                    OS.UI.selectSession(sessionId);
-                    OS.UI.closeHub();
-                },
-
-                // 2. Group Hosting
-                createGroup: () => {
-                    const name = document.getElementById('group-name').value.trim() || "New Group";
-                    const id = `grp-${Date.now()}`;
-                    OS.State.sessions[id] = {
-                        id: id, type: 'group', name: name, isHost: true,
-                        msgs: [], connections: [], participants: []
-                    };
-                    OS.Storage.saveSession(OS.State.sessions[id]);
-                    OS.UI.selectSession(id);
-                    OS.UI.closeHub();
-                    OS.UI.toast(`Group "${name}" Created`, 'success');
-                },
-
-                // 3. Join Group
-                joinGroup: () => {
-                    const hostId = document.getElementById('host-id-input').value.trim();
-                    if(!hostId) return;
-                    const conn = OS.Net.peer.connect(hostId, { metadata: { type: 'join-group' } });
+                bind: (c) => {
+                    OS.State.connections[c.peer] = c;
                     
-                    // Temp session until handshake confirms details
-                    conn.on('open', () => {
-                        conn.send({ t: 'sys', p: { action: 'join-req', name: OS.State.peerId } });
+                    c.on('open', () => {
+                        OS.UI.addContact(c.peer);
+                        document.getElementById('connection-hub').classList.add('hidden');
+                        document.getElementById('chat-input').removeAttribute('disabled');
+                        document.getElementById('qr-modal').style.display = 'none';
+                        OS.Apps.Logs.add(`Connection Open to ${c.peer}`, 'NET');
+                        OS.UI.sound('ding');
+                        
+                        // Send Handshake with Fingerprint
+                        OS.Net.sendTo(c.peer, 'handshake', { fp: OS.State.fingerprint });
                     });
                     
-                    // We bind nicely once we get the 'welcome' packet
-                    OS.Net.tempConn = conn;
-                    OS.Net.bindConnection(conn, null); // Null session initially
-                },
-
-                handleIncomingConnection: (conn) => {
-                    // Is this a group join request?
-                    if(conn.metadata?.type === 'join-group') {
-                        // Find my hosted group (simplified: assuming 1 active hosted group for demo, or match metadata)
-                        const hosted = Object.values(OS.State.sessions).find(s => s.isHost);
-                        if(hosted) {
-                            OS.Net.bindConnection(conn, hosted.id);
-                            // Send Welcome Packet
-                            conn.send({ t: 'sys', p: { action: 'welcome', name: hosted.name, id: hosted.id } });
-                            OS.UI.toast(`Peer ${conn.peer.substr(0,4)} joined group`, 'info');
-                            hosted.participants.push(conn.peer);
-                        }
-                    } else {
-                        // Standard P2P
-                        const sessionId = `p2p-${conn.peer}`;
-                        if(!OS.State.sessions[sessionId]) {
-                            OS.State.sessions[sessionId] = {
-                                id: sessionId, type: 'p2p', name: `Peer ${conn.peer.substr(0,4)}`,
-                                msgs: [], connections: [], participants: [conn.peer]
-                            };
-                        }
-                        OS.Net.bindConnection(conn, sessionId);
-                        OS.UI.renderSidebar();
-                        OS.UI.toast(`Incoming: ${conn.peer.substr(0,4)}`, 'success');
-                    }
-                },
-
-                bindConnection: (conn, sessionId) => {
-                    conn.on('data', (data) => OS.Net.route(data, conn.peer, sessionId));
-                    conn.on('close', () => OS.UI.toast(`Conn Lost: ${conn.peer.substr(0,4)}`, 'error'));
+                    c.on('data', async (d) => { 
+                        if(d.iv) { 
+                            const m = await OS.Security.dec(d); 
+                            if(m) OS.Net.route(m, c.peer); 
+                        } 
+                    });
                     
-                    if(sessionId && OS.State.sessions[sessionId]) {
-                        OS.State.sessions[sessionId].connections.push(conn);
-                    }
+                    c.on('close', () => {
+                        delete OS.State.connections[c.peer];
+                        OS.UI.removeContact(c.peer);
+                        OS.Apps.Logs.add(`Connection Closed: ${c.peer}`, 'NET');
+                        if(Object.keys(OS.State.connections).length === 0) {
+                            document.getElementById('connection-hub').classList.remove('hidden');
+                            document.getElementById('chat-input').setAttribute('disabled', true);
+                        }
+                    });
                 },
-
-                route: (pkg, senderId, sessionId) => {
-                    // Handle Handshakes
-                    if(pkg.t === 'sys' && pkg.p.action === 'welcome') {
-                        // We joined a group, create session
-                        const grpId = pkg.p.id;
-                        OS.State.sessions[grpId] = {
-                            id: grpId, type: 'group', name: pkg.p.name,
-                            msgs: [], connections: [OS.Net.tempConn], participants: [senderId] // sender is host
-                        };
-                        // Rebind temp connection
-                        OS.Net.tempConn = null;
-                        OS.UI.selectSession(grpId);
-                        OS.UI.closeHub();
-                        return;
-                    }
-
-                    const session = OS.State.sessions[sessionId];
-                    if(!session) return;
-
-                    // Relay Logic (Star Topology)
-                    if(session.isHost && session.type === 'group') {
-                        // Broadcast to others
-                        session.connections.forEach(c => {
-                            if(c.peer !== senderId && c.open) c.send(pkg);
+                startHeartbeat: () => {
+                    setInterval(() => {
+                        Object.values(OS.State.connections).forEach(c => {
+                            if(c.open) c.send({ t: 'ping' }); // Plaintext ping to keep NAT open
                         });
+                    }, 4000);
+                },
+                send: async (t, p) => {
+                    // Broadcast or Single Send based on Context
+                    if(OS.State.activeContext === 'broadcast') {
+                        Object.keys(OS.State.connections).forEach(pid => OS.Net.sendTo(pid, t, p));
+                    } else {
+                        OS.Net.sendTo(OS.State.activeContext, t, p);
                     }
-
-                    // Process Data
-                    if(pkg.t === 'text') OS.Apps.Chat.receive(pkg.p, senderId, session);
-                    if(pkg.t === 'chunk') OS.Net.File.recv(pkg.p, session);
-                    if(pkg.t === 'draw') OS.Apps.Canvas.drawRemote(pkg.p);
                 },
-
-                send: (type, payload) => {
-                    const s = OS.State.sessions[OS.State.activeSessionId];
-                    if(!s) return;
-                    
-                    const pkg = { t: type, p: payload };
-                    
-                    // Send to all open connections in this session
-                    s.connections.forEach(c => {
-                        if(c.open) c.send(pkg);
-                    });
+                sendTo: async (peerId, t, p) => {
+                    const conn = OS.State.connections[peerId];
+                    if(conn && conn.open) {
+                        try {
+                            conn.send(await OS.Security.enc({ t, p }));
+                        } catch(e) { OS.Apps.Logs.add("Send Error: " + e.message, 'ERR'); }
+                    }
                 },
-
+                route: (m, senderId) => {
+                    if(m.t === 'text') OS.Apps.Chat.receive(m.p, senderId);
+                    if(m.t === 'chunk') OS.Net.File.recv(m.p, senderId);
+                    if(m.t === 'draw') OS.Apps.Canvas.drawRemote(m.p);
+                    if(m.t === 'sys') OS.Apps.Chat.sys(m.p.msg, m.p.action);
+                    if(m.t === 'handshake') {
+                        OS.Apps.Logs.add(`Peer ${senderId} Fingerprint: ${m.p.fp}`, 'SEC');
+                    }
+                },
+                refreshIdentity: () => {
+                    if(OS.Net.peer) OS.Net.peer.destroy();
+                    OS.Net.init();
+                    OS.UI.toast('Identity Refreshed', 'success');
+                },
+                setCustomId: () => {
+                    const id = prompt("Enter Custom ID (e.g. pepeman):");
+                    if(id) {
+                        if(OS.Net.peer) OS.Net.peer.destroy();
+                        OS.Net.init(id);
+                        OS.UI.toast('Setting Custom ID...', 'info');
+                    }
+                },
                 copyId: () => {
-                    navigator.clipboard.writeText(OS.State.peerId);
-                    OS.UI.toast("ID Copied");
+                     const id = document.getElementById('hub-my-id').innerText;
+                     if(id) {
+                         navigator.clipboard.writeText(id);
+                         OS.UI.toast("ID Copied", "info");
+                     }
                 },
-
+                
                 File: {
                     bufs: {},
-                    handle: (inp) => {
-                        if(inp.files.length > 0) Array.from(inp.files).forEach(f => OS.Net.File.send(f));
+                    handle: (inp) => { 
+                        if(inp.files.length > 0) {
+                            Array.from(inp.files).forEach(f => OS.Net.File.send(f));
+                        }
                     },
                     send: (f) => {
                         const fid = Math.random().toString(36).substr(2);
                         const total = Math.ceil(f.size / OS.Config.CHUNK);
-                        const r = new FileReader();
-                        let idx = 0, off = 0;
-                        
                         OS.Apps.Chat.renderFile(f, 'local', fid);
+                        OS.Apps.Logs.add(`Sending File: ${f.name} (${f.size} bytes)`, 'NET');
                         
-                        r.onload = (e) => {
-                            OS.Net.send('chunk', { fid, idx, total, d: e.target.result, n: f.name, type: f.type });
-                            idx++; off += OS.Config.CHUNK;
-                            if(off < f.size) r.readAsDataURL(f.slice(off, off + OS.Config.CHUNK));
-                            else OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
+                        const reader = new FileReader();
+                        let offset = 0;
+                        let idx = 0;
+
+                        const readNext = () => {
+                            const slice = f.slice(offset, offset + OS.Config.CHUNK);
+                            reader.readAsDataURL(slice);
                         };
-                        r.readAsDataURL(f.slice(0, OS.Config.CHUNK));
-                    },
-                    recv: (p, session) => {
-                        if(!OS.Net.File.bufs[p.fid]) {
-                            // If receiving file in non-active chat
-                            if(session.id !== OS.State.activeSessionId) {
-                                OS.UI.toast(`Receiving file in ${session.name}`);
-                                return; // Simplified: Background file transfer logic omitted for brevity
+
+                        reader.onload = async (e) => {
+                            const data = e.target.result;
+                            await OS.Net.send('chunk', { fid, idx, total, d: data, n: f.name, type: f.type });
+                            
+                            offset += OS.Config.CHUNK;
+                            idx++;
+                            
+                            // Update Progress UI
+                            const el = document.getElementById(`f-${fid}`);
+                            if(el) el.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending... ${Math.round((idx/total)*100)}%`;
+
+                            if(offset < f.size) {
+                                // Backpressure Hack: Small delay to let buffer drain
+                                setTimeout(readNext, 10); 
+                            } else {
+                                OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
+                                OS.Apps.Logs.add(`File Sent: ${f.name}`, 'NET');
                             }
-                            OS.Net.File.bufs[p.fid] = { c: [], n: 0 };
-                            OS.Apps.Chat.renderFile({name:p.n}, 'remote', p.fid);
+                        };
+                        readNext();
+                    },
+                    recv: (p, senderId) => {
+                        if(!OS.Net.File.bufs[p.fid]) {
+                            OS.Net.File.bufs[p.fid] = { c: [], n: 0, ui: OS.Apps.Chat.renderFile({name:p.n}, 'remote', p.fid, senderId) };
                         }
                         const b = OS.Net.File.bufs[p.fid];
-                        b.c[p.idx] = p.d; b.n++;
+                        b.c[p.idx] = p.d; 
+                        b.n++;
+                        
+                        // Update UI
+                        const el = document.getElementById(`f-${p.fid}`);
+                        if(el) el.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Receiving... ${Math.round((b.n/p.total)*100)}%`;
+
                         if(b.n === p.total) {
                             const blobs = b.c.map(c => {
                                 const s = atob(c.split(',')[1]);
@@ -852,8 +896,10 @@
                                 return a;
                             });
                             const url = URL.createObjectURL(new Blob(blobs, { type: p.type }));
-                            OS.Apps.Chat.finalize(p.fid, url, p.type);
+                            OS.Apps.Chat.finalize(p.fid, url, p.type, p.type.startsWith('audio/')); 
                             delete OS.Net.File.bufs[p.fid];
+                            OS.Apps.Logs.add(`File Received: ${p.n}`, 'NET');
+                            OS.UI.sound('ding');
                         }
                     }
                 }
@@ -862,122 +908,248 @@
             // --- APPS ---
             Apps: {
                 Chat: {
-                    render: (txt, side, session) => {
-                        // Store Msg
-                        if(session) {
-                            session.msgs.push({ side, txt, type: 'text', time: Date.now() });
-                            OS.Storage.saveSession(session);
-                        }
-                        
-                        // Only render if active
-                        if(OS.State.activeSessionId === session?.id) {
-                            const f = document.getElementById('chat-feed');
-                            const d = document.createElement('div');
-                            d.className = `msg ${side}`;
-                            let content = DOMPurify.sanitize(txt).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-                            d.innerHTML = `<div class="bubble">${content}<div class="msg-meta">${new Date().toLocaleTimeString()}</div></div>`;
-                            f.appendChild(d);
-                            OS.Apps.Chat.scroll();
-                        } else {
-                            OS.UI.renderSidebar(); // Update badges
+                    clear: () => {
+                        OS.State.chats[OS.State.activeContext] = [];
+                        OS.Apps.Chat.refreshFeed();
+                        OS.Apps.Logs.add("User cleared chat history.", 'UI');
+                    },
+                    nuke: () => {
+                        if(confirm("NUKE: This will overwrite memory and reload. Continue?")) {
+                            document.body.innerHTML = "<div style='background:black;color:red;height:100vh;display:flex;justify-content:center;align-items:center;font-family:monospace;font-size:2rem;'>SYSTEM PURGE INITIATED...</div>";
+                            setTimeout(() => window.location.reload(), 1000);
                         }
                     },
-                    receive: (txt, sender, session) => {
-                        const side = 'remote';
-                        OS.Apps.Chat.render(txt, side, session);
+                    toggleEphemeral: () => {
+                        OS.State.ephemeral = !OS.State.ephemeral;
+                        const btn = document.getElementById('ephemeral-btn');
+                        btn.style.color = OS.State.ephemeral ? 'var(--danger)' : 'var(--text-muted)';
+                        OS.UI.toast(`Ephemeral Mode: ${OS.State.ephemeral ? 'ON' : 'OFF'}`, 'info');
+                    },
+                    switchContext: (ctx) => {
+                        OS.State.activeContext = ctx;
+                        document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+                        
+                        if(ctx === 'broadcast') {
+                            document.querySelector('.contact-item.broadcast').classList.add('active');
+                            document.getElementById('chat-title-text').innerText = "Broadcast Channel";
+                        } else {
+                            const el = document.getElementById(`contact-${ctx}`);
+                            if(el) {
+                                el.classList.add('active');
+                                el.classList.remove('has-unread'); // Clear unread
+                            }
+                            document.getElementById('chat-title-text').innerText = `Secure: ${ctx.substring(0,6)}...`;
+                        }
+                        
+                        OS.Apps.Chat.refreshFeed();
+                        if(window.innerWidth < 768) OS.UI.toggleSidebar(); // Auto close sidebar on mobile
+                    },
+                    refreshFeed: () => {
+                        const f = document.getElementById('chat-feed');
+                        f.innerHTML = '';
+                        // Re-render header
+                        f.innerHTML = `<div style="text-align:center; margin-top:50px; opacity:0.5;">
+                            <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
+                            <p>End-to-End Encrypted Mesh.<br>No Server Storage.</p>
+                        </div>`;
+                        
+                        const history = OS.State.chats[OS.State.activeContext] || [];
+                        history.forEach(msg => {
+                            const d = document.createElement('div');
+                            d.className = `msg ${msg.side}`;
+                            d.innerHTML = msg.html;
+                            f.appendChild(d);
+                        });
+                        OS.Apps.Chat.scrollToBottom();
                     },
                     send: () => {
                         const el = document.getElementById('chat-input');
                         const txt = el.value.trim();
-                        if(!txt || !OS.State.activeSessionId) return;
+                        if(!txt) return;
                         
                         OS.Net.send('text', txt);
-                        const s = OS.State.sessions[OS.State.activeSessionId];
-                        OS.Apps.Chat.render(txt, 'local', s);
-                        el.value = ''; el.focus();
+                        OS.Apps.Chat.storeAndRender(txt, 'local', 'Me');
+                        el.value = '';
+                        el.focus();
                     },
-                    renderFile: (f, side, id) => {
-                        const feed = document.getElementById('chat-feed');
+                    receive: (txt, senderId) => {
+                        // Store in specific history
+                        const ctx = OS.State.activeContext === 'broadcast' ? 'broadcast' : senderId;
+                        
+                        // Check if active
+                        if(OS.State.activeContext === senderId || OS.State.activeContext === 'broadcast') {
+                            OS.Apps.Chat.storeAndRender(txt, 'remote', senderId);
+                            OS.UI.sound('ding');
+                        } else {
+                            // Background store
+                            OS.Apps.Chat.storeBackground(txt, 'remote', senderId);
+                            OS.UI.markUnread(senderId);
+                            OS.UI.sound('ding');
+                        }
+                    },
+                    storeAndRender: (txt, side, name) => {
+                        let content = DOMPurify.sanitize(txt);
+                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                        content = content.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+                        
+                        const html = `<div class="bubble">${content}<div class="msg-meta">${name} • ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div></div>`;
+                        
+                        // Add to history
+                        if(!OS.State.chats[OS.State.activeContext]) OS.State.chats[OS.State.activeContext] = [];
+                        OS.State.chats[OS.State.activeContext].push({ side, html });
+                        
+                        // Render
+                        const f = document.getElementById('chat-feed');
                         const d = document.createElement('div');
                         d.className = `msg ${side}`;
-                        d.innerHTML = `<div class="bubble" id="f-${id}"><i class="fas fa-spinner fa-spin"></i> ${f.name}</div>`;
-                        feed.appendChild(d);
-                        OS.Apps.Chat.scroll();
+                        d.innerHTML = html;
+                        f.appendChild(d);
+                        OS.Apps.Chat.scrollToBottom();
+                        
+                        if(OS.State.ephemeral) {
+                            setTimeout(() => {
+                                d.innerHTML = "<i>Message Expired</i>";
+                                setTimeout(() => d.remove(), 1000);
+                            }, 30000);
+                        }
                     },
-                    finalize: (id, url, type) => {
-                        const el = document.getElementById(`f-${id}`);
-                        if(!el) return;
-                        if(type.startsWith('image/')) el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px;" onclick="OS.UI.openMediaViewer('${url}')">`;
-                        else el.innerHTML = `<a href="${url}" download class="menu-item"><i class="fas fa-download"></i> Download File</a>`;
+                    storeBackground: (txt, side, peerId) => {
+                        let content = DOMPurify.sanitize(txt);
+                        const html = `<div class="bubble">${content}<div class="msg-meta">${peerId.substring(0,6)} • ${new Date().toLocaleTimeString()}</div></div>`;
+                        if(!OS.State.chats[peerId]) OS.State.chats[peerId] = [];
+                        OS.State.chats[peerId].push({ side, html });
                     },
-                    scroll: () => {
+                    scrollToBottom: () => {
                         const f = document.getElementById('chat-feed');
                         f.scrollTop = f.scrollHeight;
                     },
-                    toggleEphemeral: () => {
-                        OS.State.ephemeral = !OS.State.ephemeral;
-                        OS.UI.toast(`Ephemeral: ${OS.State.ephemeral}`);
-                        document.getElementById('ephemeral-btn').style.color = OS.State.ephemeral ? 'red' : 'inherit';
+                    sys: (msg, action) => {
+                        const f = document.getElementById('chat-feed');
+                        const d = document.createElement('div');
+                        d.className = 'msg sys';
+                        d.innerHTML = `<div class="bubble">${msg}</div>`;
+                        if(action === 'canvas') d.onclick = () => OS.Apps.Canvas.open();
+                        f.appendChild(d);
+                        OS.Apps.Chat.scrollToBottom();
+                    },
+                    renderFile: (f, s, id, senderName='Me') => {
+                        const html = `<div id="f-${id}"><i class="fas fa-spinner fa-spin"></i> ${f.name}</div><div class="msg-meta">${senderName}</div>`;
+                        const d = document.createElement('div');
+                        d.className = `msg ${s}`;
+                        d.innerHTML = `<div class="bubble">${html}</div>`;
+                        document.getElementById('chat-feed').appendChild(d);
+                        OS.Apps.Chat.scrollToBottom();
+                        return id;
+                    },
+                    finalize: (id, url, type, autoPlay = false) => {
+                        const el = document.getElementById(`f-${id}`);
+                        if(!el) return;
+                        if(type.startsWith('audio/')) {
+                            const wid = `w-${id}`;
+                            el.innerHTML = `<div id="${wid}" style="width:200px"></div><button class="btn-icon" onclick="OS.Apps.Chat.play('${wid}')"><i class="fas fa-play"></i></button>`;
+                            requestAnimationFrame(() => {
+                                setTimeout(() => {
+                                    OS.Apps.Chat.waves[wid] = WaveSurfer.create({ container: `#${wid}`, waveColor: '#0a84ff', height: 40, url });
+                                    if(autoPlay) OS.Apps.Chat.waves[wid].on('ready', () => OS.Apps.Chat.waves[wid].play());
+                                }, 100);
+                            });
+                        } else if(type.startsWith('image/')) {
+                            el.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:8px; cursor:pointer;" onclick="OS.UI.openMediaViewer('${url}')">`;
+                        } else {
+                            el.innerHTML = `<a href="${url}" download class="menu-btn" style="font-size:0.9rem"><i class="fas fa-download"></i> Download</a>`;
+                        }
+                        OS.Apps.Chat.scrollToBottom();
+                    },
+                    waves: {},
+                    play: (id) => OS.Apps.Chat.waves[id]?.playPause()
+                },
+
+                Logs: {
+                    history: [],
+                    open: () => document.getElementById('logs-app').classList.add('active'),
+                    add: (msg, type='SYS') => {
+                        const out = document.getElementById('log-out');
+                        const d = document.createElement('div');
+                        const time = new Date().toLocaleTimeString();
+                        const color = type === 'ERR' ? '#ff453a' : type === 'SEC' ? '#ffd60a' : type === 'NET' ? '#3b82f6' : '#0f0';
+                        const entry = `[${time}] [${type}] ${msg}`;
+                        d.innerHTML = `<span style="color:${color}">${entry}</span>`;
+                        out.appendChild(d);
+                        out.scrollTop = out.scrollHeight;
+                        OS.Apps.Logs.history.push(entry);
+                        console.log(entry);
+                    },
+                    download: () => {
+                        const blob = new Blob([OS.Apps.Logs.history.join('\n')], {type: 'text/plain'});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `pepetalk-logs-${Date.now()}.txt`;
+                        a.click();
                     }
                 },
-                
+
                 Canvas: {
-                    ctx: null, color: '#3b82f6', isDrawing: false, last: {x:0,y:0},
+                    ctx: null, drawing: false, color: '#3b82f6', last: {x:0, y:0},
                     open: () => {
                         document.getElementById('canvas-app').classList.add('active');
+                        document.getElementById('attach-menu').classList.remove('open');
+                        OS.Apps.Canvas.init();
+                        OS.Net.send('sys', { msg: 'User opened the Whiteboard', action: 'canvas' });
+                    },
+                    close: () => document.getElementById('canvas-app').classList.remove('active'),
+                    toggleGhost: () => document.getElementById('canvas-app').classList.toggle('ghost'),
+                    init: () => {
                         const c = document.getElementById('wb-canvas');
                         c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight;
                         OS.Apps.Canvas.ctx = c.getContext('2d');
-                        OS.Apps.Canvas.initEvents(c);
-                    },
-                    close: () => document.getElementById('canvas-app').classList.remove('active'),
-                    initEvents: (c) => {
+                        
                         const getPos = (e) => {
                             const r = c.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
                             return { x: t.clientX - r.left, y: t.clientY - r.top };
                         };
-                        const draw = (e) => {
-                            if(!OS.Apps.Canvas.isDrawing) return;
+                        
+                        const start = (e) => { OS.Apps.Canvas.drawing = true; OS.Apps.Canvas.last = getPos(e); };
+                        const move = (e) => {
+                            if(!OS.Apps.Canvas.drawing) return;
                             e.preventDefault();
                             const p = getPos(e);
-                            OS.Apps.Canvas.renderLine(OS.Apps.Canvas.last, p, OS.Apps.Canvas.color);
+                            OS.Apps.Canvas.draw(OS.Apps.Canvas.last, p, OS.Apps.Canvas.color);
                             OS.Net.send('draw', { x1: OS.Apps.Canvas.last.x/c.width, y1: OS.Apps.Canvas.last.y/c.height, x2: p.x/c.width, y2: p.y/c.height, c: OS.Apps.Canvas.color });
                             OS.Apps.Canvas.last = p;
                         };
-                        c.onmousedown = (e) => { OS.Apps.Canvas.isDrawing=true; OS.Apps.Canvas.last=getPos(e); };
-                        c.onmousemove = draw;
-                        c.onmouseup = () => OS.Apps.Canvas.isDrawing=false;
-                        c.ontouchstart = (e) => { OS.Apps.Canvas.isDrawing=true; OS.Apps.Canvas.last=getPos(e); };
-                        c.ontouchmove = draw;
-                        c.ontouchend = () => OS.Apps.Canvas.isDrawing=false;
+                        const end = () => OS.Apps.Canvas.drawing = false;
+                        
+                        c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
+                        c.addEventListener('touchstart', start); c.addEventListener('touchmove', move); c.addEventListener('touchend', end);
                     },
-                    renderLine: (p1, p2, c) => {
+                    draw: (p1, p2, c) => {
                         const ctx = OS.Apps.Canvas.ctx;
-                        ctx.beginPath(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.lineCap = 'round';
-                        ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
                     },
                     drawRemote: (d) => {
-                        if(!document.getElementById('canvas-app').classList.contains('active')) return;
                         const c = document.getElementById('wb-canvas');
-                        OS.Apps.Canvas.renderLine({x: d.x1*c.width, y: d.y1*c.height}, {x: d.x2*c.width, y: d.y2*c.height}, d.c);
-                    },
-                    save: () => {
-                        document.getElementById('wb-canvas').toBlob(b => {
-                            OS.Net.File.send(new File([b], "sketch.png", {type:"image/png"}));
-                            OS.Apps.Canvas.close();
-                        });
+                        OS.Apps.Canvas.draw({x: d.x1*c.width, y: d.y1*c.height}, {x: d.x2*c.width, y: d.y2*c.height}, d.c);
                     },
                     setColor: (c, el) => {
                         OS.Apps.Canvas.color = c;
-                        document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+                        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
                         el.classList.add('active');
                     },
                     clear: () => {
                         const c = document.getElementById('wb-canvas');
                         OS.Apps.Canvas.ctx.clearRect(0,0,c.width,c.height);
                     },
-                    toggleGhost: () => document.getElementById('canvas-app').classList.toggle('ghost')
+                    save: () => {
+                        const c = document.getElementById('wb-canvas');
+                        c.toBlob(blob => {
+                            const file = new File([blob], "drawing.png", { type: "image/png" });
+                            OS.Net.File.send(file);
+                            OS.Apps.Canvas.close();
+                        });
+                    }
                 },
 
                 Telegraph: {
@@ -985,13 +1157,10 @@
                     dict: { '.-':'A', '-...':'B', '-.-.':'C', '-..':'D', '.':'E', '..-.':'F', '--.':'G', '....':'H', '..':'I', '.---':'J', '-.-':'K', '.-..':'L', '--':'M', '-.':'N', '---':'O', '.--.':'P', '--.-':'Q', '.-.':'R', '...':'S', '-':'T', '..-':'U', '...-':'V', '.--':'W', '-..-':'X', '-.--':'Y', '--..':'Z' },
                     open: () => {
                         document.getElementById('telegraph-app').classList.add('active');
-                        const key = document.getElementById('tele-key');
-                        key.onmousedown = OS.Apps.Telegraph.down;
-                        key.onmouseup = OS.Apps.Telegraph.up;
-                        key.ontouchstart = (e) => { e.preventDefault(); OS.Apps.Telegraph.down(); };
-                        key.ontouchend = (e) => { e.preventDefault(); OS.Apps.Telegraph.up(); };
+                        document.getElementById('attach-menu').classList.remove('open');
                     },
                     close: () => document.getElementById('telegraph-app').classList.remove('active'),
+                    toggleInfo: () => OS.UI.toast("Morse Code Reference not loaded.", "info"),
                     initAudio: () => {
                         if(OS.Apps.Telegraph.ctx) return;
                         OS.Apps.Telegraph.ctx = new AudioContext();
@@ -1010,300 +1179,324 @@
                         t.osc.frequency.value = 600; t.osc.start();
                         t.startT = Date.now();
                         document.getElementById('tele-key').classList.add('pressed');
-                        
-                        // Space logic
-                        if(t.lastUp > 0 && Date.now() - t.lastUp > 400) t.seq += " ";
+                        const diff = Date.now() - t.lastUp;
+                        if(t.lastUp > 0) { if(diff > 1000) t.seq += " / "; else if(diff > 400) t.seq += " "; }
                     },
                     up: () => {
                         const t = OS.Apps.Telegraph;
-                        if(t.osc) { t.osc.stop(); t.osc = null; }
+                        if(!t.osc) return;
+                        t.osc.stop(); t.osc = null;
                         document.getElementById('tele-key').classList.remove('pressed');
                         const dur = Date.now() - t.startT;
-                        t.seq += dur < 150 ? "." : "-";
+                        t.seq += dur < 200 ? "." : "-";
                         document.getElementById('tele-code').innerText = t.seq;
                         t.lastUp = Date.now();
-                        
-                        // Transcribe
-                        const txt = t.seq.split(' ').map(w => w.split('').reduce((acc, c, i, a) => {
-                           // Simple parser would go here, simplified for brevity
-                           return acc; 
-                        }, '')).join(' '); // Real implementation uses the dict lookup reversely or char by char
-                        // Since dict is Char->Morse, we need Morse->Char
-                        const revDict = Object.fromEntries(Object.entries(t.dict).map(a => a.reverse()));
-                        const decoded = t.seq.split(' ').map(code => revDict[code] || '').join('');
-                        document.getElementById('tele-text').innerText = decoded;
+                        t.transcribe();
+                    },
+                    transcribe: () => {
+                        const t = OS.Apps.Telegraph;
+                        const words = t.seq.split(' / ');
+                        const text = words.map(w => w.split(' ').map(c => t.dict[c] || '?').join('')).join(' ');
+                        document.getElementById('tele-text').innerText = text;
                     },
                     send: () => {
                         const t = OS.Apps.Telegraph;
-                        if(t.rec && t.rec.state === 'recording') {
-                            t.rec.stop();
-                            t.rec.onstop = () => {
-                                const b = new Blob(t.chunks, {type:'audio/webm'});
-                                OS.Net.File.send(new File([b], "morse.webm", {type:'audio/webm'}));
-                                OS.Net.send('text', `[MORSE] ${t.seq} = ${document.getElementById('tele-text').innerText}`);
-                                t.clear();
-                            };
-                        }
+                        if(!t.rec) return;
+                        t.rec.stop();
+                        t.rec.onstop = () => {
+                            const b = new Blob(t.chunks, { type: 'audio/webm' });
+                            OS.Net.File.send(new File([b], "telegraph.webm", { type: 'audio/webm' }));
+                            const translation = document.getElementById('tele-text').innerText;
+                            if(t.seq) {
+                                let msg = `<div class="spoiler-box"><div style="font-family:monospace; color:var(--primary)">${t.seq}</div><div style="font-weight:bold; color:var(--accent)">${translation}</div></div>`;
+                                OS.Net.send('text', msg);
+                                OS.Apps.Chat.storeAndRender(msg, 'local', 'Me');
+                            }
+                            t.clear();
+                        };
                     },
                     clear: () => {
-                        OS.Apps.Telegraph.seq = "";
-                        OS.Apps.Telegraph.chunks = [];
+                        const t = OS.Apps.Telegraph;
+                        t.chunks = []; t.seq = ""; t.lastUp = 0;
                         document.getElementById('tele-code').innerText = "";
                         document.getElementById('tele-text').innerText = "";
-                        if(OS.Apps.Telegraph.rec) OS.Apps.Telegraph.rec.start();
-                    }
-                },
-                
-                Video: {
-                    stream: null,
-                    open: async () => {
-                        document.getElementById('video-app').classList.add('active');
-                        try {
-                            const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                            OS.Apps.Video.stream = s;
-                            document.getElementById('local-pip').srcObject = s;
-                            // Call active peer connection
-                            const sess = OS.State.sessions[OS.State.activeSessionId];
-                            if(sess && sess.type === 'p2p') {
-                                const peerId = sess.participants[0];
-                                const call = OS.Net.peer.call(peerId, s);
-                                OS.Apps.Video.handle(call);
-                            } else {
-                                OS.UI.toast("Video only available in 1:1 for now", "warning");
-                            }
-                        } catch(e) { OS.UI.toast("Cam Error"); }
-                    },
-                    incoming: (call) => {
-                        if(confirm("Incoming Video Call")) {
-                            document.getElementById('video-app').classList.add('active');
-                             navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => {
-                                 OS.Apps.Video.stream = s;
-                                 document.getElementById('local-pip').srcObject = s;
-                                 call.answer(s);
-                                 OS.Apps.Video.handle(call);
-                             });
-                        }
-                    },
-                    handle: (call) => {
-                        call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
-                        call.on('close', OS.Apps.Video.end);
-                        OS.Apps.Video.currentCall = call;
-                    },
-                    end: () => {
-                        if(OS.Apps.Video.currentCall) OS.Apps.Video.currentCall.close();
-                        if(OS.Apps.Video.stream) OS.Apps.Video.stream.getTracks().forEach(t=>t.stop());
-                        document.getElementById('video-app').classList.remove('active');
-                    },
-                    toggleMic: () => {
-                         const t = OS.Apps.Video.stream.getAudioTracks()[0];
-                         t.enabled = !t.enabled;
-                         OS.UI.toast(t.enabled ? "Mic On" : "Mic Off");
-                    },
-                    toggleCam: () => {
-                         const t = OS.Apps.Video.stream.getVideoTracks()[0];
-                         t.enabled = !t.enabled;
-                         OS.UI.toast(t.enabled ? "Cam On" : "Cam Off");
-                    },
-                    close: () => OS.Apps.Video.end(),
-                    shareScreen: async () => {
-                        const s = await navigator.mediaDevices.getDisplayMedia({video:true});
-                        const t = s.getVideoTracks()[0];
-                        const sender = OS.Apps.Video.currentCall.peerConnection.getSenders().find(s=>s.track.kind==='video');
-                        sender.replaceTrack(t);
-                    }
-                },
-                
-                Audio: {
-                    rec: null, chunks: [],
-                    start: async () => {
-                        const s = await navigator.mediaDevices.getUserMedia({audio:true});
-                        document.getElementById('audio-bar').classList.add('active');
-                        OS.Apps.Audio.rec = new MediaRecorder(s);
-                        OS.Apps.Audio.chunks = [];
-                        OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
-                        OS.Apps.Audio.rec.start();
-                        OS.Apps.Audio.vis(s);
-                    },
-                    vis: (s) => {
-                        const ctx = new AudioContext();
-                        const src = ctx.createMediaStreamSource(s);
-                        const an = ctx.createAnalyser();
-                        src.connect(an);
-                        const data = new Uint8Array(an.frequencyBinCount);
-                        const canvas = document.getElementById('audio-viz');
-                        const c = canvas.getContext('2d');
-                        const draw = () => {
-                            if(!document.getElementById('audio-bar').classList.contains('active')) return;
-                            requestAnimationFrame(draw);
-                            an.getByteFrequencyData(data);
-                            c.clearRect(0,0,canvas.width,canvas.height);
-                            c.fillStyle = '#ef4444';
-                            const w = canvas.width/20;
-                            for(let i=0; i<20; i++) {
-                                const h = (data[i*2]/255)*canvas.height;
-                                c.fillRect(i*w, canvas.height-h, w-1, h);
-                            }
-                        };
-                        draw();
-                    },
-                    send: () => {
-                        if(OS.Apps.Audio.rec) {
-                            OS.Apps.Audio.rec.stop();
-                            OS.Apps.Audio.rec.onstop = () => {
-                                const b = new Blob(OS.Apps.Audio.chunks, {type:'audio/webm'});
-                                OS.Net.File.send(new File([b], "voice.webm", {type:'audio/webm'}));
-                                OS.Apps.Audio.cancel();
-                            };
-                        }
-                    },
-                    cancel: () => {
-                        if(OS.Apps.Audio.rec) OS.Apps.Audio.rec.stream.getTracks().forEach(t=>t.stop());
-                        document.getElementById('audio-bar').classList.remove('active');
+                        if(t.ctx) { t.ctx.close(); t.ctx = null; }
                     }
                 },
 
                 Keyboard: {
+                    layers: { abc: "QWERTYUIOPASDFGHJKLZXCVBNM", num: "1234567890@#$%&-+()" },
+                    currentLayer: 'abc', caps: false,
                     toggle: () => {
-                        document.getElementById('secure-kb').classList.toggle('open');
-                        const inp = document.getElementById('chat-input');
-                        if(document.getElementById('secure-kb').classList.contains('open')) {
-                            inp.setAttribute('readonly', true);
-                            OS.Apps.Keyboard.render();
-                        } else {
-                            inp.removeAttribute('readonly');
-                        }
+                        const kb = document.getElementById('secure-kb');
+                        const input = document.getElementById('chat-input');
+                        kb.classList.add('open');
+                        input.setAttribute('readonly', true);
+                        OS.Apps.Keyboard.render();
                     },
-                    close: () => OS.Apps.Keyboard.toggle(),
+                    close: () => {
+                        document.getElementById('secure-kb').classList.remove('open');
+                        document.getElementById('chat-input').removeAttribute('readonly');
+                    },
                     render: () => {
-                        const keys = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890".split('').sort(()=>0.5-Math.random());
-                        const g = document.getElementById('kb-keys');
-                        g.innerHTML = '';
-                        keys.forEach(k => {
-                            const b = document.createElement('div');
-                            b.className = 'kb-key'; b.innerText = k;
-                            b.onclick = () => OS.Apps.Keyboard.type(k);
-                            g.appendChild(b);
+                        const grid = document.getElementById('kb-keys');
+                        grid.innerHTML = '';
+                        let chars = OS.Apps.Keyboard.layers[OS.Apps.Keyboard.currentLayer].split('');
+                        if(!OS.Apps.Keyboard.caps && OS.Apps.Keyboard.currentLayer === 'abc') chars = chars.map(c => c.toLowerCase());
+                        chars = chars.sort(() => 0.5 - Math.random()); // Scramble
+                        chars.forEach(char => {
+                            const k = document.createElement('div');
+                            k.className = 'kb-key'; k.innerText = char;
+                            k.onclick = () => OS.Apps.Keyboard.type(char);
+                            grid.appendChild(k);
                         });
                     },
-                    type: (k) => {
-                        const i = document.getElementById('chat-input');
-                        i.value += k;
-                        document.getElementById('kb-preview').innerText = i.value;
+                    type: (char) => {
+                        const input = document.getElementById('chat-input');
+                        input.value += char;
+                        document.getElementById('kb-preview').innerText = input.value;
+                        OS.Apps.Keyboard.render();
+                        OS.UI.sound('key');
                     },
                     backspace: () => {
-                        const i = document.getElementById('chat-input');
-                        i.value = i.value.slice(0,-1);
-                        document.getElementById('kb-preview').innerText = i.value;
+                        const input = document.getElementById('chat-input');
+                        input.value = input.value.slice(0, -1);
+                        document.getElementById('kb-preview').innerText = input.value;
+                        OS.Apps.Keyboard.render();
                     },
-                    enter: () => OS.Apps.Chat.send(),
-                    switchLayer: () => OS.Apps.Keyboard.render(), // Reshuffle for security
-                    toggleCaps: () => {} 
+                    enter: () => { OS.Apps.Chat.send(); OS.Apps.Keyboard.render(); },
+                    move: (dir) => {},
+                    switchLayer: () => {
+                        OS.Apps.Keyboard.currentLayer = OS.Apps.Keyboard.currentLayer === 'abc' ? 'num' : 'abc';
+                        OS.Apps.Keyboard.render();
+                    },
+                    toggleCaps: () => {
+                        OS.Apps.Keyboard.caps = !OS.Apps.Keyboard.caps;
+                        OS.Apps.Keyboard.render();
+                    }
                 },
 
-                Logs: {
-                    open: () => document.getElementById('logs-app').classList.add('active'),
-                    add: (msg) => {
-                        const d = document.createElement('div');
-                        d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-                        document.getElementById('log-out').appendChild(d);
+                Audio: {
+                    rec: null, chunks: [], ctx: null, timer: null,
+                    start: async () => {
+                        try {
+                            OS.UI.sound('ding');
+                            setTimeout(async () => {
+                                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                document.getElementById('audio-bar').classList.add('active');
+                                OS.Apps.Audio.ctx = new AudioContext();
+                                const src = OS.Apps.Audio.ctx.createMediaStreamSource(s);
+                                const an = OS.Apps.Audio.ctx.createAnalyser();
+                                src.connect(an);
+                                
+                                const cvs = document.getElementById('audio-viz');
+                                const c = cvs.getContext('2d');
+                                const d = new Uint8Array(an.frequencyBinCount);
+                                const draw = () => {
+                                    if(!document.getElementById('audio-bar').classList.contains('active')) return;
+                                    requestAnimationFrame(draw);
+                                    an.getByteFrequencyData(d);
+                                    c.clearRect(0,0,cvs.width,cvs.height);
+                                    c.fillStyle = '#3b82f6';
+                                    const w = cvs.width/30;
+                                    for(let i=0; i<30; i++) {
+                                        const h = (d[i]/255)*cvs.height;
+                                        c.fillRect(i*w, cvs.height-h, w-2, h);
+                                    }
+                                };
+                                draw();
+
+                                OS.Apps.Audio.rec = new MediaRecorder(s);
+                                OS.Apps.Audio.chunks = [];
+                                OS.Apps.Audio.rec.ondataavailable = e => OS.Apps.Audio.chunks.push(e.data);
+                                OS.Apps.Audio.rec.start();
+                                
+                                let sec = 0;
+                                OS.Apps.Audio.timer = setInterval(() => {
+                                    sec++;
+                                    document.getElementById('rec-timer').innerText = `00:${sec.toString().padStart(2,'0')}`;
+                                }, 1000);
+                            }, 300);
+                        } catch(e) { OS.Apps.Logs.add("Mic Error: " + e.message, 'ERR'); }
+                    },
+                    send: () => {
+                        if(!OS.Apps.Audio.rec) return;
+                        OS.Apps.Audio.rec.onstop = () => {
+                            const b = new Blob(OS.Apps.Audio.chunks, { type: 'audio/webm' });
+                            const file = new File([b], "voice.webm", { type: 'audio/webm' });
+                            OS.Net.File.send(file);
+                            OS.Apps.Audio.cancel();
+                        };
+                        OS.Apps.Audio.rec.stop();
+                    },
+                    cancel: () => {
+                        if(OS.Apps.Audio.rec) {
+                            OS.Apps.Audio.rec.stream.getTracks().forEach(t => t.stop());
+                            OS.Apps.Audio.rec = null;
+                        }
+                        if(OS.Apps.Audio.timer) clearInterval(OS.Apps.Audio.timer);
+                        document.getElementById('rec-timer').innerText = "00:00";
+                        document.getElementById('audio-bar').classList.remove('active');
+                    }
+                },
+
+                Video: {
+                    stream: null,
+                    open: () => {
+                        document.getElementById('video-app').classList.add('active');
+                        document.getElementById('attach-menu').classList.remove('open');
+                        OS.Apps.Video.start();
+                    },
+                    close: () => {
+                        document.getElementById('video-app').classList.remove('active');
+                        OS.Apps.Video.end();
+                    },
+                    start: async () => {
+                        try {
+                            const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                            document.getElementById('local-pip').srcObject = s;
+                            OS.Apps.Video.stream = s;
+                            // Call everyone in broadcast or specific peer
+                            if(OS.State.activeContext === 'broadcast') {
+                                Object.keys(OS.State.connections).forEach(pid => {
+                                    const call = OS.Net.peer.call(pid, s);
+                                    OS.Apps.Video.handle(call);
+                                });
+                            } else {
+                                const call = OS.Net.peer.call(OS.State.activeContext, s);
+                                OS.Apps.Video.handle(call);
+                            }
+                        } catch(e) { console.error(e); }
+                    },
+                    incoming: (call) => {
+                        document.getElementById('video-app').classList.add('active');
+                        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
+                            document.getElementById('local-pip').srcObject = s;
+                            OS.Apps.Video.stream = s;
+                            call.answer(s);
+                            OS.Apps.Video.handle(call);
+                        });
+                    },
+                    handle: (call) => {
+                        OS.State.call = call;
+                        call.on('stream', s => document.getElementById('remote-video').srcObject = s);
+                        call.on('close', OS.Apps.Video.end);
+                    },
+                    end: () => {
+                        if(OS.State.call) OS.State.call.close();
+                        if(OS.Apps.Video.stream) OS.Apps.Video.stream.getTracks().forEach(t => t.stop());
+                        document.getElementById('video-app').classList.remove('active');
+                    },
+                    toggleMic: () => {
+                        const t = OS.Apps.Video.stream.getAudioTracks()[0];
+                        t.enabled = !t.enabled;
+                    },
+                    toggleCam: () => {
+                        const t = OS.Apps.Video.stream.getVideoTracks()[0];
+                        t.enabled = !t.enabled;
+                    },
+                    shareScreen: async () => {
+                        try {
+                            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                            const videoTrack = stream.getVideoTracks()[0];
+                            const sender = OS.State.call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                            sender.replaceTrack(videoTrack);
+                            videoTrack.onended = () => {
+                                OS.Apps.Video.stream.getVideoTracks()[0].enabled = true;
+                                sender.replaceTrack(OS.Apps.Video.stream.getVideoTracks()[0]);
+                            };
+                        } catch(e) { console.error(e); }
                     }
                 }
             },
 
-            // --- UI HELPERS ---
             UI: {
-                showHub: () => document.getElementById('connection-hub').classList.remove('hidden'),
-                closeHub: () => document.getElementById('connection-hub').classList.add('hidden'),
-                toggleSidebar: () => document.getElementById('sidebar').classList.toggle('open'),
-                toggleAttach: () => document.getElementById('attach-menu').classList.toggle('open'),
-                
-                tab: (t) => {
-                    document.querySelectorAll('.hub-tab').forEach(e => e.classList.remove('active'));
-                    document.querySelectorAll('.hub-content').forEach(e => e.classList.remove('active'));
-                    event.target.classList.add('active');
-                    document.getElementById(`tab-${t}`).classList.add('active');
-                },
-
-                renderSidebar: () => {
-                    const l = document.getElementById('session-list');
-                    l.innerHTML = '';
-                    Object.values(OS.State.sessions).forEach(s => {
-                        const el = document.createElement('div');
-                        el.className = `session-item ${OS.State.activeSessionId === s.id ? 'active' : ''}`;
-                        el.onclick = () => OS.UI.selectSession(s.id);
-                        
-                        // Badge logic
-                        const icon = s.type === 'group' ? '<i class="fas fa-users"></i>' : '<i class="fas fa-user"></i>';
-                        const cls = s.type === 'group' ? 'avatar group' : 'avatar';
-                        
-                        el.innerHTML = `
-                            <div class="${cls}">
-                                ${icon}
-                                <div class="status-dot ${s.connections.length > 0 ? 'online' : ''}"></div>
-                            </div>
-                            <div class="session-info">
-                                <div class="session-name">${s.name}</div>
-                                <div class="session-meta">
-                                    <span>${s.type.toUpperCase()}</span>
-                                </div>
-                            </div>
-                        `;
-                        l.appendChild(el);
-                    });
-                },
-
-                selectSession: (id) => {
-                    OS.State.activeSessionId = id;
-                    const s = OS.State.sessions[id];
-                    document.getElementById('active-chat-name').innerText = s.name;
-                    OS.UI.renderSidebar();
-                    
-                    // Render Chat History
-                    const feed = document.getElementById('chat-feed');
-                    feed.innerHTML = ''; // clear
-                    // Repopulate (Limit to last 50 for perf in DOM)
-                    s.msgs.slice(-50).forEach(m => {
-                        if(m.type === 'text') {
-                            const d = document.createElement('div');
-                            d.className = `msg ${m.side}`;
-                            d.innerHTML = `<div class="bubble">${m.txt}<div class="msg-meta">${new Date(m.time).toLocaleTimeString()}</div></div>`;
-                            feed.appendChild(d);
-                        }
-                    });
-                    OS.Apps.Chat.scroll();
-                    
-                    document.getElementById('chat-input').removeAttribute('disabled');
-                    if(OS.State.isMobile) document.getElementById('sidebar').classList.remove('open');
-                },
-
-                openMediaViewer: (url) => {
-                    document.getElementById('media-content').src = url;
-                    document.getElementById('media-download-btn').onclick = () => {
-                        const a = document.createElement('a'); a.href=url; a.download='file'; a.click();
-                    };
-                    document.getElementById('media-viewer').style.display = 'flex';
-                },
-
-                sound: (t) => {
-                    const ctx = new AudioContext();
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    o.connect(g); g.connect(ctx.destination);
-                    if(t==='startup') {
-                        o.frequency.setValueAtTime(220, ctx.currentTime);
-                        o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.5);
-                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+0.5);
-                        o.start(); o.stop(ctx.currentTime+0.5);
+                toggleSidebar: () => {
+                    const sb = document.getElementById('sidebar');
+                    if(sb.style.transform === 'translateX(0px)') {
+                        sb.style.transform = 'translateX(-100%)';
+                        document.getElementById('close-sidebar').style.display = 'none';
+                    } else {
+                        sb.style.transform = 'translateX(0px)';
+                        document.getElementById('close-sidebar').style.display = 'block';
                     }
                 },
-                
-                toast: (msg, type='info') => {
-                    const c = document.getElementById('toast-area');
+                toggleHub: () => document.getElementById('connection-hub').classList.toggle('hidden'),
+                toggleAttach: () => document.getElementById('attach-menu').classList.toggle('open'),
+                qr: (txt) => {
+                    const t = document.getElementById('qr-target');
+                    t.innerHTML = '';
+                    new QRCode(t, { text: txt, width: 200, height: 200 });
+                    document.getElementById('qr-modal').style.display = 'flex';
+                },
+                showQR: () => { if(OS.State.link) OS.UI.qr(OS.State.link); },
+                openMediaViewer: (url) => {
+                    const v = document.getElementById('media-viewer');
+                    const c = document.getElementById('media-content');
+                    const b = document.getElementById('media-download-btn');
+                    c.src = url;
+                    b.onclick = () => {
+                        const a = document.createElement('a');
+                        a.href = url; a.download = 'media-' + Date.now();
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+                    v.style.display = 'flex';
+                },
+                addContact: (peerId) => {
+                    const list = document.getElementById('contact-list');
+                    if(document.getElementById(`contact-${peerId}`)) return;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'contact-item';
+                    div.id = `contact-${peerId}`;
+                    div.onclick = () => OS.Apps.Chat.switchContext(peerId);
+                    div.innerHTML = `
+                        <div class="avatar online"><i class="fas fa-user-secret"></i></div>
+                        <div class="contact-info">
+                            <div class="contact-name">${peerId}</div>
+                            <div class="contact-status">Connected</div>
+                        </div>
+                        <div class="unread-badge">!</div>
+                    `;
+                    list.appendChild(div);
+                },
+                removeContact: (peerId) => {
+                    const el = document.getElementById(`contact-${peerId}`);
+                    if(el) el.remove();
+                    if(OS.State.activeContext === peerId) OS.Apps.Chat.switchContext('broadcast');
+                },
+                markUnread: (peerId) => {
+                    const el = document.getElementById(`contact-${peerId}`);
+                    if(el) el.classList.add('has-unread');
+                },
+                toast: (msg, type = "info") => {
+                    const area = document.getElementById('toast-area');
                     const t = document.createElement('div');
                     t.className = `toast ${type}`;
                     t.innerText = msg;
-                    c.appendChild(t);
+                    area.appendChild(t);
                     setTimeout(() => t.remove(), 3000);
+                },
+                sound: (t) => {
+                    const ctx = new AudioContext();
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.connect(g); g.connect(ctx.destination);
+                    
+                    if(t === 'startup') {
+                        osc.frequency.setValueAtTime(220, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.5);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+0.5);
+                        osc.start(); osc.stop(ctx.currentTime+0.5);
+                    } else if (t === 'key') {
+                        osc.frequency.value = 800; g.gain.value = 0.02;
+                        osc.start(); osc.stop(ctx.currentTime + 0.05);
+                    } else if (t === 'ding') {
+                        osc.frequency.value = 440; g.gain.value = 0.1;
+                        osc.start(); osc.stop(ctx.currentTime + 0.2);
+                    }
                 }
             }
         };
