@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* * 🏛️ THEME: SINGULARITY DARK (MESH REVISION v25) */
+        /* * 🏛️ THEME: SINGULARITY DARK (MESH REVISION v25.1) */
         :root {
             --bg-root: #000000;
             --bg-app: #0f0f0f;
@@ -91,6 +91,10 @@
             justify-content: space-between; background: var(--bg-header);
         }
         .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .sidebar-section-title {
+            padding: 10px 12px 5px; font-size: 0.75rem; color: var(--text-muted);
+            font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+        }
         
         .contact-item {
             display: flex; align-items: center; gap: 15px; padding: 12px;
@@ -121,6 +125,14 @@
             display: none; margin-left: auto;
         }
         .contact-item.has-unread .unread-badge { display: block; }
+
+        /* --- TOGGLE SWITCH --- */
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(14px); }
 
         /* --- CHAT VIEW --- */
         .chat-view {
@@ -164,10 +176,10 @@
         
         .msg-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; display: flex; gap: 5px; align-items: center; user-select: none; }
         
-        /* Input Bar (FIXED: Desktop Offset) */
+        /* Input Bar */
         .input-area {
             position: fixed; bottom: 0; 
-            left: 300px; width: calc(100% - 300px); /* Desktop Fix */
+            left: 300px; width: calc(100% - 300px);
             padding: 15px; background: var(--bg-header); border-top: var(--border);
             display: flex; align-items: flex-end; gap: 10px; 
             z-index: var(--z-input);
@@ -202,6 +214,40 @@
             width: 100%; padding: 12px; background: #000; border: 1px solid var(--border);
             color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace;
             text-align: center; font-size: 1.1rem;
+        }
+
+        /* --- FUN QR CODE MODAL --- */
+        #qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: var(--z-modal);
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+            backdrop-filter: blur(5px);
+        }
+        .qr-card {
+            background: #111; padding: 30px; border-radius: 20px; text-align: center;
+            border: 2px solid var(--primary); box-shadow: 0 0 40px var(--primary-dim);
+            position: relative; overflow: hidden;
+        }
+        .qr-container {
+            position: relative; display: inline-block; padding: 15px;
+            background: #fff; border-radius: 10px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        .qr-laser {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: rgba(255, 50, 50, 0.9); box-shadow: 0 0 15px red, 0 0 30px red;
+            animation: scan 2.5s infinite linear; z-index: 10; pointer-events: none;
+        }
+        .qr-center-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #fff; padding: 8px; border-radius: 50%; font-size: 28px;
+            color: var(--primary); z-index: 5; box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
         
         /* --- OVERLAYS (APPS) --- */
@@ -360,7 +406,7 @@
     <div id="boot-layer">
         <div class="boot-logo"><i class="fas fa-atom"></i></div>
         <div style="font-family:'JetBrains Mono'; margin-bottom:10px;">PEPETALK OS XXV</div>
-        <div style="font-size: 0.8rem; color: #555;">Singularity Mesh v25.0.0</div>
+        <div style="font-size: 0.8rem; color: #555;">Singularity Mesh v25.1.0</div>
         <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
@@ -369,22 +415,38 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span>PepeTalk</span>
-                <div style="display:flex; gap:10px;">
-                    <i class="fas fa-times menu-btn" onclick="OS.UI.toggleSidebar()" style="display:none;" id="close-sidebar"></i>
-                    <i class="fas fa-qrcode menu-btn" onclick="OS.UI.showQR()" title="Show QR"></i>
-                    <i class="fas fa-sync menu-btn" onclick="OS.Net.refreshIdentity()" title="Refresh ID"></i>
+                <div style="display:flex; gap:5px;">
+                    <i class="fas fa-volume-up menu-btn btn-icon" id="mute-btn" onclick="OS.UI.toggleMute()" title="Toggle Sound" style="font-size: 1.1rem; padding: 5px;"></i>
+                    <i class="fas fa-qrcode menu-btn btn-icon" onclick="OS.UI.showQR()" title="Show QR" style="font-size: 1.1rem; padding: 5px;"></i>
+                    <i class="fas fa-sync menu-btn btn-icon" onclick="OS.Net.refreshIdentity()" title="Refresh ID" style="font-size: 1.1rem; padding: 5px;"></i>
+                    <i class="fas fa-times menu-btn btn-icon" onclick="OS.UI.toggleSidebar()" style="display:none; font-size: 1.1rem; padding: 5px;" id="close-sidebar"></i>
                 </div>
             </div>
-            <div class="sidebar-list" id="contact-list">
-                <!-- Dynamic Contacts -->
-                <div class="contact-item broadcast active" onclick="OS.Apps.Chat.switchContext('broadcast')">
+            <div class="sidebar-list">
+                <div class="sidebar-section-title">Channels</div>
+                <div class="contact-item broadcast" id="contact-broadcast" onclick="OS.Apps.Chat.switchContext('broadcast')">
                     <div class="avatar"><i class="fas fa-broadcast-tower"></i></div>
                     <div class="contact-info">
                         <div class="contact-name">BROADCAST</div>
                         <div class="contact-status">Send to all peers</div>
                     </div>
                 </div>
+                
+                <div class="sidebar-section-title" style="margin-top: 15px;">Direct Messages</div>
+                <div id="contact-list">
+                    <!-- Dynamic Contacts -->
+                </div>
             </div>
+            
+            <!-- Settings Area -->
+            <div style="padding:10px; border-top:var(--border); font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted)"><i class="fas fa-user-secret"></i> Obfuscate Filenames</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-obfuscate" onchange="OS.State.obfuscateFiles = this.checked">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            
             <div style="padding:10px; border-top:var(--border);">
                 <button class="btn-primary" style="width:100%; background:#222; font-size:0.8rem;" onclick="OS.UI.toggleHub()">
                     <i class="fas fa-plus"></i> ADD PEER
@@ -400,7 +462,7 @@
             <div class="chat-header">
                 <div class="chat-title">
                     <i class="fas fa-bars mobile-menu-btn" onclick="OS.UI.toggleSidebar()"></i>
-                    <span id="chat-title-text">Broadcast Channel</span>
+                    <span id="chat-title-text">No Active Chat</span>
                 </div>
                 <div class="chat-actions">
                     <i class="fas fa-stopwatch menu-btn" id="ephemeral-btn" onclick="OS.Apps.Chat.toggleEphemeral()" title="Ephemeral Mode"></i>
@@ -411,8 +473,8 @@
 
             <div class="chat-feed" id="chat-feed">
                 <div style="text-align:center; margin-top:50px; opacity:0.5;">
-                    <i class="fas fa-shield-alt" style="font-size:3rem; margin-bottom:10px;"></i>
-                    <p>End-to-End Encrypted Mesh.<br>No Server Storage.<br><span style="font-size:0.7rem">Double-click message to copy.</span></p>
+                    <i class="fas fa-user-slash" style="font-size:3rem; margin-bottom:10px;"></i>
+                    <p>No active connection.<br>Add a peer to start chatting.</p>
                 </div>
             </div>
 
@@ -528,12 +590,17 @@
 
     <input type="file" id="file-input" multiple hidden onchange="OS.Net.File.handle(this)">
 
-    <div id="qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:var(--z-modal); display:none; justify-content:center; align-items:center; flex-direction:column;">
-        <div style="background:white; padding:20px; border-radius:16px; text-align:center;">
-            <div id="qr-target"></div>
-            <div style="margin-top:10px; color:#333; font-weight:bold;">Scan to Connect</div>
+    <!-- Fun QR Modal -->
+    <div id="qr-modal">
+        <div class="qr-card">
+            <div class="qr-container" id="qr-container">
+                <div id="qr-target"></div>
+                <div class="qr-laser"></div>
+                <div class="qr-center-icon"><i class="fas fa-atom"></i></div>
+            </div>
+            <div style="margin-top:20px; color:var(--primary); font-weight:bold; letter-spacing: 2px; font-family: var(--font-mono);">SCAN TO LINK</div>
+            <button class="btn-primary" style="margin-top:20px; width: 100%; background: #333;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
         </div>
-        <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('qr-modal').style.display='none'">Close</button>
     </div>
 
     <div id="media-viewer">
@@ -566,7 +633,7 @@
         /**
          * 🍓 PEPETALK OS XXV - SINGULARITY MESH
          * "The final word in browser-based communication."
-         * * PATCH 25.0.0: Multi-Peer Mesh, Heartbeat, Fingerprinting, Robust Chunking.
+         * * PATCH 25.1.0: Robust Chunking, Mute Toggle, File Obfuscation, 1-on-1 Default, Fun QR.
          */
 
         const OS = {
@@ -575,11 +642,13 @@
                 peerId: null, 
                 connections: {}, // Map of peerId -> DataConnection
                 chats: { 'broadcast': [] }, // History per peer
-                activeContext: 'broadcast', // 'broadcast' or peerId
+                activeContext: null, // Default to null (no active chat)
                 key: null, 
                 isMobile: false, 
                 ephemeral: false,
-                fingerprint: null
+                fingerprint: null,
+                muted: false,
+                obfuscateFiles: false
             },
 
             init: async () => {
@@ -596,6 +665,7 @@
                     document.getElementById('boot-layer').style.display = 'none';
                     document.getElementById('app-container').classList.add('visible');
                     OS.UI.sound('startup');
+                    OS.Apps.Chat.switchContext(null); // Initialize empty state
                 }, 1500);
 
                 // 2. Async Init
@@ -754,10 +824,14 @@
                     c.on('open', () => {
                         OS.UI.addContact(c.peer);
                         document.getElementById('connection-hub').classList.add('hidden');
-                        document.getElementById('chat-input').removeAttribute('disabled');
                         document.getElementById('qr-modal').style.display = 'none';
                         OS.Apps.Logs.add(`Connection Open to ${c.peer}`, 'NET');
                         OS.UI.sound('ding');
+                        
+                        // Auto-switch to 1-on-1 if no active chat or on broadcast
+                        if(OS.State.activeContext === null || OS.State.activeContext === 'broadcast') {
+                            OS.Apps.Chat.switchContext(c.peer);
+                        }
                         
                         // Send Handshake with Fingerprint
                         OS.Net.sendTo(c.peer, 'handshake', { fp: OS.State.fingerprint });
@@ -776,7 +850,7 @@
                         OS.Apps.Logs.add(`Connection Closed: ${c.peer}`, 'NET');
                         if(Object.keys(OS.State.connections).length === 0) {
                             document.getElementById('connection-hub').classList.remove('hidden');
-                            document.getElementById('chat-input').setAttribute('disabled', true);
+                            OS.Apps.Chat.switchContext(null);
                         }
                     });
                 },
@@ -788,6 +862,7 @@
                     }, 4000);
                 },
                 send: async (t, p) => {
+                    if(!OS.State.activeContext) return;
                     // Broadcast or Single Send based on Context
                     if(OS.State.activeContext === 'broadcast') {
                         Object.keys(OS.State.connections).forEach(pid => OS.Net.sendTo(pid, t, p));
@@ -835,43 +910,84 @@
                 
                 File: {
                     bufs: {},
+                    active: {}, // Store files for retry
                     handle: (inp) => { 
                         if(inp.files.length > 0) {
                             Array.from(inp.files).forEach(f => OS.Net.File.send(f));
                         }
                     },
+                    retry: (fid) => {
+                        const f = OS.Net.File.active[fid];
+                        if(f) {
+                            OS.Apps.Logs.add(`Retrying file: ${f.name}`, 'NET');
+                            OS.Net.File.send(f);
+                        }
+                    },
                     send: (f) => {
+                        if(!OS.State.activeContext) return;
+                        
                         const fid = Math.random().toString(36).substr(2);
+                        OS.Net.File.active[fid] = f; // Store for retry
+                        
                         const total = Math.ceil(f.size / OS.Config.CHUNK);
-                        OS.Apps.Chat.renderFile(f, 'local', fid);
-                        OS.Apps.Logs.add(`Sending File: ${f.name} (${f.size} bytes)`, 'NET');
+                        
+                        // Handle Obfuscation
+                        let finalName = f.name;
+                        if (OS.State.obfuscateFiles) {
+                            const ext = f.name.includes('.') ? '.' + f.name.split('.').pop() : '';
+                            finalName = 'secure_file_' + Math.random().toString(36).substr(2, 6) + ext;
+                        }
+
+                        OS.Apps.Chat.renderFile({name: finalName}, 'local', fid);
+                        OS.Apps.Logs.add(`Sending File: ${finalName} (${f.size} bytes)`, 'NET');
                         
                         const reader = new FileReader();
                         let offset = 0;
                         let idx = 0;
 
-                        const readNext = () => {
+                        const readNext = async () => {
+                            // Backpressure Check
+                            let targets = [];
+                            if (OS.State.activeContext === 'broadcast') {
+                                targets = Object.values(OS.State.connections).filter(c => c.open);
+                            } else {
+                                const c = OS.State.connections[OS.State.activeContext];
+                                if (c && c.open) targets.push(c);
+                            }
+
+                            // If any target buffer is > 128KB, wait
+                            const bufferFull = targets.some(c => c.dataChannel && c.dataChannel.bufferedAmount > 131072);
+                            
+                            if (bufferFull) {
+                                setTimeout(readNext, 50);
+                                return;
+                            }
+
                             const slice = f.slice(offset, offset + OS.Config.CHUNK);
                             reader.readAsDataURL(slice);
                         };
 
                         reader.onload = async (e) => {
                             const data = e.target.result;
-                            await OS.Net.send('chunk', { fid, idx, total, d: data, n: f.name, type: f.type });
+                            await OS.Net.send('chunk', { fid, idx, total, d: data, n: finalName, type: f.type });
                             
                             offset += OS.Config.CHUNK;
                             idx++;
                             
                             // Update Progress UI
                             const el = document.getElementById(`f-${fid}`);
-                            if(el) el.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending... ${Math.round((idx/total)*100)}%`;
+                            if(el) {
+                                el.innerHTML = `
+                                    <i class="fas fa-spinner fa-spin"></i> Sending... ${Math.round((idx/total)*100)}%
+                                    <i class="fas fa-sync" style="cursor:pointer; margin-left:10px; opacity:0.5;" onclick="OS.Net.File.retry('${fid}')" title="Retry Upload"></i>
+                                `;
+                            }
 
                             if(offset < f.size) {
-                                // Backpressure Hack: Small delay to let buffer drain
-                                setTimeout(readNext, 10); 
+                                setTimeout(readNext, 5); // Small delay to yield thread
                             } else {
                                 OS.Apps.Chat.finalize(fid, URL.createObjectURL(f), f.type);
-                                OS.Apps.Logs.add(`File Sent: ${f.name}`, 'NET');
+                                OS.Apps.Logs.add(`File Sent: ${finalName}`, 'NET');
                             }
                         };
                         readNext();
@@ -909,9 +1025,11 @@
             Apps: {
                 Chat: {
                     clear: () => {
-                        OS.State.chats[OS.State.activeContext] = [];
-                        OS.Apps.Chat.refreshFeed();
-                        OS.Apps.Logs.add("User cleared chat history.", 'UI');
+                        if(OS.State.activeContext) {
+                            OS.State.chats[OS.State.activeContext] = [];
+                            OS.Apps.Chat.refreshFeed();
+                            OS.Apps.Logs.add("User cleared chat history.", 'UI');
+                        }
                     },
                     nuke: () => {
                         if(confirm("NUKE: This will overwrite memory and reload. Continue?")) {
@@ -929,8 +1047,23 @@
                         OS.State.activeContext = ctx;
                         document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
                         
+                        const input = document.getElementById('chat-input');
+                        
+                        if (!ctx) {
+                            document.getElementById('chat-title-text').innerText = "No Active Chat";
+                            input.setAttribute('disabled', true);
+                            document.getElementById('chat-feed').innerHTML = `
+                                <div style="text-align:center; margin-top:50px; opacity:0.5;">
+                                    <i class="fas fa-user-slash" style="font-size:3rem; margin-bottom:10px;"></i>
+                                    <p>No active connection.<br>Add a peer to start chatting.</p>
+                                </div>`;
+                            return;
+                        }
+                        
+                        input.removeAttribute('disabled');
+                        
                         if(ctx === 'broadcast') {
-                            document.querySelector('.contact-item.broadcast').classList.add('active');
+                            document.getElementById('contact-broadcast').classList.add('active');
                             document.getElementById('chat-title-text').innerText = "Broadcast Channel";
                         } else {
                             const el = document.getElementById(`contact-${ctx}`);
@@ -963,6 +1096,7 @@
                         OS.Apps.Chat.scrollToBottom();
                     },
                     send: () => {
+                        if(!OS.State.activeContext) return;
                         const el = document.getElementById('chat-input');
                         const txt = el.value.trim();
                         if(!txt) return;
@@ -1362,7 +1496,7 @@
                                     const call = OS.Net.peer.call(pid, s);
                                     OS.Apps.Video.handle(call);
                                 });
-                            } else {
+                            } else if (OS.State.activeContext) {
                                 const call = OS.Net.peer.call(OS.State.activeContext, s);
                                 OS.Apps.Video.handle(call);
                             }
@@ -1423,10 +1557,33 @@
                 },
                 toggleHub: () => document.getElementById('connection-hub').classList.toggle('hidden'),
                 toggleAttach: () => document.getElementById('attach-menu').classList.toggle('open'),
+                toggleMute: () => {
+                    OS.State.muted = !OS.State.muted;
+                    const btn = document.getElementById('mute-btn');
+                    if (OS.State.muted) {
+                        btn.classList.remove('fa-volume-up');
+                        btn.classList.add('fa-volume-mute');
+                        btn.style.color = 'var(--danger)';
+                        OS.UI.toast("Sounds Muted", "info");
+                    } else {
+                        btn.classList.remove('fa-volume-mute');
+                        btn.classList.add('fa-volume-up');
+                        btn.style.color = 'var(--text-muted)';
+                        OS.UI.sound('ding');
+                        OS.UI.toast("Sounds Enabled", "info");
+                    }
+                },
                 qr: (txt) => {
                     const t = document.getElementById('qr-target');
                     t.innerHTML = '';
-                    new QRCode(t, { text: txt, width: 200, height: 200 });
+                    new QRCode(t, { 
+                        text: txt, 
+                        width: 220, 
+                        height: 220,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
                     document.getElementById('qr-modal').style.display = 'flex';
                 },
                 showQR: () => { if(OS.State.link) OS.UI.qr(OS.State.link); },
@@ -1465,7 +1622,7 @@
                 removeContact: (peerId) => {
                     const el = document.getElementById(`contact-${peerId}`);
                     if(el) el.remove();
-                    if(OS.State.activeContext === peerId) OS.Apps.Chat.switchContext('broadcast');
+                    if(OS.State.activeContext === peerId) OS.Apps.Chat.switchContext(null);
                 },
                 markUnread: (peerId) => {
                     const el = document.getElementById(`contact-${peerId}`);
@@ -1480,6 +1637,7 @@
                     setTimeout(() => t.remove(), 3000);
                 },
                 sound: (t) => {
+                    if (OS.State.muted) return;
                     const ctx = new AudioContext();
                     const osc = ctx.createOscillator();
                     const g = ctx.createGain();
